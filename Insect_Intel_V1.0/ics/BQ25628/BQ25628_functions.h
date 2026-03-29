@@ -75,6 +75,21 @@
 
 /* : NTC Control 0 (TS pin) */
 #define BQ25628E_NTC0_TS_IGNORE (1u << 7)
+// ================================================================
+// REG0x1E: Charger Status 1
+// ================================================================
+
+/* Charge Status Bits (Bits 4:3) */
+#define BQ25628E_CHG_STAT_MASK      0x18u   /* 0001 1000b */
+#define BQ25628E_CHG_STAT_NOT_CHG   0x00u   /* 00b: Not Charging / Terminated */
+#define BQ25628E_CHG_STAT_FAST_CHG  0x08u   /* 01b: Trickle/Pre/Fast Charge */
+#define BQ25628E_CHG_STAT_TAPER     0x10u   /* 10b: Taper Charge (CV mode) */
+#define BQ25628E_CHG_STAT_TOP_OFF   0x18u   /* 11b: Top-off Timer Active */
+
+/* VBUS Status Bits (Bits 2:0) */
+#define BQ25628E_VBUS_STAT_MASK     0x07u   /* 0000 0111b */
+#define BQ25628E_VBUS_STAT_NONE     0x00u   /* 000b: Not powered from VBUS */
+#define BQ25628E_VBUS_STAT_UNKNOWN  0x04u   /* 100b: Unknown Adapter */
 
 /* -------------------------------------------------------------------------- */
 /* Public API                                                                 */

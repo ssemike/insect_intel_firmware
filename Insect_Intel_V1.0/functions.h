@@ -28,4 +28,8 @@ void cmd_spi(char *args);
 
 void cmd_gauge(char *args);
 
+void cmd_sm(char *args);
+
+void Run_Legacy_Monitors(char* processingBuffer);
+
 #endif /* FUNCTIONS_H_ */

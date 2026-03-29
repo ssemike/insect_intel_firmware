@@ -85,6 +85,34 @@
 
 
 // ================================================================
+// SafetyStatus Bits (MAC 0x0051)
+// ================================================================
+// These are 32-bit latched safety failure flags
+
+// Primary Safety Flags (Used in your SM_DecodeSafetyStatus function)
+#define BQ27Z746_SAFETY_CUV   (1UL << 0)  // CUV: Cell Undervoltage
+#define BQ27Z746_SAFETY_OVP   (1UL << 1)  // COV: Cell Overvoltage
+#define BQ27Z746_SAFETY_OCC   (1UL << 2)  // OCC: Overcurrent During Charge
+#define BQ27Z746_SAFETY_OCD   (1UL << 4)  // OCD: Overcurrent During Discharge
+#define BQ27Z746_SAFETY_SCD   (1UL << 10) // HSCD: Hardware Short-Circuit Discharge
+
+// Additional Temperature & Timeout Flags
+#define BQ27Z746_SAFETY_HOCD  (1UL << 6)  // Overload during discharge
+#define BQ27Z746_SAFETY_HOCC  (1UL << 8)  // Short-circuit during charge
+#define BQ27Z746_SAFETY_OTC   (1UL << 12) // Over-temperature during charge
+#define BQ27Z746_SAFETY_OTD   (1UL << 13) // Over-temperature during discharge
+#define BQ27Z746_SAFETY_OTF   (1UL << 16) // Over-temperature FET
+#define BQ27Z746_SAFETY_PTO   (1UL << 18) // Precharge Timeout
+#define BQ27Z746_SAFETY_CTO   (1UL << 20) // Charge Timeout
+#define BQ27Z746_SAFETY_UTC   (1UL << 26) // Under-temperature during charge
+#define BQ27Z746_SAFETY_UTD   (1UL << 27) // Under-temperature during discharge
+
+#define BQ27Z746_SAFETY_HCOV  (1UL << 30) // Hardware Cell Overvoltage
+#define BQ27Z746_SAFETY_HCUV  (1UL << 31) // Hardware Cell Undervoltage
+
+
+
+// ================================================================
 // MAC frame constants
 // ================================================================
 #define BQ27Z746_MAC_DATA_LEN       32u

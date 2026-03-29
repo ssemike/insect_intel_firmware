@@ -2,6 +2,7 @@
 "./startup_mspm0g350x_ticlang.o"
 "./functions.o"
 "./main.o"
+"./sm.o"
 "./HAL/i2c.o"
 "./HAL/spi_master.o"
 "./HAL/uart.o"

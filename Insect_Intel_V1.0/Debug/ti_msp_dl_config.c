@@ -58,6 +58,7 @@ SYSCONFIG_WEAK void SYSCFG_DL_init(void)
     SYSCFG_DL_UART_0_init();
     SYSCFG_DL_SPI_1_init();
     SYSCFG_DL_DMA_init();
+    SYSCFG_DL_RTC_init();
     /* Ensure backup structures have no valid state */
 
 
@@ -97,6 +98,7 @@ SYSCONFIG_WEAK void SYSCFG_DL_initPower(void)
     DL_UART_Main_reset(UART_0_INST);
     DL_SPI_reset(SPI_1_INST);
 
+    DL_RTC_reset(RTC);
 
     DL_GPIO_enablePower(GPIOA);
     DL_GPIO_enablePower(GPIOB);
@@ -106,6 +108,7 @@ SYSCONFIG_WEAK void SYSCFG_DL_initPower(void)
     DL_UART_Main_enablePower(UART_0_INST);
     DL_SPI_enablePower(SPI_1_INST);
 
+    DL_RTC_enablePower(RTC);
     delay_cycles(POWER_STARTUP_DELAY);
 }
 
@@ -149,14 +152,16 @@ SYSCONFIG_WEAK void SYSCFG_DL_GPIO_init(void)
     DL_GPIO_initPeripheralOutputFunction(
         GPIO_SPI_1_IOMUX_CS1, GPIO_SPI_1_IOMUX_CS1_FUNC);
 
-    DL_GPIO_initDigitalOutput(DIGITAL_OUTPUT_PORTA_HALL_3V_IOMUX);
-
     DL_GPIO_initDigitalInputFeatures(EXTERNAL_INTERRUPT_CHARGER_INT_IOMUX,
 		 DL_GPIO_INVERSION_DISABLE, DL_GPIO_RESISTOR_NONE,
 		 DL_GPIO_HYSTERESIS_DISABLE, DL_GPIO_WAKEUP_DISABLE);
 
     DL_GPIO_initDigitalInputFeatures(EXTERNAL_INTERRUPT_SETUP_INT_IOMUX,
 		 DL_GPIO_INVERSION_DISABLE, DL_GPIO_RESISTOR_NONE,
+		 DL_GPIO_HYSTERESIS_DISABLE, DL_GPIO_WAKEUP_DISABLE);
+
+    DL_GPIO_initDigitalInputFeatures(EXTERNAL_INTERRUPT_STM_MCU_IO2_IOMUX,
+		 DL_GPIO_INVERSION_DISABLE, DL_GPIO_RESISTOR_PULL_DOWN,
 		 DL_GPIO_HYSTERESIS_DISABLE, DL_GPIO_WAKEUP_DISABLE);
 
     DL_GPIO_initDigitalOutput(DIGITAL_OUTPUT_PORTB_CHARGER_EN_IOMUX);
@@ -175,8 +180,16 @@ SYSCONFIG_WEAK void SYSCFG_DL_GPIO_init(void)
 
     DL_GPIO_initDigitalOutput(DIGITAL_OUTPUT_PORTB_GAUGE_EN_IOMUX);
 
-    DL_GPIO_clearPins(DIGITAL_OUTPUT_PORTA_PORT, DIGITAL_OUTPUT_PORTA_HALL_3V_PIN);
-    DL_GPIO_enableOutput(DIGITAL_OUTPUT_PORTA_PORT, DIGITAL_OUTPUT_PORTA_HALL_3V_PIN);
+    DL_GPIO_initDigitalOutput(DIGITAL_OUTPUT_PORTA_HALL_3V_IOMUX);
+
+    DL_GPIO_initDigitalOutputFeatures(DIGITAL_OUTPUT_PORTA_STM_MCU_IO1_IOMUX,
+		 DL_GPIO_INVERSION_DISABLE, DL_GPIO_RESISTOR_PULL_DOWN,
+		 DL_GPIO_DRIVE_STRENGTH_LOW, DL_GPIO_HIZ_DISABLE);
+
+    DL_GPIO_clearPins(GPIOA, DIGITAL_OUTPUT_PORTA_HALL_3V_PIN |
+		DIGITAL_OUTPUT_PORTA_STM_MCU_IO1_PIN);
+    DL_GPIO_enableOutput(GPIOA, DIGITAL_OUTPUT_PORTA_HALL_3V_PIN |
+		DIGITAL_OUTPUT_PORTA_STM_MCU_IO1_PIN);
     DL_GPIO_clearPins(GPIOB, DIGITAL_OUTPUT_PORTB_EN3V8_PIN |
 		DIGITAL_OUTPUT_PORTB_MCU_LTE_PON_PIN |
 		DIGITAL_OUTPUT_PORTB_STM_PON_PIN |
@@ -193,9 +206,12 @@ SYSCONFIG_WEAK void SYSCFG_DL_GPIO_init(void)
 		DIGITAL_OUTPUT_PORTB_MCU_WIFI_PON_PIN |
 		DIGITAL_OUTPUT_PORTB_CAM_SYNC_PIN |
 		DIGITAL_OUTPUT_PORTB_GAUGE_EN_PIN);
-    DL_GPIO_setLowerPinsPolarity(GPIOB, DL_GPIO_PIN_1_EDGE_RISE_FALL);
-    DL_GPIO_clearInterruptStatus(GPIOB, EXTERNAL_INTERRUPT_CHARGER_INT_PIN);
-    DL_GPIO_enableInterrupt(GPIOB, EXTERNAL_INTERRUPT_CHARGER_INT_PIN);
+    DL_GPIO_setLowerPinsPolarity(GPIOB, DL_GPIO_PIN_1_EDGE_FALL);
+    DL_GPIO_setUpperPinsPolarity(GPIOB, DL_GPIO_PIN_20_EDGE_FALL);
+    DL_GPIO_clearInterruptStatus(GPIOB, EXTERNAL_INTERRUPT_CHARGER_INT_PIN |
+		EXTERNAL_INTERRUPT_SETUP_INT_PIN);
+    DL_GPIO_enableInterrupt(GPIOB, EXTERNAL_INTERRUPT_CHARGER_INT_PIN |
+		EXTERNAL_INTERRUPT_SETUP_INT_PIN);
 
 }
 
@@ -442,4 +458,24 @@ SYSCONFIG_WEAK void SYSCFG_DL_DMA_init(void){
     SYSCFG_DL_DMA_CH0_init();
 }
 
+
+static const DL_RTC_Calendar gRTCCalendarConfig = {
+		.seconds    = 0,   /* Seconds = 0 */
+		.minutes    = 0,   /* Minute = 0 */
+		.hours      = 0,   /* Hour = 0 */
+		.dayOfWeek  = 0,    /* Day of week = 0 (Sunday) */
+		.dayOfMonth = 1,    /* Day of month = 1*/
+		.month      = 1,    /* Month = 1 (January) */
+		.year       = 2022, /* Year = 2022 */
+};
+
+
+
+
+SYSCONFIG_WEAK void SYSCFG_DL_RTC_init(void)
+{
+	/* Initialize RTC Calendar */
+	DL_RTC_initCalendar(RTC , gRTCCalendarConfig, DL_RTC_FORMAT_BINARY);
+
+}
 

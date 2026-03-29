@@ -265,10 +265,6 @@ bool BQ27Z746_Init(I2C_Regs *i2c)
     uint16_t device_type = 0u;
     if (!BQ27Z746_GetDeviceType(i2c, &device_type))
         return false;
-
-    if (!BQ27Z746_UseInternalTempOnly(i2c))
-        return false;
-
     return true;
 }
 

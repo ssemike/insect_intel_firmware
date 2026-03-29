@@ -167,25 +167,23 @@ extern "C" {
 #define SPI_1_INST_DMA_TRIGGER_1                              (DMA_SPI1_TX_TRIG)
 
 
-/* Port definition for Pin Group DIGITAL_OUTPUT_PORTA */
-#define DIGITAL_OUTPUT_PORTA_PORT                                        (GPIOA)
-
-/* Defines for HALL_3V: GPIOA.7 with pinCMx 14 on package pin 49 */
-#define DIGITAL_OUTPUT_PORTA_HALL_3V_PIN                         (DL_GPIO_PIN_7)
-#define DIGITAL_OUTPUT_PORTA_HALL_3V_IOMUX                       (IOMUX_PINCM14)
-/* Port definition for Pin Group EXTERNAL_INTERRUPT */
-#define EXTERNAL_INTERRUPT_PORT                                          (GPIOB)
-
 /* Defines for CHARGER_INT: GPIOB.1 with pinCMx 13 on package pin 48 */
-// pins affected by this interrupt request:["CHARGER_INT"]
+#define EXTERNAL_INTERRUPT_CHARGER_INT_PORT                              (GPIOB)
+// pins affected by this interrupt request:["CHARGER_INT","SETUP_INT"]
 #define EXTERNAL_INTERRUPT_INT_IRQN                             (GPIOB_INT_IRQn)
 #define EXTERNAL_INTERRUPT_INT_IIDX             (DL_INTERRUPT_GROUP1_IIDX_GPIOB)
 #define EXTERNAL_INTERRUPT_CHARGER_INT_IIDX                  (DL_GPIO_IIDX_DIO1)
 #define EXTERNAL_INTERRUPT_CHARGER_INT_PIN                       (DL_GPIO_PIN_1)
 #define EXTERNAL_INTERRUPT_CHARGER_INT_IOMUX                     (IOMUX_PINCM13)
 /* Defines for SETUP_INT: GPIOB.20 with pinCMx 48 on package pin 19 */
+#define EXTERNAL_INTERRUPT_SETUP_INT_PORT                                (GPIOB)
+#define EXTERNAL_INTERRUPT_SETUP_INT_IIDX                   (DL_GPIO_IIDX_DIO20)
 #define EXTERNAL_INTERRUPT_SETUP_INT_PIN                        (DL_GPIO_PIN_20)
 #define EXTERNAL_INTERRUPT_SETUP_INT_IOMUX                       (IOMUX_PINCM48)
+/* Defines for STM_MCU_IO2: GPIOA.26 with pinCMx 59 on package pin 30 */
+#define EXTERNAL_INTERRUPT_STM_MCU_IO2_PORT                              (GPIOA)
+#define EXTERNAL_INTERRUPT_STM_MCU_IO2_PIN                      (DL_GPIO_PIN_26)
+#define EXTERNAL_INTERRUPT_STM_MCU_IO2_IOMUX                     (IOMUX_PINCM59)
 /* Port definition for Pin Group DIGITAL_OUTPUT_PORTB */
 #define DIGITAL_OUTPUT_PORTB_PORT                                        (GPIOB)
 
@@ -213,6 +211,18 @@ extern "C" {
 /* Defines for GAUGE_EN: GPIOB.16 with pinCMx 33 on package pin 4 */
 #define DIGITAL_OUTPUT_PORTB_GAUGE_EN_PIN                       (DL_GPIO_PIN_16)
 #define DIGITAL_OUTPUT_PORTB_GAUGE_EN_IOMUX                      (IOMUX_PINCM33)
+/* Port definition for Pin Group DIGITAL_OUTPUT_PORTA */
+#define DIGITAL_OUTPUT_PORTA_PORT                                        (GPIOA)
+
+/* Defines for HALL_3V: GPIOA.7 with pinCMx 14 on package pin 49 */
+#define DIGITAL_OUTPUT_PORTA_HALL_3V_PIN                         (DL_GPIO_PIN_7)
+#define DIGITAL_OUTPUT_PORTA_HALL_3V_IOMUX                       (IOMUX_PINCM14)
+/* Defines for STM_MCU_IO1: GPIOA.27 with pinCMx 60 on package pin 31 */
+#define DIGITAL_OUTPUT_PORTA_STM_MCU_IO1_PIN                    (DL_GPIO_PIN_27)
+#define DIGITAL_OUTPUT_PORTA_STM_MCU_IO1_IOMUX                   (IOMUX_PINCM60)
+
+
+
 
 
 /* clang-format on */
@@ -228,6 +238,7 @@ void SYSCFG_DL_UART_0_init(void);
 void SYSCFG_DL_SPI_1_init(void);
 void SYSCFG_DL_DMA_init(void);
 
+void SYSCFG_DL_RTC_init(void);
 
 bool SYSCFG_DL_saveConfiguration(void);
 bool SYSCFG_DL_restoreConfiguration(void);
