@@ -1,0 +1,1300 @@
+******************************************************************************
+            TI ARM Clang Linker PC v4.0.4                      
+******************************************************************************
+>> Linked Sun Mar 29 09:07:08 2026
+
+OUTPUT FILE NAME:   <HW_SW_interface_CCS.out>
+ENTRY POINT SYMBOL: "_c_int00_noargs"  address: 000055e9
+
+
+MEMORY CONFIGURATION
+
+         name            origin    length      used     unused   attr    fill
+----------------------  --------  ---------  --------  --------  ----  --------
+  FLASH                 00000000   00020000  00007808  000187f8  R  X
+  SRAM                  20200000   00008000  000003ab  00007c55  RW X
+  BCR_CONFIG            41c00000   000000ff  00000000  000000ff  R   
+  BSL_CONFIG            41c00100   00000080  00000000  00000080  R   
+
+
+SEGMENT ALLOCATION MAP
+
+run origin  load origin   length   init length attrs members
+----------  ----------- ---------- ----------- ----- -------
+00000000    00000000    00007808   00007808    r-x
+  00000000    00000000    000000c0   000000c0    r-- .intvecs
+  000000c0    000000c0    00005af0   00005af0    r-x .text
+  00005bb0    00005bb0    00001c10   00001c10    r-- .rodata
+  000077c0    000077c0    00000048   00000048    r-- .cinit
+20200000    20200000    000001ae   00000000    rw-
+  20200000    20200000    00000161   00000000    rw- .bss
+  20200164    20200164    0000004a   00000000    rw- .data
+20207e00    20207e00    00000200   00000000    rw-
+  20207e00    20207e00    00000200   00000000    rw- .stack
+
+
+SECTION ALLOCATION MAP
+
+ output                                  attributes/
+section   page    origin      length       input sections
+--------  ----  ----------  ----------   ----------------
+.intvecs   0    00000000    000000c0     
+                  00000000    000000c0     startup_mspm0g350x_ticlang.o (.intvecs)
+
+.text      0    000000c0    00005af0     
+                  000000c0    000009d0     libc.a : _printfi.c.obj (.text:__TI_printfi)
+                  00000a90    000007ac     functions.o (.text.cmd_gauge)
+                  0000123c    000003e4     functions.o (.text.cmd_bq)
+                  00001620    000003b0     main.o (.text.main)
+                  000019d0    00000344     uart.o (.text.CLI_ProcessInput)
+                  00001d14    00000220     libc.a : _printfi.c.obj (.text._pconv_a)
+                  00001f34    000001dc            : _printfi.c.obj (.text._pconv_g)
+                  00002110    000001d4     i2c.o (.text.I2C_ReadDevice)
+                  000022e4    000001c0     functions.o (.text.cmd_i2cscan)
+                  000024a4    00000192     libclang_rt.builtins.a : adddf3.S.obj (.text.adddf3_subdf3)
+                  00002636    00000002     startup_mspm0g350x_ticlang.o (.text.Default_Handler)
+                  00002638    0000016c     functions.o (.text.cmd_spi)
+                  000027a4    00000144     libc.a : strtol.c.obj (.text.strtol)
+                  000028e8    0000013c            : _printfi.c.obj (.text.fcvt)
+                  00002a24    00000138     i2c.o (.text.I2C_WriteDevice)
+                  00002b5c    00000120     libc.a : _printfi.c.obj (.text._pconv_e)
+                  00002c7c    00000110     BQ27Z7_functions.o (.text.BQ27Z746_SetUTFET_Direct)
+                  00002d8c    0000010c     BQ27Z7_functions.o (.text.BQ27Z746_SetTempSensorConfig)
+                  00002e98    0000010c     libclang_rt.builtins.a : divdf3.S.obj (.text.__divdf3)
+                  00002fa4    00000100     BQ27Z7_functions.o (.text.BQ27Z746_GetSecurityMode)
+                  000030a4    00000100     BQ27Z7_functions.o (.text.BQ27Z746_UpdateTelemetry)
+                  000031a4    000000fc     BQ25628_functions.o (.text.BQ25628E_UpdateTelemetry)
+                  000032a0    000000fc     driverlib.a : dl_timer.o (.text.DL_Timer_initTimerMode)
+                  0000339c    000000f0     BQ25628_functions.o (.text.BQ25628E_Init_Default)
+                  0000348c    000000ec     BQ27Z7_functions.o (.text.BQ27Z746_GetChargingStatus)
+                  00003578    000000e4     i2c.o (.text.I2C_TryAddress)
+                  0000365c    000000e4     libclang_rt.builtins.a : muldf3.S.obj (.text.__muldf3)
+                  00003740    000000de     BQ27Z7_functions.o (.text.BQ27Z746_GetDeviceType)
+                  0000381e    000000dc     BQ27Z7_functions.o (.text.BQ27Z746_GetChemID)
+                  000038fa    000000dc     BQ27Z7_functions.o (.text.BQ27Z746_GetOperationStatus)
+                  000039d6    000000dc     BQ27Z7_functions.o (.text.BQ27Z746_GetSafetyStatus)
+                  00003ab2    000000d8     BQ27Z7_functions.o (.text.BQ27Z746_GetFirmwareVersion)
+                  00003b8a    000000d8     BQ27Z7_functions.o (.text.BQ27Z746_MAC_Read)
+                  00003c62    00000002     libclang_rt.builtins.a : aeabi_div0.c.obj (.text.__aeabi_idiv0)
+                  00003c64    000000d8     libc.a : s_scalbn.c.obj (.text.scalbn)
+                  00003d3c    000000d8     libclang_rt.builtins.a : addsf3.S.obj (.text)
+                  00003e14    000000d4     functions.o (.text.cmd_pwr)
+                  00003ee8    000000d0     functions.o (.text.cmd_hall)
+                  00003fb8    000000cc     ti_msp_dl_config.o (.text.SYSCFG_DL_GPIO_init)
+                  00004084    000000bc     i2c.o (.text.Shared_I2C_IRQHandler)
+                  00004140    000000ac     uart.o (.text.UARTReceive)
+                  000041ec    000000a2     libclang_rt.builtins.a : udivmoddi4.S.obj (.text)
+                  0000428e    0000009a     libc.a : memcpy16.S.obj (.text:memcpy)
+                  00004328    0000008c     libclang_rt.builtins.a : mulsf3.S.obj (.text.__mulsf3)
+                  000043b4    0000008c     libc.a : s_floorf.c.obj (.text.floorf)
+                  00004440    00000088            : strcmp-armv6m.S.obj (.text:strcmp)
+                  000044c8    0000007c            : copy_decompress_lzss.c.obj (.text:decompress:lzss)
+                  00004544    0000007a     BQ27Z7_functions.o (.text.BQ27Z746_Unseal)
+                  000045be    00000002     libclang_rt.builtins.a : aeabi_div0.c.obj (.text.__aeabi_ldiv0)
+                  000045c0    00000078     uart.o (.text.uart_printf)
+                  00004638    00000074     libclang_rt.builtins.a : comparedf2.c.obj (.text.__gedf2)
+                  000046ac    00000070     ti_msp_dl_config.o (.text.SYSCFG_DL_UART_0_init)
+                  0000471c    00000068     uart.o (.text.CLI_Tokenize)
+                  00004784    00000068     ti_msp_dl_config.o (.text.SYSCFG_DL_I2C_0_init)
+                  000047ec    00000068     ti_msp_dl_config.o (.text.SYSCFG_DL_I2C_1_init)
+                  00004854    00000068     libclang_rt.builtins.a : comparedf2.c.obj (.text.__ledf2)
+                  000048bc    00000068     libc.a : s_roundf.c.obj (.text.roundf)
+                  00004924    00000066            : _printfi.c.obj (.text._mcpy)
+                  0000498a    00000002     --HOLE-- [fill = 0]
+                  0000498c    00000064     uart.o (.text.cmd_help)
+                  000049f0    00000062     libclang_rt.builtins.a : aeabi_dcmp.S.obj (.text.__aeabi_dcmp)
+                  00004a52    00000002     --HOLE-- [fill = 0]
+                  00004a54    00000062                            : aeabi_fcmp.S.obj (.text.__aeabi_fcmp)
+                  00004ab6    00000062     libc.a : memset16.S.obj (.text:memset)
+                  00004b18    00000060     ti_msp_dl_config.o (.text.SYSCFG_DL_SPI_1_init)
+                  00004b78    00000060     ti_msp_dl_config.o (.text.SYSCFG_DL_initPower)
+                  00004bd8    0000005e     driverlib.a : dl_i2c.o (.text.DL_I2C_fillControllerTXFIFO)
+                  00004c36    00000002     --HOLE-- [fill = 0]
+                  00004c38    0000005c     spi_master.o (.text.SPI_Controller_Arm)
+                  00004c94    0000005c     libc.a : s_frexp.c.obj (.text.frexp)
+                  00004cf0    00000058            : _ltoa.c.obj (.text.__TI_ltoa)
+                  00004d48    00000058            : _printfi.c.obj (.text._pconv_f)
+                  00004da0    00000056     libclang_rt.builtins.a : aeabi_idivmod.S.obj (.text.__aeabi_idivmod)
+                  00004df6    00000052     libc.a : _printfi.c.obj (.text._ecpy)
+                  00004e48    0000004c     driverlib.a : dl_dma.o (.text.DL_DMA_initChannel)
+                  00004e94    0000004a     BQ27Z7_functions.o (.text.BQ27Z746_GetTempConfig)
+                  00004ede    00000002     --HOLE-- [fill = 0]
+                  00004ee0    0000004a     libclang_rt.builtins.a : fixdfsi.S.obj (.text.__fixdfsi)
+                  00004f2a    00000048     BQ27Z7_functions.o (.text.BQ27Z746_GetFETOptions)
+                  00004f72    00000002     --HOLE-- [fill = 0]
+                  00004f74    00000048     driverlib.a : dl_uart.o (.text.DL_UART_init)
+                  00004fbc    00000048     libc.a : strtok.c.obj (.text.strtok)
+                  00005004    00000044     BQ27Z7_functions.o (.text.BQ27Z746_Seal)
+                  00005048    00000044     driverlib.a : dl_spi.o (.text.DL_SPI_init)
+                  0000508c    00000040     ti_msp_dl_config.o (.text.SYSCFG_DL_SYSCTL_init)
+                  000050cc    00000040     libclang_rt.builtins.a : aeabi_uidivmod.S.obj (.text.__aeabi_uidivmod)
+                  0000510c    00000040     libc.a : atoi.c.obj (.text.atoi)
+                  0000514c    00000040            : vsnprintf.c.obj (.text.vsnprintf)
+                  0000518c    0000003c     uart.o (.text.CLI_RegisterCommand)
+                  000051c8    0000003c     driverlib.a : dl_i2c.o (.text.DL_I2C_flushControllerTXFIFO)
+                  00005204    0000003c     libclang_rt.builtins.a : comparesf2.S.obj (.text.__gtsf2)
+                  00005240    0000003c     uart.o (.text.get_UART_buffer)
+                  0000527c    0000003c     libc.a : autoinit.c.obj (.text:__TI_auto_init_nobinit_nopinit)
+                  000052b8    0000003a     libclang_rt.builtins.a : comparesf2.S.obj (.text.__eqsf2)
+                  000052f2    00000002     --HOLE-- [fill = 0]
+                  000052f4    0000003a                            : muldsi3.S.obj (.text.__muldsi3)
+                  0000532e    00000002     --HOLE-- [fill = 0]
+                  00005330    00000038     ti_msp_dl_config.o (.text.SYSCFG_DL_TIMER_0_init)
+                  00005368    00000038     libclang_rt.builtins.a : fixsfsi.S.obj (.text.__fixsfsi)
+                  000053a0    00000038     gauge.o (.text.gauge_read)
+                  000053d8    00000038     gauge.o (.text.gauge_write)
+                  00005410    00000034     spi_master.o (.text.SPI1_IRQHandler)
+                  00005444    00000034     ti_msp_dl_config.o (.text.SYSCFG_DL_init)
+                  00005478    00000030     driverlib.a : dl_i2c.o (.text.DL_I2C_flushControllerRXFIFO)
+                  000054a8    00000030                 : dl_uart.o (.text.DL_UART_transmitDataBlocking)
+                  000054d8    00000030     libc.a : _printfi.c.obj (.text._fcpy)
+                  00005508    00000030            : vsnprintf.c.obj (.text._outs)
+                  00005538    00000030     gauge.o (.text.gauge_cmd_read)
+                  00005568    0000002c     BQ27Z7_functions.o (.text.BQ27Z746_Init)
+                  00005594    0000002c     libclang_rt.builtins.a : floatsidf.S.obj (.text.__floatsidf)
+                  000055c0    00000028                            : floatunsisf.S.obj (.text.__floatunsisf)
+                  000055e8    00000028     libc.a : boot_cortex_m.c.obj (.text:_c_int00_noargs)
+                  00005610    00000026     driverlib.a : dl_i2c.o (.text.DL_I2C_setClockConfig)
+                  00005636    00000026     libc.a : strspn.c.obj (.text.strspn)
+                  0000565c    00000024     BQ25628_functions.o (.text.BQ25628E_ReadReg16)
+                  00005680    00000024     BQ25628_functions.o (.text.BQ25628E_ReadReg8)
+                  000056a4    00000024     BQ25628_functions.o (.text.BQ25628E_WriteReg16)
+                  000056c8    00000024     spi_master.o (.text.SPI_Controller_Init)
+                  000056ec    00000024     libclang_rt.builtins.a : muldi3.S.obj (.text.__muldi3)
+                  00005710    00000024     libc.a : strcspn.c.obj (.text.strcspn)
+                  00005734    00000022            : memccpy.c.obj (.text.memccpy)
+                  00005756    00000002     --HOLE-- [fill = 0]
+                  00005758    00000020     BQ25628_functions.o (.text.BQ25628E_WriteReg8)
+                  00005778    00000020     BQ27Z7_functions.o (.text.BQ27Z746_ReadInternalTemp_C)
+                  00005798    00000020     BQ27Z7_functions.o (.text.BQ27Z746_ReadTemperature_C)
+                  000057b8    00000020     uart.o (.text.uart_init)
+                  000057d8    0000001e     BQ27Z7_functions.o (.text.BQ27Z746_MAC_Send)
+                  000057f6    00000002     --HOLE-- [fill = 0]
+                  000057f8    0000001e     libclang_rt.builtins.a : ashldi3.S.obj (.text.__ashldi3)
+                  00005816    00000002     --HOLE-- [fill = 0]
+                  00005818    0000001c     driverlib.a : dl_timer.o (.text.DL_Timer_setClockConfig)
+                  00005834    0000001c     i2c.o (.text.i2c_init)
+                  00005850    00000018     ti_msp_dl_config.o (.text.SYSCFG_DL_DMA_CH0_init)
+                  00005868    00000018     ti_msp_dl_config.o (.text.SYSCFG_DL_DMA_CH1_init)
+                  00005880    00000018     main.o (.text.UART0_IRQHandler)
+                  00005898    00000018     libc.a : vsnprintf.c.obj (.text._outc)
+                  000058b0    00000016            : copy_zero_init.c.obj (.text:decompress:ZI:__TI_zero_init_nomemset)
+                  000058c6    00000002     --HOLE-- [fill = 0]
+                  000058c8    00000014     libclang_rt.builtins.a : aeabi_uldivmod.S.obj (.text.__aeabi_uldivmod)
+                  000058dc    00000014     libc.a : _printfi.c.obj (.text.strchr)
+                  000058f0    00000012     driverlib.a : dl_spi.o (.text.DL_SPI_setClockConfig)
+                  00005902    00000012                 : dl_uart.o (.text.DL_UART_setClockConfig)
+                  00005914    00000012     libc.a : copy_decompress_none.c.obj (.text:decompress:none)
+                  00005926    00000002     --HOLE-- [fill = 0]
+                  00005928    00000010     BQ27Z7_functions.o (.text.BQ27Z746_IsDischarging)
+                  00005938    00000010     BQ27Z7_functions.o (.text.BQ27Z746_IsFullyCharged)
+                  00005948    00000010     BQ27Z7_functions.o (.text.BQ27Z746_IsFullyDischarged)
+                  00005958    00000010     i2c.o (.text.I2C0_IRQHandler)
+                  00005968    00000010     i2c.o (.text.I2C1_IRQHandler)
+                  00005978    00000010     gauge.o (.text.gauge_address)
+                  00005988    00000010     libc.a : wcslen.c.obj (.text.wcslen)
+                  00005998    0000000e     libclang_rt.builtins.a : aeabi_memset.S.obj (.text.__aeabi_memset)
+                  000059a6    0000000e     libc.a : _printfi.c.obj (.text.strlen)
+                  000059b4    0000000c     BQ25628_functions.o (.text.BQ25628E_Get_IBAT_mA)
+                  000059c0    0000000c     BQ25628_functions.o (.text.BQ25628E_Get_IBUS_mA)
+                  000059cc    0000000c     BQ25628_functions.o (.text.BQ25628E_Get_VBAT_mV)
+                  000059d8    0000000c     BQ25628_functions.o (.text.BQ25628E_Get_VBUS_mV)
+                  000059e4    0000000c     BQ25628_functions.o (.text.BQ25628E_Get_VSYS_mV)
+                  000059f0    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_Get_AvgCurrent_mA)
+                  000059fc    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_Get_AvgPower_mW)
+                  00005a08    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_Get_BatteryStatus)
+                  00005a14    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_Get_Current_mA)
+                  00005a20    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_Get_CycleCount)
+                  00005a2c    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_Get_FullChargeCap_mAh)
+                  00005a38    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_Get_InternalTemp_C)
+                  00005a44    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_Get_RemainingCap_mAh)
+                  00005a50    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_Get_SOC_pct)
+                  00005a5c    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_Get_StateOfHealth_pct)
+                  00005a68    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_Get_Temperature_C)
+                  00005a74    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_Get_TimeToEmpty_min)
+                  00005a80    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_Get_TimeToFull_min)
+                  00005a8c    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_Get_Voltage_mV)
+                  00005a98    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_ReadAvgCurrent_mA)
+                  00005aa4    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_ReadAvgPower_mW)
+                  00005ab0    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_ReadBatteryStatus)
+                  00005abc    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_ReadCurrent_mA)
+                  00005ac8    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_ReadCycleCount)
+                  00005ad4    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_ReadFullChargeCap_mAh)
+                  00005ae0    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_ReadRemainingCap_mAh)
+                  00005aec    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_ReadSOC_pct)
+                  00005af8    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_ReadStateOfHealth_pct)
+                  00005b04    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_ReadTimeToEmpty_min)
+                  00005b10    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_ReadTimeToFull_min)
+                  00005b1c    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_ReadVoltage_mV)
+                  00005b28    0000000c     ti_msp_dl_config.o (.text.SYSCFG_DL_DMA_init)
+                  00005b34    0000000c     libclang_rt.builtins.a : aeabi_memset.S.obj (.text.__aeabi_memclr)
+                  00005b40    0000000a     driverlib.a : dl_common.o (.text.DL_Common_delayCycles)
+                  00005b4a    0000000a     libc.a : _printfi.c.obj (.text.OUTLINED_FUNCTION_0)
+                  00005b54    00000010     libclang_rt.builtins.a : adddf3.S.obj (.tramp.__aeabi_dsub.1)
+                  00005b64    0000000a     libc.a : s_roundf.c.obj (.text.OUTLINED_FUNCTION_0)
+                  00005b6e    00000002     --HOLE-- [fill = 0]
+                  00005b70    00000010     libclang_rt.builtins.a : addsf3.S.obj (.tramp.__aeabi_fadd.1)
+                  00005b80    0000000a     libc.a : _printfi.c.obj (.text.OUTLINED_FUNCTION_1)
+                  00005b8a    00000002     --HOLE-- [fill = 0]
+                  00005b8c    00000008            : aeabi_portable.c.obj (.text.__aeabi_errno_addr)
+                  00005b94    00000008     libclang_rt.builtins.a : aeabi_memcpy.S.obj (.text.__aeabi_memcpy)
+                  00005b9c    00000006     libc.a : exit.c.obj (.text:abort)
+                  00005ba2    00000004     libsysbm.a : hostexit.c.obj (.text.HOSTexit)
+                  00005ba6    00000004     startup_mspm0g350x_ticlang.o (.text.Reset_Handler)
+                  00005baa    00000004     libc.a : pre_init.c.obj (.text._system_pre_init)
+                  00005bae    00000002     --HOLE-- [fill = 0]
+
+.cinit     0    000077c0    00000048     
+                  000077c0    00000024     (.cinit..data.load) [load image, compression = lzss]
+                  000077e4    0000000c     (__TI_handler_table)
+                  000077f0    00000008     (.cinit..bss.load) [load image, compression = zero_init]
+                  000077f8    00000010     (__TI_cinit_table)
+
+.rodata    0    00005bb0    00001c10     
+                  00005bb0    000002ec     functions.o (.rodata.str1.976629323795015702.1)
+                  00005e9c    000001da     functions.o (.rodata.str1.5556253844797924259.1)
+                  00006076    0000000a     ti_msp_dl_config.o (.rodata.gSPI_1_config)
+                  00006080    00000101     libc.a : aeabi_ctype.S.obj (.rodata:__aeabi_ctype_table_)
+                  00006181    000000af     functions.o (.rodata.str1.17873271132953962449.1)
+                  00006230    00000046     functions.o (.rodata.str1.14212890215622683485.1)
+                  00006276    00000041     functions.o (.rodata.str1.16757203657686794125.1)
+                  000062b7    0000003c     functions.o (.rodata.str1.13258710136769708401.1)
+                  000062f3    0000003b     functions.o (.rodata.str1.3322434249706281543.1)
+                  0000632e    0000003b     main.o (.rodata.str1.3530083166107438000.1)
+                  00006369    00000034     functions.o (.rodata.str1.11548324711019379123.1)
+                  0000639d    00000034     functions.o (.rodata.str1.3107984650851015417.1)
+                  000063d1    00000033     functions.o (.rodata.str1.13213250456124221025.1)
+                  00006404    00000031     main.o (.rodata.str1.16265332423659789559.1)
+                  00006435    00000030     main.o (.rodata.str1.10635229749459437609.1)
+                  00006465    0000002f     functions.o (.rodata.str1.11093425900794288272.1)
+                  00006494    0000002f     main.o (.rodata.str1.18227636981041470289.1)
+                  000064c3    0000002d     functions.o (.rodata.str1.16113805747440866019.1)
+                  000064f0    0000002d     functions.o (.rodata.str1.5514502381961403268.1)
+                  0000651d    0000002d     functions.o (.rodata.str1.823074591787180899.1)
+                  0000654a    0000002d     functions.o (.rodata.str1.8855207564147674068.1)
+                  00006577    0000002c     main.o (.rodata.str1.5043408953494467246.1)
+                  000065a3    0000002a     functions.o (.rodata.str1.7723146404961276984.1)
+                  000065cd    00000029     functions.o (.rodata.str1.13707145581914847747.1)
+                  000065f6    00000028     functions.o (.rodata.str1.2305192595417680505.1)
+                  0000661e    00000027     functions.o (.rodata.str1.15927518266867229498.1)
+                  00006645    00000027     main.o (.rodata.str1.9059077390166914652.1)
+                  0000666c    00000026     functions.o (.rodata.str1.11403685632016021771.1)
+                  00006692    00000026     functions.o (.rodata.str1.3123360382440319361.1)
+                  000066b8    00000026     main.o (.rodata.str1.39260288392874984.1)
+                  000066de    00000025     functions.o (.rodata.str1.3172367308849033862.1)
+                  00006703    00000024     main.o (.rodata.str1.1311392489248731986.1)
+                  00006727    00000024     functions.o (.rodata.str1.17622889657162422067.1)
+                  0000674b    00000024     main.o (.rodata.str1.6554448696319176064.1)
+                  0000676f    00000023     functions.o (.rodata.str1.12609848238114409581.1)
+                  00006792    00000023     main.o (.rodata.str1.14402440632258215044.1)
+                  000067b5    00000023     uart.o (.rodata.str1.14464947116831474962.1)
+                  000067d8    00000023     functions.o (.rodata.str1.17004305802620412261.1)
+                  000067fb    00000023     functions.o (.rodata.str1.455706336395187257.1)
+                  0000681e    00000022     functions.o (.rodata.str1.10930655922842606279.1)
+                  00006840    00000022     functions.o (.rodata.str1.13554695696533425351.1)
+                  00006862    00000022     main.o (.rodata.str1.14466178792657420020.1)
+                  00006884    00000022     functions.o (.rodata.str1.14504089057119714207.1)
+                  000068a6    00000022     functions.o (.rodata.str1.14626576299884526934.1)
+                  000068c8    00000022     functions.o (.rodata.str1.15416425971347363818.1)
+                  000068ea    00000022     main.o (.rodata.str1.17376258722486336754.1)
+                  0000690c    00000022     functions.o (.rodata.str1.2298903785866919411.1)
+                  0000692e    00000022     functions.o (.rodata.str1.7261598007108977983.1)
+                  00006950    00000022     main.o (.rodata.str1.8828068777338075035.1)
+                  00006972    00000021     functions.o (.rodata.str1.12250083639950253671.1)
+                  00006993    00000021     functions.o (.rodata.str1.13225435875195226696.1)
+                  000069b4    00000021     functions.o (.rodata.str1.16386345573460399209.1)
+                  000069d5    00000021     functions.o (.rodata.str1.17112998893623131760.1)
+                  000069f6    00000021     functions.o (.rodata.str1.18169768820860067831.1)
+                  00006a17    00000021     functions.o (.rodata.str1.3156050197955811031.1)
+                  00006a38    00000021     functions.o (.rodata.str1.4910338030008278487.1)
+                  00006a59    00000021     functions.o (.rodata.str1.7324634916810494498.1)
+                  00006a7a    00000021     functions.o (.rodata.str1.831622212789273363.1)
+                  00006a9b    00000020     functions.o (.rodata.str1.11852899632267644254.1)
+                  00006abb    00000020     functions.o (.rodata.str1.14660004578859228044.1)
+                  00006adb    00000020     functions.o (.rodata.str1.16726128468901222387.1)
+                  00006afb    00000020     functions.o (.rodata.str1.17588442350683572369.1)
+                  00006b1b    00000020     functions.o (.rodata.str1.1879081474855052955.1)
+                  00006b3b    00000020     functions.o (.rodata.str1.2006883888705870762.1)
+                  00006b5b    00000020     functions.o (.rodata.str1.2190941444116491765.1)
+                  00006b7b    00000020     main.o (.rodata.str1.2563708670032483588.1)
+                  00006b9b    00000020     functions.o (.rodata.str1.4040450050525152614.1)
+                  00006bbb    00000020     functions.o (.rodata.str1.5117621188084071403.1)
+                  00006bdb    00000020     functions.o (.rodata.str1.7667325258934765219.1)
+                  00006bfb    00000020     functions.o (.rodata.str1.9866892624350641238.1)
+                  00006c1b    0000001f     functions.o (.rodata.str1.11373607083750233779.1)
+                  00006c3a    0000001f     functions.o (.rodata.str1.13933329845969146692.1)
+                  00006c59    0000001f     main.o (.rodata.str1.14112174005742061988.1)
+                  00006c78    0000001f     functions.o (.rodata.str1.15914577833492633752.1)
+                  00006c97    0000001f     functions.o (.rodata.str1.16699442666505370998.1)
+                  00006cb6    0000001f     functions.o (.rodata.str1.17124744513834159004.1)
+                  00006cd5    0000001f     functions.o (.rodata.str1.2132137826339264873.1)
+                  00006cf4    0000001f     functions.o (.rodata.str1.3274426514815924028.1)
+                  00006d13    0000001f     functions.o (.rodata.str1.8683587540435544184.1)
+                  00006d32    0000001e     functions.o (.rodata.str1.13786467237224150958.1)
+                  00006d50    0000001e     functions.o (.rodata.str1.14125585639945481457.1)
+                  00006d6e    0000001e     functions.o (.rodata.str1.14247832736261690914.1)
+                  00006d8c    0000001e     functions.o (.rodata.str1.1787322033648190911.1)
+                  00006daa    0000001e     functions.o (.rodata.str1.2654337880733388962.1)
+                  00006dc8    0000001e     functions.o (.rodata.str1.9393216526452698668.1)
+                  00006de6    0000001e     functions.o (.rodata.str1.9987864939932165754.1)
+                  00006e04    0000001d     functions.o (.rodata.str1.10387253022637546114.1)
+                  00006e21    0000001d     functions.o (.rodata.str1.1463293767001829125.1)
+                  00006e3e    0000001d     functions.o (.rodata.str1.16929425599360063401.1)
+                  00006e5b    0000001d     functions.o (.rodata.str1.5905555877690922764.1)
+                  00006e78    0000001c     main.o (.rodata.str1.12180500075719773345.1)
+                  00006e94    0000001c     functions.o (.rodata.str1.12869987097872302101.1)
+                  00006eb0    0000001b     functions.o (.rodata.str1.11087625087312282266.1)
+                  00006ecb    0000001b     functions.o (.rodata.str1.11158820112163685190.1)
+                  00006ee6    0000001b     functions.o (.rodata.str1.11371842499512143921.1)
+                  00006f01    0000001b     functions.o (.rodata.str1.11740181311745255940.1)
+                  00006f1c    0000001b     functions.o (.rodata.str1.2957129483359387701.1)
+                  00006f37    0000001b     functions.o (.rodata.str1.3098115528246613681.1)
+                  00006f52    0000001b     functions.o (.rodata.str1.4144252613811081812.1)
+                  00006f6d    0000001b     functions.o (.rodata.str1.6886749528440134913.1)
+                  00006f88    0000001b     functions.o (.rodata.str1.7108839738911806945.1)
+                  00006fa3    0000001b     functions.o (.rodata.str1.8841248051089024616.1)
+                  00006fbe    0000001a     functions.o (.rodata.str1.11584461607463951922.1)
+                  00006fd8    0000001a     functions.o (.rodata.str1.12257129677820421622.1)
+                  00006ff2    0000001a     main.o (.rodata.str1.14079361385603432444.1)
+                  0000700c    0000001a     functions.o (.rodata.str1.1912318065655334061.1)
+                  00007026    0000001a     functions.o (.rodata.str1.3544098629501009633.1)
+                  00007040    0000001a     functions.o (.rodata.str1.4307635291288551838.1)
+                  0000705a    0000001a     functions.o (.rodata.str1.502354497711140047.1)
+                  00007074    0000001a     functions.o (.rodata.str1.5320122413559821118.1)
+                  0000708e    0000001a     functions.o (.rodata.str1.9955790773425000222.1)
+                  000070a8    00000019     main.o (.rodata.str1.8076846746581808073.1)
+                  000070c1    00000019     functions.o (.rodata.str1.8113497073403762318.1)
+                  000070da    00000002     ti_msp_dl_config.o (.rodata.gI2C_0ClockConfig)
+                  000070dc    00000018     ti_msp_dl_config.o (.rodata.gDMA_CH0Config)
+                  000070f4    00000018     ti_msp_dl_config.o (.rodata.gDMA_CH1Config)
+                  0000710c    00000018     functions.o (.rodata.str1.11621569494667626893.1)
+                  00007124    00000018     functions.o (.rodata.str1.15981603964029308583.1)
+                  0000713c    00000018     functions.o (.rodata.str1.17144429639171527548.1)
+                  00007154    00000018     functions.o (.rodata.str1.303947978237559523.1)
+                  0000716c    00000018     functions.o (.rodata.str1.6596733414268854495.1)
+                  00007184    00000018     main.o (.rodata.str1.8154729771448623357.1)
+                  0000719c    00000017     functions.o (.rodata.str1.13361924668150654931.1)
+                  000071b3    00000017     functions.o (.rodata.str1.13647871663007229205.1)
+                  000071ca    00000017     functions.o (.rodata.str1.17016031596792030868.1)
+                  000071e1    00000017     functions.o (.rodata.str1.17162129685140799346.1)
+                  000071f8    00000017     functions.o (.rodata.str1.17669684748118727147.1)
+                  0000720f    00000017     functions.o (.rodata.str1.2216088936736676215.1)
+                  00007226    00000017     functions.o (.rodata.str1.4561657886204501224.1)
+                  0000723d    00000017     functions.o (.rodata.str1.6579945242302544448.1)
+                  00007254    00000017     functions.o (.rodata.str1.7276749916342729794.1)
+                  0000726b    00000017     functions.o (.rodata.str1.8276779995786722914.1)
+                  00007282    00000017     main.o (.rodata.str1.8428454045432808059.1)
+                  00007299    00000017     functions.o (.rodata.str1.9629253951102113371.1)
+                  000072b0    00000016     functions.o (.rodata.str1.11345522308171243087.1)
+                  000072c6    00000016     functions.o (.rodata.str1.11538060877586311343.1)
+                  000072dc    00000016     uart.o (.rodata.str1.15503172443992438641.1)
+                  000072f2    00000016     functions.o (.rodata.str1.16499007181999684178.1)
+                  00007308    00000016     functions.o (.rodata.str1.17242831494859343374.1)
+                  0000731e    00000016     functions.o (.rodata.str1.2344728598999326712.1)
+                  00007334    00000016     main.o (.rodata.str1.2763581881760962609.1)
+                  0000734a    00000015     functions.o (.rodata.str1.11457859038367029433.1)
+                  0000735f    00000015     functions.o (.rodata.str1.13291850131445628085.1)
+                  00007374    00000015     functions.o (.rodata.str1.13318008327193210645.1)
+                  00007389    00000015     functions.o (.rodata.str1.14079700471513303319.1)
+                  0000739e    00000015     functions.o (.rodata.str1.14779408147115502373.1)
+                  000073b3    00000015     functions.o (.rodata.str1.16344480386849582482.1)
+                  000073c8    00000015     functions.o (.rodata.str1.17171889877841249491.1)
+                  000073dd    00000015     functions.o (.rodata.str1.18285776561876861988.1)
+                  000073f2    00000015     functions.o (.rodata.str1.5196872854305757230.1)
+                  00007407    00000015     functions.o (.rodata.str1.7987950595137088371.1)
+                  0000741c    00000015     main.o (.rodata.str1.8108965883388295311.1)
+                  00007431    00000015     uart.o (.rodata.str1.8171864734171609186.1)
+                  00007446    00000002     ti_msp_dl_config.o (.rodata.gI2C_1ClockConfig)
+                  00007448    00000014     functions.o (.rodata..Lswitch.table.cmd_gauge)
+                  0000745c    00000014     ti_msp_dl_config.o (.rodata.gTIMER_0TimerConfig)
+                  00007470    00000014     main.o (.rodata.str1.11870794119293528247.1)
+                  00007484    00000014     functions.o (.rodata.str1.4930741957133989383.1)
+                  00007498    00000013     functions.o (.rodata.str1.10394495994740858438.1)
+                  000074ab    00000012     main.o (.rodata.str1.16631870348416990953.1)
+                  000074bd    00000012     functions.o (.rodata.str1.62749256631814321.1)
+                  000074cf    00000011     libc.a : _printfi.c.obj (.rodata.str1.10348868589481759720.1)
+                  000074e0    00000011     main.o (.rodata.str1.10865113624938808685.1)
+                  000074f1    00000011     main.o (.rodata.str1.11321157723316767883.1)
+                  00007502    00000011     functions.o (.rodata.str1.11900037607746946141.1)
+                  00007513    00000011     libc.a : _printfi.c.obj (.rodata.str1.15363888844622738466.1)
+                  00007524    00000011     main.o (.rodata.str1.17045314124001216156.1)
+                  00007535    00000011     main.o (.rodata.str1.7784929982665794503.1)
+                  00007546    00000011     main.o (.rodata.str1.8096991282711418442.1)
+                  00007557    00000001     --HOLE-- [fill = 0]
+                  00007558    00000010     main.o (.rodata..Lswitch.table.main)
+                  00007568    0000000f     functions.o (.rodata.str1.9659379646541333203.1)
+                  00007577    0000000e     functions.o (.rodata.str1.11488970495173820783.1)
+                  00007585    0000000e     functions.o (.rodata.str1.15241132200125037881.1)
+                  00007593    0000000e     main.o (.rodata.str1.7996925722583989644.1)
+                  000075a1    0000000d     functions.o (.rodata.str1.11391304066098951517.1)
+                  000075ae    0000000d     main.o (.rodata.str1.8320541211001259012.1)
+                  000075bb    0000000c     main.o (.rodata.str1.16302215771116645891.1)
+                  000075c7    0000000c     functions.o (.rodata.str1.17954340015018547257.1)
+                  000075d3    0000000c     functions.o (.rodata.str1.6954128830300373732.1)
+                  000075df    0000000c     functions.o (.rodata.str1.9586352787182320994.1)
+                  000075eb    0000000b     main.o (.rodata.str1.10313062130652730376.1)
+                  000075f6    0000000b     functions.o (.rodata.str1.17418132220924322792.1)
+                  00007601    0000000b     functions.o (.rodata.str1.4198453541086758413.1)
+                  0000760c    0000000a     ti_msp_dl_config.o (.rodata.gUART_0Config)
+                  00007616    0000000a     functions.o (.rodata.str1.10302267126528799586.1)
+                  00007620    0000000a     main.o (.rodata.str1.13030671760666898970.1)
+                  0000762a    0000000a     functions.o (.rodata.str1.13183419841694627606.1)
+                  00007634    00000009     main.o (.rodata.str1.10720410773482754683.1)
+                  0000763d    00000009     main.o (.rodata.str1.11822182024223342093.1)
+                  00007646    00000009     functions.o (.rodata.str1.12716370140545181522.1)
+                  0000764f    00000009     functions.o (.rodata.str1.15667472894159448674.1)
+                  00007658    00000009     functions.o (.rodata.str1.15871961652988661611.1)
+                  00007661    00000009     functions.o (.rodata.str1.16985884696085998545.1)
+                  0000766a    00000009     main.o (.rodata.str1.18092426736022315238.1)
+                  00007673    00000009     uart.o (.rodata.str1.2747995240747259486.1)
+                  0000767c    00000009     functions.o (.rodata.str1.2989574447005584482.1)
+                  00007685    00000009     functions.o (.rodata.str1.771275161403278999.1)
+                  0000768e    00000008     functions.o (.rodata.str1.10029850049327752681.1)
+                  00007696    00000008     functions.o (.rodata.str1.10105263805998509149.1)
+                  0000769e    00000008     main.o (.rodata.str1.10224226614597680209.1)
+                  000076a6    00000008     functions.o (.rodata.str1.11596568296542930794.1)
+                  000076ae    00000008     functions.o (.rodata.str1.14249227603012650231.1)
+                  000076b6    00000008     functions.o (.rodata.str1.14826907694073300720.1)
+                  000076be    00000008     main.o (.rodata.str1.2846389346932560359.1)
+                  000076c6    00000008     main.o (.rodata.str1.6891813955777630061.1)
+                  000076ce    00000008     functions.o (.rodata.str1.7085808795165203043.1)
+                  000076d6    00000007     functions.o (.rodata.str1.14296218639596138037.1)
+                  000076dd    00000007     functions.o (.rodata.str1.15647711897633472048.1)
+                  000076e4    00000007     main.o (.rodata.str1.2624144126699937905.1)
+                  000076eb    00000007     functions.o (.rodata.str1.4531601087117612729.1)
+                  000076f2    00000007     functions.o (.rodata.str1.504123949362312185.1)
+                  000076f9    00000007     functions.o (.rodata.str1.5994875290679588583.1)
+                  00007700    00000007     functions.o (.rodata.str1.9506313465773766142.1)
+                  00007707    00000006     functions.o (.rodata.str1.13060549876486072544.1)
+                  0000770d    00000006     functions.o (.rodata.str1.13405053720543497480.1)
+                  00007713    00000006     functions.o (.rodata.str1.13750405472340812261.1)
+                  00007719    00000006     main.o (.rodata.str1.2123964117280943167.1)
+                  0000771f    00000006     functions.o (.rodata.str1.2347775125427912132.1)
+                  00007725    00000006     functions.o (.rodata.str1.2872345601479061820.1)
+                  0000772b    00000006     main.o (.rodata.str1.403738606202455663.1)
+                  00007731    00000006     functions.o (.rodata.str1.4959705119256106851.1)
+                  00007737    00000005     functions.o (.rodata.str1.10868672936327135180.1)
+                  0000773c    00000005     functions.o (.rodata.str1.11510568493784519380.1)
+                  00007741    00000005     functions.o (.rodata.str1.12871985577256932554.1)
+                  00007746    00000005     main.o (.rodata.str1.13288086030101331538.1)
+                  0000774b    00000005     main.o (.rodata.str1.15159059442110792349.1)
+                  00007750    00000005     functions.o (.rodata.str1.17600609178903569978.1)
+                  00007755    00000005     functions.o (.rodata.str1.2153166669032916089.1)
+                  0000775a    00000005     functions.o (.rodata.str1.2618360898605671341.1)
+                  0000775f    00000005     main.o (.rodata.str1.288608917962107522.1)
+                  00007764    00000005     functions.o (.rodata.str1.312031595841812858.1)
+                  00007769    00000005     functions.o (.rodata.str1.3739636256912452571.1)
+                  0000776e    00000005     functions.o (.rodata.str1.5896414462293131170.1)
+                  00007773    00000004     functions.o (.rodata.str1.11296493460036947760.1)
+                  00007777    00000004     main.o (.rodata.str1.11702106008850790973.1)
+                  0000777b    00000004     functions.o (.rodata.str1.14496393926573069083.1)
+                  0000777f    00000004     functions.o (.rodata.str1.14754684760099289372.1)
+                  00007783    00000004     main.o (.rodata.str1.15996357275703397564.1)
+                  00007787    00000004     functions.o (.rodata.str1.16614484817706633923.1)
+                  0000778b    00000004     main.o (.rodata.str1.17100691992556644108.1)
+                  0000778f    00000004     functions.o (.rodata.str1.3066531604708884151.1)
+                  00007793    00000004     functions.o (.rodata.str1.8430466031500812981.1)
+                  00007797    00000004     functions.o (.rodata.str1.9119127971185803168.1)
+                  0000779b    00000003     ti_msp_dl_config.o (.rodata.gTIMER_0ClockConfig)
+                  0000779e    00000003     uart.o (.rodata.str1.12819099410943012003.1)
+                  000077a1    00000003     functions.o (.rodata.str1.14424774467072349609.1)
+                  000077a4    00000003     functions.o (.rodata.str1.4088760258362988122.1)
+                  000077a7    00000003     main.o (.rodata.str1.7702501944640899365.1)
+                  000077aa    00000002     ti_msp_dl_config.o (.rodata.gSPI_1_clockConfig)
+                  000077ac    00000002     ti_msp_dl_config.o (.rodata.gUART_0ClockConfig)
+                  000077ae    00000002     uart.o (.rodata.str1.3510367808670815947.1)
+                  000077b0    00000002     functions.o (.rodata.str1.6405428687533244608.1)
+                  000077b2    0000000e     --HOLE-- [fill = 0]
+
+.init_array 
+*          0    00000000    00000000     UNINITIALIZED
+
+.binit     0    00000000    00000000     
+
+.bss       0    20200000    00000161     UNINITIALIZED
+                  20200000    00000078     uart.o (.bss.commandList)
+                  20200078    00000040     (.common:UART_Buffer)
+                  202000b8    00000028     (.common:gSPI_1Backup)
+                  202000e0    00000022     (.common:gRxPacket)
+                  20200102    00000022     (.common:gTxPacket)
+                  20200124    0000001c     (.common:stm32Spi)
+                  20200140    00000010     (.common:gSPI_RxPacket)
+                  20200150    00000004     (.common:gRxCount)
+                  20200154    00000004     (.common:gRxLen)
+                  20200158    00000004     (.common:gTxCount)
+                  2020015c    00000004     (.common:gTxLen)
+                  20200160    00000001     (.common:gI2cControllerStatus)
+
+.data      0    20200164    0000004a     UNINITIALIZED
+                  20200164    00000010     spi_master.o (.data.gSPI_TxPacket)
+                  20200174    00000004     libc.a : aeabi_portable.c.obj (.data.__aeabi_errno)
+                  20200178    00000004     uart.o (.data.commandCount)
+                  2020017c    00000004     libc.a : strtok.c.obj (.data.last_end)
+                  20200180    00000004     main.o (.data.monitor_rate)
+                  20200184    00000002     BQ25628_functions.o (.data.g_ibat_mA)
+                  20200186    00000002     BQ25628_functions.o (.data.g_ibus_mA)
+                  20200188    00000002     BQ27Z7_functions.o (.data.g_telem.0)
+                  2020018a    00000002     BQ27Z7_functions.o (.data.g_telem.10)
+                  2020018c    00000002     BQ27Z7_functions.o (.data.g_telem.11)
+                  2020018e    00000002     BQ27Z7_functions.o (.data.g_telem.12)
+                  20200190    00000002     BQ27Z7_functions.o (.data.g_telem.13)
+                  20200192    00000002     BQ27Z7_functions.o (.data.g_telem.1)
+                  20200194    00000002     BQ27Z7_functions.o (.data.g_telem.2)
+                  20200196    00000002     BQ27Z7_functions.o (.data.g_telem.4)
+                  20200198    00000002     BQ27Z7_functions.o (.data.g_telem.5)
+                  2020019a    00000002     BQ27Z7_functions.o (.data.g_telem.7)
+                  2020019c    00000002     BQ27Z7_functions.o (.data.g_telem.8)
+                  2020019e    00000002     BQ27Z7_functions.o (.data.g_telem.9)
+                  202001a0    00000002     BQ25628_functions.o (.data.g_vbat_mV)
+                  202001a2    00000002     BQ25628_functions.o (.data.g_vbus_mV)
+                  202001a4    00000002     BQ25628_functions.o (.data.g_vsys_mV)
+                  202001a6    00000001     main.o (.data.bq_monitor_active)
+                  202001a7    00000001     uart.o (.data.char_index)
+                  202001a8    00000001     uart.o (.data.data_received)
+                  202001a9    00000001     gauge.o (.data.g_gaugeAddr)
+                  202001aa    00000001     BQ27Z7_functions.o (.data.g_telem.3)
+                  202001ab    00000001     main.o (.data.gauge_monitor_active)
+                  202001ac    00000001     BQ27Z7_functions.o (.data.g_telem.6)
+                  202001ad    00000001     main.o (.data.hall_monitor_active)
+
+.stack     0    20207e00    00000200     UNINITIALIZED
+                  20207e00    00000004     libc.a : boot_cortex_m.c.obj (.stack)
+                  20207e04    000001fc     --HOLE--
+
+__llvm_prf_cnts 
+*          0    20200000    00000000     UNINITIALIZED
+
+__llvm_prf_bits 
+*          0    20200000    00000000     UNINITIALIZED
+
+MODULE SUMMARY
+
+       Module                         code    ro data   rw data
+       ------                         ----    -------   -------
+    .\
+       functions.o                    4192    5623      0      
+       main.o                         968     1064      7      
+       ti_msp_dl_config.o             948     99        40     
+       startup_mspm0g350x_ticlang.o   6       192       0      
+    +--+------------------------------+-------+---------+---------+
+       Total:                         6114    6978      47     
+                                                               
+    .\HAL\
+       uart.o                         1484    92        190    
+       i2c.o                          1256    0         85     
+       spi_master.o                   180     0         60     
+    +--+------------------------------+-------+---------+---------+
+       Total:                         2920    92        335    
+                                                               
+    .\ics\BQ25628\
+       BQ25628_functions.o            692     0         10     
+    +--+------------------------------+-------+---------+---------+
+       Total:                         692     0         10     
+                                                               
+    .\ics\BQ27Z7\
+       BQ27Z7_functions.o             3436    0         26     
+       gauge.o                        176     0         1      
+    +--+------------------------------+-------+---------+---------+
+       Total:                         3612    0         27     
+                                                               
+    C:/ti/mspm0_sdk_2_09_00_01/source/ti/driverlib/lib/ticlang/m0p/mspm0g1x0x_g3x0x/driverlib.a
+       dl_timer.o                     280     0         0      
+       dl_i2c.o                       240     0         0      
+       dl_uart.o                      138     0         0      
+       dl_spi.o                       86      0         0      
+       dl_dma.o                       76      0         0      
+       dl_common.o                    10      0         0      
+    +--+------------------------------+-------+---------+---------+
+       Total:                         830     0         0      
+                                                               
+    C:\ti\ccs2031\ccs\tools\compiler\ti-cgt-armllvm_4.0.4.LTS\lib\armv6m-ti-none-eabi/c/libc.a
+       _printfi.c.obj                 4510    34        0      
+       strtol.c.obj                   324     0         0      
+       aeabi_ctype.S.obj              0       257       0      
+       s_scalbn.c.obj                 216     0         0      
+       memcpy16.S.obj                 154     0         0      
+       s_floorf.c.obj                 140     0         0      
+       strcmp-armv6m.S.obj            136     0         0      
+       vsnprintf.c.obj                136     0         0      
+       copy_decompress_lzss.c.obj     124     0         0      
+       s_roundf.c.obj                 114     0         0      
+       memset16.S.obj                 98      0         0      
+       s_frexp.c.obj                  92      0         0      
+       _ltoa.c.obj                    88      0         0      
+       strtok.c.obj                   72      0         4      
+       atoi.c.obj                     64      0         0      
+       autoinit.c.obj                 60      0         0      
+       boot_cortex_m.c.obj            40      0         0      
+       strspn.c.obj                   38      0         0      
+       strcspn.c.obj                  36      0         0      
+       memccpy.c.obj                  34      0         0      
+       copy_zero_init.c.obj           22      0         0      
+       copy_decompress_none.c.obj     18      0         0      
+       wcslen.c.obj                   16      0         0      
+       aeabi_portable.c.obj           8       0         4      
+       exit.c.obj                     6       0         0      
+       pre_init.c.obj                 4       0         0      
+    +--+------------------------------+-------+---------+---------+
+       Total:                         6550    291       8      
+                                                               
+    C:\ti\ccs2031\ccs\tools\compiler\ti-cgt-armllvm_4.0.4.LTS\lib\armv6m-ti-none-eabi/c/libsysbm.a
+       hostexit.c.obj                 4       0         0      
+    +--+------------------------------+-------+---------+---------+
+       Total:                         4       0         0      
+                                                               
+    C:\ti\ccs2031\ccs\tools\compiler\ti-cgt-armllvm_4.0.4.LTS\lib\armv6m-ti-none-eabi/libclang_rt.builtins.a
+       adddf3.S.obj                   418     0         0      
+       divdf3.S.obj                   268     0         0      
+       addsf3.S.obj                   232     0         0      
+       muldf3.S.obj                   228     0         0      
+       comparedf2.c.obj               220     0         0      
+       udivmoddi4.S.obj               162     0         0      
+       mulsf3.S.obj                   140     0         0      
+       comparesf2.S.obj               118     0         0      
+       aeabi_dcmp.S.obj               98      0         0      
+       aeabi_fcmp.S.obj               98      0         0      
+       aeabi_idivmod.S.obj            86      0         0      
+       fixdfsi.S.obj                  74      0         0      
+       aeabi_uidivmod.S.obj           64      0         0      
+       muldsi3.S.obj                  58      0         0      
+       fixsfsi.S.obj                  56      0         0      
+       floatsidf.S.obj                44      0         0      
+       floatunsisf.S.obj              40      0         0      
+       muldi3.S.obj                   36      0         0      
+       ashldi3.S.obj                  30      0         0      
+       aeabi_memset.S.obj             26      0         0      
+       aeabi_uldivmod.S.obj           20      0         0      
+       aeabi_memcpy.S.obj             8       0         0      
+       aeabi_div0.c.obj               4       0         0      
+    +--+------------------------------+-------+---------+---------+
+       Total:                         2528    0         0      
+                                                               
+       Stack:                         0       0         512    
+       Linker Generated:              0       72        0      
+    +--+------------------------------+-------+---------+---------+
+       Grand Total:                   23250   7433      939    
+
+
+LINKER GENERATED COPY TABLES
+
+__TI_cinit_table @ 000077f8 records: 2, size/record: 8, table size: 16
+	.data: load addr=000077c0, load size=00000024 bytes, run addr=20200164, run size=0000004a bytes, compression=lzss
+	.bss: load addr=000077f0, load size=00000008 bytes, run addr=20200000, run size=00000161 bytes, compression=zero_init
+
+
+LINKER GENERATED HANDLER TABLE
+
+__TI_handler_table @ 000077e4 records: 3, size/record: 4, table size: 12
+	index: 0, handler: __TI_decompress_lzss
+	index: 1, handler: __TI_decompress_none
+	index: 2, handler: __TI_zero_init
+
+
+FAR CALL TRAMPOLINES
+
+callee name               trampoline name
+   callee addr  tramp addr   call addr  call info
+--------------  -----------  ---------  ----------------
+__aeabi_dsub              $Tramp$TT$L$PI$$__aeabi_dsub
+   000024a5     00005b54     00005b52   libc.a : _printfi.c.obj (.text.OUTLINED_FUNCTION_0)
+__aeabi_fadd              $Tramp$TT$L$PI$$__aeabi_fadd
+   00003d47     00005b70     00005b6c   libc.a : s_roundf.c.obj (.text.OUTLINED_FUNCTION_0)
+
+[2 trampolines]
+[2 trampoline calls]
+
+
+GLOBAL SYMBOLS: SORTED ALPHABETICALLY BY Name 
+
+address   name                          
+-------   ----                          
+00002637  ADC0_IRQHandler               
+00002637  ADC1_IRQHandler               
+00002637  AES_IRQHandler                
+000059b5  BQ25628E_Get_IBAT_mA          
+000059c1  BQ25628E_Get_IBUS_mA          
+000059cd  BQ25628E_Get_VBAT_mV          
+000059d9  BQ25628E_Get_VBUS_mV          
+000059e5  BQ25628E_Get_VSYS_mV          
+0000339d  BQ25628E_Init_Default         
+0000565d  BQ25628E_ReadReg16            
+00005681  BQ25628E_ReadReg8             
+000031a5  BQ25628E_UpdateTelemetry      
+000056a5  BQ25628E_WriteReg16           
+00005759  BQ25628E_WriteReg8            
+0000348d  BQ27Z746_GetChargingStatus    
+0000381f  BQ27Z746_GetChemID            
+00003741  BQ27Z746_GetDeviceType        
+00004f2b  BQ27Z746_GetFETOptions        
+00003ab3  BQ27Z746_GetFirmwareVersion   
+000038fb  BQ27Z746_GetOperationStatus   
+000039d7  BQ27Z746_GetSafetyStatus      
+00002fa5  BQ27Z746_GetSecurityMode      
+00004e95  BQ27Z746_GetTempConfig        
+000059f1  BQ27Z746_Get_AvgCurrent_mA    
+000059fd  BQ27Z746_Get_AvgPower_mW      
+00005a09  BQ27Z746_Get_BatteryStatus    
+00005a15  BQ27Z746_Get_Current_mA       
+00005a21  BQ27Z746_Get_CycleCount       
+00005a2d  BQ27Z746_Get_FullChargeCap_mAh
+00005a39  BQ27Z746_Get_InternalTemp_C   
+00005a45  BQ27Z746_Get_RemainingCap_mAh 
+00005a51  BQ27Z746_Get_SOC_pct          
+00005a5d  BQ27Z746_Get_StateOfHealth_pct
+00005a69  BQ27Z746_Get_Temperature_C    
+00005a75  BQ27Z746_Get_TimeToEmpty_min  
+00005a81  BQ27Z746_Get_TimeToFull_min   
+00005a8d  BQ27Z746_Get_Voltage_mV       
+00005569  BQ27Z746_Init                 
+00005929  BQ27Z746_IsDischarging        
+00005939  BQ27Z746_IsFullyCharged       
+00005949  BQ27Z746_IsFullyDischarged    
+00003b8b  BQ27Z746_MAC_Read             
+000057d9  BQ27Z746_MAC_Send             
+00005a99  BQ27Z746_ReadAvgCurrent_mA    
+00005aa5  BQ27Z746_ReadAvgPower_mW      
+00005ab1  BQ27Z746_ReadBatteryStatus    
+00005abd  BQ27Z746_ReadCurrent_mA       
+00005ac9  BQ27Z746_ReadCycleCount       
+00005ad5  BQ27Z746_ReadFullChargeCap_mAh
+00005779  BQ27Z746_ReadInternalTemp_C   
+00005ae1  BQ27Z746_ReadRemainingCap_mAh 
+00005aed  BQ27Z746_ReadSOC_pct          
+00005af9  BQ27Z746_ReadStateOfHealth_pct
+00005799  BQ27Z746_ReadTemperature_C    
+00005b05  BQ27Z746_ReadTimeToEmpty_min  
+00005b11  BQ27Z746_ReadTimeToFull_min   
+00005b1d  BQ27Z746_ReadVoltage_mV       
+00005005  BQ27Z746_Seal                 
+00002d8d  BQ27Z746_SetTempSensorConfig  
+00002c7d  BQ27Z746_SetUTFET_Direct      
+00004545  BQ27Z746_Unseal               
+000030a5  BQ27Z746_UpdateTelemetry      
+00005ba2  C$$EXIT                       
+00002637  CANFD0_IRQHandler             
+000019d1  CLI_ProcessInput              
+0000518d  CLI_RegisterCommand           
+0000471d  CLI_Tokenize                  
+00002637  DAC0_IRQHandler               
+00005b41  DL_Common_delayCycles         
+00004e49  DL_DMA_initChannel            
+00004bd9  DL_I2C_fillControllerTXFIFO   
+00005479  DL_I2C_flushControllerRXFIFO  
+000051c9  DL_I2C_flushControllerTXFIFO  
+00005611  DL_I2C_setClockConfig         
+00005049  DL_SPI_init                   
+000058f1  DL_SPI_setClockConfig         
+000032a1  DL_Timer_initTimerMode        
+00005819  DL_Timer_setClockConfig       
+00004f75  DL_UART_init                  
+00005903  DL_UART_setClockConfig        
+000054a9  DL_UART_transmitDataBlocking  
+00002637  DMA_IRQHandler                
+00002637  Default_Handler               
+00002637  GROUP0_IRQHandler             
+00002637  GROUP1_IRQHandler             
+00005ba3  HOSTexit                      
+00002637  HardFault_Handler             
+00005959  I2C0_IRQHandler               
+00005969  I2C1_IRQHandler               
+00002111  I2C_ReadDevice                
+00003579  I2C_TryAddress                
+00002a25  I2C_WriteDevice               
+00002637  NMI_Handler                   
+00002637  PendSV_Handler                
+00002637  RTC_IRQHandler                
+00005ba7  Reset_Handler                 
+00002637  SPI0_IRQHandler               
+00005411  SPI1_IRQHandler               
+00004c39  SPI_Controller_Arm            
+000056c9  SPI_Controller_Init           
+00002637  SVC_Handler                   
+00005851  SYSCFG_DL_DMA_CH0_init        
+00005869  SYSCFG_DL_DMA_CH1_init        
+00005b29  SYSCFG_DL_DMA_init            
+00003fb9  SYSCFG_DL_GPIO_init           
+00004785  SYSCFG_DL_I2C_0_init          
+000047ed  SYSCFG_DL_I2C_1_init          
+00004b19  SYSCFG_DL_SPI_1_init          
+0000508d  SYSCFG_DL_SYSCTL_init         
+00005331  SYSCFG_DL_TIMER_0_init        
+000046ad  SYSCFG_DL_UART_0_init         
+00005445  SYSCFG_DL_init                
+00004b79  SYSCFG_DL_initPower           
+00004085  Shared_I2C_IRQHandler         
+00002637  SysTick_Handler               
+00002637  TIMA0_IRQHandler              
+00002637  TIMA1_IRQHandler              
+00002637  TIMG0_IRQHandler              
+00002637  TIMG12_IRQHandler             
+00002637  TIMG6_IRQHandler              
+00002637  TIMG7_IRQHandler              
+00002637  TIMG8_IRQHandler              
+00005881  UART0_IRQHandler              
+00002637  UART1_IRQHandler              
+00002637  UART2_IRQHandler              
+00002637  UART3_IRQHandler              
+00004141  UARTReceive                   
+20200078  UART_Buffer                   
+20208000  __STACK_END                   
+00000200  __STACK_SIZE                  
+00000000  __TI_ATRegion0_region_sz      
+00000000  __TI_ATRegion0_src_addr       
+00000000  __TI_ATRegion0_trg_addr       
+00000000  __TI_ATRegion1_region_sz      
+00000000  __TI_ATRegion1_src_addr       
+00000000  __TI_ATRegion1_trg_addr       
+00000000  __TI_ATRegion2_region_sz      
+00000000  __TI_ATRegion2_src_addr       
+00000000  __TI_ATRegion2_trg_addr       
+000077f8  __TI_CINIT_Base               
+00007808  __TI_CINIT_Limit              
+00007808  __TI_CINIT_Warm               
+000077e4  __TI_Handler_Table_Base       
+000077f0  __TI_Handler_Table_Limit      
+0000527d  __TI_auto_init_nobinit_nopinit
+000044c9  __TI_decompress_lzss          
+00005915  __TI_decompress_none          
+00004cf1  __TI_ltoa                     
+ffffffff  __TI_pprof_out_hndl           
+000000c1  __TI_printfi                  
+ffffffff  __TI_prof_data_size           
+ffffffff  __TI_prof_data_start          
+00000000  __TI_static_base__            
+000058b1  __TI_zero_init_nomemset       
+000024af  __adddf3                      
+00003d47  __addsf3                      
+00006080  __aeabi_ctype_table_          
+00006080  __aeabi_ctype_table_C         
+00004ee1  __aeabi_d2iz                  
+000024af  __aeabi_dadd                  
+000049f1  __aeabi_dcmpeq                
+00004a2d  __aeabi_dcmpge                
+00004a41  __aeabi_dcmpgt                
+00004a19  __aeabi_dcmple                
+00004a05  __aeabi_dcmplt                
+00002e99  __aeabi_ddiv                  
+0000365d  __aeabi_dmul                  
+000024a5  __aeabi_dsub                  
+20200174  __aeabi_errno                 
+00005b8d  __aeabi_errno_addr            
+00005369  __aeabi_f2iz                  
+00003d47  __aeabi_fadd                  
+00004a55  __aeabi_fcmpeq                
+00004a91  __aeabi_fcmpge                
+00004aa5  __aeabi_fcmpgt                
+00004a7d  __aeabi_fcmple                
+00004a69  __aeabi_fcmplt                
+00004329  __aeabi_fmul                  
+00003d3d  __aeabi_fsub                  
+00005595  __aeabi_i2d                   
+00004da1  __aeabi_idiv                  
+00003c63  __aeabi_idiv0                 
+00004da1  __aeabi_idivmod               
+000045bf  __aeabi_ldiv0                 
+000057f9  __aeabi_llsl                  
+000056ed  __aeabi_lmul                  
+00005b35  __aeabi_memclr                
+00005b35  __aeabi_memclr4               
+00005b35  __aeabi_memclr8               
+00005b95  __aeabi_memcpy                
+00005b95  __aeabi_memcpy4               
+00005b95  __aeabi_memcpy8               
+00005999  __aeabi_memset                
+00005999  __aeabi_memset4               
+00005999  __aeabi_memset8               
+000055c1  __aeabi_ui2f                  
+000050cd  __aeabi_uidiv                 
+000050cd  __aeabi_uidivmod              
+000058c9  __aeabi_uldivmod              
+000057f9  __ashldi3                     
+ffffffff  __binit__                     
+00004855  __cmpdf2                      
+000052b9  __cmpsf2                      
+00002e99  __divdf3                      
+00004855  __eqdf2                       
+000052b9  __eqsf2                       
+00004ee1  __fixdfsi                     
+00005369  __fixsfsi                     
+00005595  __floatsidf                   
+000055c1  __floatunsisf                 
+00004639  __gedf2                       
+00005205  __gesf2                       
+00004639  __gtdf2                       
+00005205  __gtsf2                       
+00004855  __ledf2                       
+000052b9  __lesf2                       
+00004855  __ltdf2                       
+000052b9  __ltsf2                       
+UNDEFED   __mpu_init                    
+0000365d  __muldf3                      
+000056ed  __muldi3                      
+000052f5  __muldsi3                     
+00004329  __mulsf3                      
+00004855  __nedf2                       
+000052b9  __nesf2                       
+20207e00  __stack                       
+20200000  __start___llvm_prf_bits       
+20200000  __start___llvm_prf_cnts       
+20200000  __stop___llvm_prf_bits        
+20200000  __stop___llvm_prf_cnts        
+000024a5  __subdf3                      
+00003d3d  __subsf3                      
+000041ed  __udivmoddi4                  
+000055e9  _c_int00_noargs               
+UNDEFED   _system_post_cinit            
+00005bab  _system_pre_init              
+00005b9d  abort                         
+0000510d  atoi                          
+ffffffff  binit                         
+202001a6  bq_monitor_active             
+202001a7  char_index                    
+0000123d  cmd_bq                        
+00000a91  cmd_gauge                     
+00003ee9  cmd_hall                      
+0000498d  cmd_help                      
+000022e5  cmd_i2cscan                   
+00003e15  cmd_pwr                       
+00002639  cmd_spi                       
+202001a8  data_received                 
+000043b5  floorf                        
+00004c95  frexp                         
+00004c95  frexpl                        
+20200160  gI2cControllerStatus          
+20200150  gRxCount                      
+20200154  gRxLen                        
+202000e0  gRxPacket                     
+202000b8  gSPI_1Backup                  
+20200140  gSPI_RxPacket                 
+20200164  gSPI_TxPacket                 
+20200158  gTxCount                      
+2020015c  gTxLen                        
+20200102  gTxPacket                     
+00005979  gauge_address                 
+00005539  gauge_cmd_read                
+202001ab  gauge_monitor_active          
+000053a1  gauge_read                    
+000053d9  gauge_write                   
+00005241  get_UART_buffer               
+202001ad  hall_monitor_active           
+00005835  i2c_init                      
+00000000  interruptVectors              
+00003c65  ldexp                         
+00003c65  ldexpl                        
+00001621  main                          
+00005735  memccpy                       
+0000428f  memcpy                        
+00004ab7  memset                        
+20200180  monitor_rate                  
+000048bd  roundf                        
+00003c65  scalbn                        
+00003c65  scalbnl                       
+20200124  stm32Spi                      
+00004441  strcmp                        
+00005711  strcspn                       
+00005637  strspn                        
+00004fbd  strtok                        
+000027a5  strtol                        
+000057b9  uart_init                     
+000045c1  uart_printf                   
+0000514d  vsnprintf                     
+00005989  wcslen                        
+
+
+GLOBAL SYMBOLS: SORTED BY Symbol Address 
+
+address   name                          
+-------   ----                          
+00000000  __TI_ATRegion0_region_sz      
+00000000  __TI_ATRegion0_src_addr       
+00000000  __TI_ATRegion0_trg_addr       
+00000000  __TI_ATRegion1_region_sz      
+00000000  __TI_ATRegion1_src_addr       
+00000000  __TI_ATRegion1_trg_addr       
+00000000  __TI_ATRegion2_region_sz      
+00000000  __TI_ATRegion2_src_addr       
+00000000  __TI_ATRegion2_trg_addr       
+00000000  __TI_static_base__            
+00000000  interruptVectors              
+000000c1  __TI_printfi                  
+00000200  __STACK_SIZE                  
+00000a91  cmd_gauge                     
+0000123d  cmd_bq                        
+00001621  main                          
+000019d1  CLI_ProcessInput              
+00002111  I2C_ReadDevice                
+000022e5  cmd_i2cscan                   
+000024a5  __aeabi_dsub                  
+000024a5  __subdf3                      
+000024af  __adddf3                      
+000024af  __aeabi_dadd                  
+00002637  ADC0_IRQHandler               
+00002637  ADC1_IRQHandler               
+00002637  AES_IRQHandler                
+00002637  CANFD0_IRQHandler             
+00002637  DAC0_IRQHandler               
+00002637  DMA_IRQHandler                
+00002637  Default_Handler               
+00002637  GROUP0_IRQHandler             
+00002637  GROUP1_IRQHandler             
+00002637  HardFault_Handler             
+00002637  NMI_Handler                   
+00002637  PendSV_Handler                
+00002637  RTC_IRQHandler                
+00002637  SPI0_IRQHandler               
+00002637  SVC_Handler                   
+00002637  SysTick_Handler               
+00002637  TIMA0_IRQHandler              
+00002637  TIMA1_IRQHandler              
+00002637  TIMG0_IRQHandler              
+00002637  TIMG12_IRQHandler             
+00002637  TIMG6_IRQHandler              
+00002637  TIMG7_IRQHandler              
+00002637  TIMG8_IRQHandler              
+00002637  UART1_IRQHandler              
+00002637  UART2_IRQHandler              
+00002637  UART3_IRQHandler              
+00002639  cmd_spi                       
+000027a5  strtol                        
+00002a25  I2C_WriteDevice               
+00002c7d  BQ27Z746_SetUTFET_Direct      
+00002d8d  BQ27Z746_SetTempSensorConfig  
+00002e99  __aeabi_ddiv                  
+00002e99  __divdf3                      
+00002fa5  BQ27Z746_GetSecurityMode      
+000030a5  BQ27Z746_UpdateTelemetry      
+000031a5  BQ25628E_UpdateTelemetry      
+000032a1  DL_Timer_initTimerMode        
+0000339d  BQ25628E_Init_Default         
+0000348d  BQ27Z746_GetChargingStatus    
+00003579  I2C_TryAddress                
+0000365d  __aeabi_dmul                  
+0000365d  __muldf3                      
+00003741  BQ27Z746_GetDeviceType        
+0000381f  BQ27Z746_GetChemID            
+000038fb  BQ27Z746_GetOperationStatus   
+000039d7  BQ27Z746_GetSafetyStatus      
+00003ab3  BQ27Z746_GetFirmwareVersion   
+00003b8b  BQ27Z746_MAC_Read             
+00003c63  __aeabi_idiv0                 
+00003c65  ldexp                         
+00003c65  ldexpl                        
+00003c65  scalbn                        
+00003c65  scalbnl                       
+00003d3d  __aeabi_fsub                  
+00003d3d  __subsf3                      
+00003d47  __addsf3                      
+00003d47  __aeabi_fadd                  
+00003e15  cmd_pwr                       
+00003ee9  cmd_hall                      
+00003fb9  SYSCFG_DL_GPIO_init           
+00004085  Shared_I2C_IRQHandler         
+00004141  UARTReceive                   
+000041ed  __udivmoddi4                  
+0000428f  memcpy                        
+00004329  __aeabi_fmul                  
+00004329  __mulsf3                      
+000043b5  floorf                        
+00004441  strcmp                        
+000044c9  __TI_decompress_lzss          
+00004545  BQ27Z746_Unseal               
+000045bf  __aeabi_ldiv0                 
+000045c1  uart_printf                   
+00004639  __gedf2                       
+00004639  __gtdf2                       
+000046ad  SYSCFG_DL_UART_0_init         
+0000471d  CLI_Tokenize                  
+00004785  SYSCFG_DL_I2C_0_init          
+000047ed  SYSCFG_DL_I2C_1_init          
+00004855  __cmpdf2                      
+00004855  __eqdf2                       
+00004855  __ledf2                       
+00004855  __ltdf2                       
+00004855  __nedf2                       
+000048bd  roundf                        
+0000498d  cmd_help                      
+000049f1  __aeabi_dcmpeq                
+00004a05  __aeabi_dcmplt                
+00004a19  __aeabi_dcmple                
+00004a2d  __aeabi_dcmpge                
+00004a41  __aeabi_dcmpgt                
+00004a55  __aeabi_fcmpeq                
+00004a69  __aeabi_fcmplt                
+00004a7d  __aeabi_fcmple                
+00004a91  __aeabi_fcmpge                
+00004aa5  __aeabi_fcmpgt                
+00004ab7  memset                        
+00004b19  SYSCFG_DL_SPI_1_init          
+00004b79  SYSCFG_DL_initPower           
+00004bd9  DL_I2C_fillControllerTXFIFO   
+00004c39  SPI_Controller_Arm            
+00004c95  frexp                         
+00004c95  frexpl                        
+00004cf1  __TI_ltoa                     
+00004da1  __aeabi_idiv                  
+00004da1  __aeabi_idivmod               
+00004e49  DL_DMA_initChannel            
+00004e95  BQ27Z746_GetTempConfig        
+00004ee1  __aeabi_d2iz                  
+00004ee1  __fixdfsi                     
+00004f2b  BQ27Z746_GetFETOptions        
+00004f75  DL_UART_init                  
+00004fbd  strtok                        
+00005005  BQ27Z746_Seal                 
+00005049  DL_SPI_init                   
+0000508d  SYSCFG_DL_SYSCTL_init         
+000050cd  __aeabi_uidiv                 
+000050cd  __aeabi_uidivmod              
+0000510d  atoi                          
+0000514d  vsnprintf                     
+0000518d  CLI_RegisterCommand           
+000051c9  DL_I2C_flushControllerTXFIFO  
+00005205  __gesf2                       
+00005205  __gtsf2                       
+00005241  get_UART_buffer               
+0000527d  __TI_auto_init_nobinit_nopinit
+000052b9  __cmpsf2                      
+000052b9  __eqsf2                       
+000052b9  __lesf2                       
+000052b9  __ltsf2                       
+000052b9  __nesf2                       
+000052f5  __muldsi3                     
+00005331  SYSCFG_DL_TIMER_0_init        
+00005369  __aeabi_f2iz                  
+00005369  __fixsfsi                     
+000053a1  gauge_read                    
+000053d9  gauge_write                   
+00005411  SPI1_IRQHandler               
+00005445  SYSCFG_DL_init                
+00005479  DL_I2C_flushControllerRXFIFO  
+000054a9  DL_UART_transmitDataBlocking  
+00005539  gauge_cmd_read                
+00005569  BQ27Z746_Init                 
+00005595  __aeabi_i2d                   
+00005595  __floatsidf                   
+000055c1  __aeabi_ui2f                  
+000055c1  __floatunsisf                 
+000055e9  _c_int00_noargs               
+00005611  DL_I2C_setClockConfig         
+00005637  strspn                        
+0000565d  BQ25628E_ReadReg16            
+00005681  BQ25628E_ReadReg8             
+000056a5  BQ25628E_WriteReg16           
+000056c9  SPI_Controller_Init           
+000056ed  __aeabi_lmul                  
+000056ed  __muldi3                      
+00005711  strcspn                       
+00005735  memccpy                       
+00005759  BQ25628E_WriteReg8            
+00005779  BQ27Z746_ReadInternalTemp_C   
+00005799  BQ27Z746_ReadTemperature_C    
+000057b9  uart_init                     
+000057d9  BQ27Z746_MAC_Send             
+000057f9  __aeabi_llsl                  
+000057f9  __ashldi3                     
+00005819  DL_Timer_setClockConfig       
+00005835  i2c_init                      
+00005851  SYSCFG_DL_DMA_CH0_init        
+00005869  SYSCFG_DL_DMA_CH1_init        
+00005881  UART0_IRQHandler              
+000058b1  __TI_zero_init_nomemset       
+000058c9  __aeabi_uldivmod              
+000058f1  DL_SPI_setClockConfig         
+00005903  DL_UART_setClockConfig        
+00005915  __TI_decompress_none          
+00005929  BQ27Z746_IsDischarging        
+00005939  BQ27Z746_IsFullyCharged       
+00005949  BQ27Z746_IsFullyDischarged    
+00005959  I2C0_IRQHandler               
+00005969  I2C1_IRQHandler               
+00005979  gauge_address                 
+00005989  wcslen                        
+00005999  __aeabi_memset                
+00005999  __aeabi_memset4               
+00005999  __aeabi_memset8               
+000059b5  BQ25628E_Get_IBAT_mA          
+000059c1  BQ25628E_Get_IBUS_mA          
+000059cd  BQ25628E_Get_VBAT_mV          
+000059d9  BQ25628E_Get_VBUS_mV          
+000059e5  BQ25628E_Get_VSYS_mV          
+000059f1  BQ27Z746_Get_AvgCurrent_mA    
+000059fd  BQ27Z746_Get_AvgPower_mW      
+00005a09  BQ27Z746_Get_BatteryStatus    
+00005a15  BQ27Z746_Get_Current_mA       
+00005a21  BQ27Z746_Get_CycleCount       
+00005a2d  BQ27Z746_Get_FullChargeCap_mAh
+00005a39  BQ27Z746_Get_InternalTemp_C   
+00005a45  BQ27Z746_Get_RemainingCap_mAh 
+00005a51  BQ27Z746_Get_SOC_pct          
+00005a5d  BQ27Z746_Get_StateOfHealth_pct
+00005a69  BQ27Z746_Get_Temperature_C    
+00005a75  BQ27Z746_Get_TimeToEmpty_min  
+00005a81  BQ27Z746_Get_TimeToFull_min   
+00005a8d  BQ27Z746_Get_Voltage_mV       
+00005a99  BQ27Z746_ReadAvgCurrent_mA    
+00005aa5  BQ27Z746_ReadAvgPower_mW      
+00005ab1  BQ27Z746_ReadBatteryStatus    
+00005abd  BQ27Z746_ReadCurrent_mA       
+00005ac9  BQ27Z746_ReadCycleCount       
+00005ad5  BQ27Z746_ReadFullChargeCap_mAh
+00005ae1  BQ27Z746_ReadRemainingCap_mAh 
+00005aed  BQ27Z746_ReadSOC_pct          
+00005af9  BQ27Z746_ReadStateOfHealth_pct
+00005b05  BQ27Z746_ReadTimeToEmpty_min  
+00005b11  BQ27Z746_ReadTimeToFull_min   
+00005b1d  BQ27Z746_ReadVoltage_mV       
+00005b29  SYSCFG_DL_DMA_init            
+00005b35  __aeabi_memclr                
+00005b35  __aeabi_memclr4               
+00005b35  __aeabi_memclr8               
+00005b41  DL_Common_delayCycles         
+00005b8d  __aeabi_errno_addr            
+00005b95  __aeabi_memcpy                
+00005b95  __aeabi_memcpy4               
+00005b95  __aeabi_memcpy8               
+00005b9d  abort                         
+00005ba2  C$$EXIT                       
+00005ba3  HOSTexit                      
+00005ba7  Reset_Handler                 
+00005bab  _system_pre_init              
+00006080  __aeabi_ctype_table_          
+00006080  __aeabi_ctype_table_C         
+000077e4  __TI_Handler_Table_Base       
+000077f0  __TI_Handler_Table_Limit      
+000077f8  __TI_CINIT_Base               
+00007808  __TI_CINIT_Limit              
+00007808  __TI_CINIT_Warm               
+20200000  __start___llvm_prf_bits       
+20200000  __start___llvm_prf_cnts       
+20200000  __stop___llvm_prf_bits        
+20200000  __stop___llvm_prf_cnts        
+20200078  UART_Buffer                   
+202000b8  gSPI_1Backup                  
+202000e0  gRxPacket                     
+20200102  gTxPacket                     
+20200124  stm32Spi                      
+20200140  gSPI_RxPacket                 
+20200150  gRxCount                      
+20200154  gRxLen                        
+20200158  gTxCount                      
+2020015c  gTxLen                        
+20200160  gI2cControllerStatus          
+20200164  gSPI_TxPacket                 
+20200174  __aeabi_errno                 
+20200180  monitor_rate                  
+202001a6  bq_monitor_active             
+202001a7  char_index                    
+202001a8  data_received                 
+202001ab  gauge_monitor_active          
+202001ad  hall_monitor_active           
+20207e00  __stack                       
+20208000  __STACK_END                   
+ffffffff  __TI_pprof_out_hndl           
+ffffffff  __TI_prof_data_size           
+ffffffff  __TI_prof_data_start          
+ffffffff  __binit__                     
+ffffffff  binit                         
+UNDEFED   __mpu_init                    
+UNDEFED   _system_post_cinit            
+
+[291 symbols]
