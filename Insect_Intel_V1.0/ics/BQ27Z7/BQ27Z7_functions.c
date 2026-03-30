@@ -260,6 +260,9 @@ bool BQ27Z746_GetSafetyStatus(I2C_Regs *i2c, uint32_t *pStatus)
 
 bool BQ27Z746_Init(I2C_Regs *i2c)
 {
+    DL_GPIO_setPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_GAUGE_EN_PIN);
+    delay_cycles(1);
+
     gauge_address(i2c, GAUGE_I2C_ADDR);
 
     uint16_t device_type = 0u;

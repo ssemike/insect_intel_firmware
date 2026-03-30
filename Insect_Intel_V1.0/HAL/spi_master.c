@@ -3,16 +3,8 @@
 
 SPI_Controller_Handle stm32Spi; 
 
-uint8_t gSPI_TxPacket[SPI_PACKET_SIZE] = {
-    0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
-    0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10
-};
+uint8_t gSPI_TxPacket[SPI_PACKET_SIZE];
 uint8_t gSPI_RxPacket[SPI_PACKET_SIZE];
-uint8_t expectedRxMessage[SPI_PACKET_SIZE] = {
-    0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
-    0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10
-};
-
 
 void SPI_Controller_Init(SPI_Controller_Handle *handle, SPI_Regs *spi, uint8_t txCh, uint8_t rxCh, uint8_t *txBuf, uint8_t *rxBuf, uint16_t len) 
 {
@@ -64,10 +56,6 @@ void SPI_1_INST_IRQHandler(void) {
             break;
         case DL_SPI_IIDX_DMA_DONE_RX:
             stm32Spi.rxDone = true;
-            bool success = true;
-            for (int i = 0; i < SPI_PACKET_SIZE; i++) {
-                if (gSPI_RxPacket[i] != expectedRxMessage[i]) { success = false; break; }
-            }
             break;
         default: break;
     }

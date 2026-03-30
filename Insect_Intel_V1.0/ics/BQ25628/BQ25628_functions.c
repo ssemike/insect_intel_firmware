@@ -53,7 +53,7 @@ bool BQ25628E_Init_Default(void) {
     BQ25628E_Set_ICHG_mA(2000);
     BQ25628E_Set_IINDPM_mA(2000);
     BQ25628E_Set_VINDPM_mV(4500);     
-    BQ25628E_Set_VSYSMIN_mV(3400);  
+    BQ25628E_Set_VSYSMIN_mV(3200);  
     // BQ25628E_Set_Precharge_mA(100);   
     // BQ25628E_Set_Termination_mA(50); 
     BQ25628E_Set_TS_Ignore(true);  

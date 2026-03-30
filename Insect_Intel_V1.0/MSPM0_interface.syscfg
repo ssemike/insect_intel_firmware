@@ -51,6 +51,8 @@ GPIO1.associatedPins[1].pin.$assign      = "PB20";
 GPIO1.associatedPins[2].$name            = "STM_MCU_IO2";
 GPIO1.associatedPins[2].direction        = "INPUT";
 GPIO1.associatedPins[2].internalResistor = "PULL_DOWN";
+GPIO1.associatedPins[2].interruptEn      = true;
+GPIO1.associatedPins[2].polarity         = "RISE";
 GPIO1.associatedPins[2].pin.$assign      = "PA26";
 
 GPIO2.$name                          = "DIGITAL_OUTPUT_PORTB";

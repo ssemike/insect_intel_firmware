@@ -105,22 +105,26 @@ void SM_Run(void) {
                     !I2C_TryAddress(I2C_0_INST, BQ25628E_I2C_ADDR)) {
                     sm_context.fault_source = SM_FAULT_I2C_BUS;
                     SM_Transition(SM_STATE_CRITICAL_FAULT);
-                    sm_context.entry_done = true;
                     return;
                 }
                 bool gauge_ok   = BQ27Z746_Init(I2C_0_INST);
                 bool charger_ok = BQ25628E_Init_Default();
+                if (!gauge_ok || !charger_ok) {
+                    sm_context.fault_source = SM_FAULT_INIT_FAILED;
+                    SM_Transition(SM_STATE_CRITICAL_FAULT);
+                }else {
+                    SM_Transition(SM_STATE_MONITOR);
+                }
             }
             break;
         }
-
         case SM_STATE_MONITOR: {
             if (!sm_context.entry_done) {
                 BQ27Z746_UpdateTelemetry(I2C_0_INST);
                 BQ27Z746_GetSafetyStatus(I2C_0_INST, &last_safety_status);
-                uint16_t vbat_mv = BQ27Z746_ReadVoltage_mV(I2C_0_INST);
-                uint8_t stat0 = BQ25628E_ReadReg8(BQ25628E_REG_STAT1);
-                bool adapter_present = (stat0 & BQ25628E_VBUS_STAT_MASK) != 0;
+                uint16_t vbat_mv = BQ27Z746_Get_Voltage_mV();
+                uint8_t stat1 = BQ25628E_ReadReg8(BQ25628E_REG_STAT1);
+                bool adapter_present = (stat1 & BQ25628E_VBUS_STAT_MASK) != 0;
 
                 if (last_safety_status != 0) {
                     sm_context.fault_source = SM_FAULT_GAUGE;
@@ -136,7 +140,6 @@ void SM_Run(void) {
                     sm_context.wake_reason = SM_WAKE_NORMAL;
                     SM_Transition(SM_STATE_POWER_STM);
                 }
-                sm_context.entry_done = true;
             }
             break;
         }
@@ -193,7 +196,7 @@ void SM_Run(void) {
                     BQ25628E_Get_IBUS_mA(),
                     BQ27Z746_Get_Voltage_mV(),
                     BQ27Z746_Get_Current_mA(),
-                    BQ27Z746_Get_Temperature_C(),
+                    BQ27Z746_Get_InternalTemp_C(),
                     (unsigned int)last_safety_status
                 );
                 
@@ -264,7 +267,7 @@ void SM_Run(void) {
                 uart_printf("[SM] CRITICAL FAULT — source: %s\n", fault_str);
 
                 if (sm_context.fault_source == SM_FAULT_I2C_BUS) {
-                    uart_printf("[SM] I2C bus failure — skipping I2C reads in fault state\n");
+                    uart_printf("[SM] I2C bus failure —Cannot initialize system\n");
                 } else {
                     sm_context.fault_entry_tick = sm_context.minute_counter;
                     SM_DecodeSafetyStatus(last_safety_status);
@@ -277,8 +280,8 @@ void SM_Run(void) {
                 last_fault_tick = sm_context.minute_counter;
                 
                 BQ27Z746_GetSafetyStatus(I2C_0_INST, &last_safety_status);
-                uint8_t stat0 = BQ25628E_ReadReg8(BQ25628E_REG_STAT1);
-                bool adapter_present = (stat0 & BQ25628E_VBUS_STAT_MASK) != 0;
+                uint8_t stat1 = BQ25628E_ReadReg8(BQ25628E_REG_STAT1);
+                bool adapter_present = (stat1 & BQ25628E_VBUS_STAT_MASK) != 0;
 
                 if (last_safety_status != 0) {
                     uart_printf("[SM] Fault still active: 0x%08X\n", (unsigned int)last_safety_status);

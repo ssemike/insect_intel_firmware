@@ -10,8 +10,6 @@
 volatile bool bq_monitor_active    = false;
 volatile bool hall_monitor_active  = false;
 volatile bool gauge_monitor_active = false;
-volatile uint32_t monitor_rate = 2000; 
-volatile uint32_t hall_monitor_counter = 0;
 
 volatile bool rtc_minute_tick  = false;
 volatile bool hall_wakeup_flag = false;
@@ -36,7 +34,8 @@ int main(void)
     setupCLI();  
     i2c_init();
     NVIC_EnableIRQ(SPI_1_INST_INT_IRQN);
-    NVIC_EnableIRQ(GROUP1_IRQn);
+    NVIC_EnableIRQ(GPIOB_INT_IRQn);
+    NVIC_EnableIRQ(GPIOA_INT_IRQn);
     SPI_Controller_Init(&stm32Spi, SPI_1_INST,  DMA_CH0_CHAN_ID, DMA_CH1_CHAN_ID, gSPI_TxPacket, gSPI_RxPacket, SPI_PACKET_SIZE); 
     SM_Init();
     
@@ -79,7 +78,7 @@ void RTC_IRQHandler(void)
 
 void GROUP1_IRQHandler(void) {
     switch (DL_Interrupt_getPendingGroup(DL_INTERRUPT_GROUP_1)) {
-        case EXTERNAL_INTERRUPT_INT_IIDX: // Hall sensor
+        case EXTERNAL_INTERRUPT_SETUP_INT_IIDX: // Hall sensor
             hall_wakeup_flag = true;
             break;
 

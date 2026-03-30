@@ -170,8 +170,8 @@ extern "C" {
 /* Defines for CHARGER_INT: GPIOB.1 with pinCMx 13 on package pin 48 */
 #define EXTERNAL_INTERRUPT_CHARGER_INT_PORT                              (GPIOB)
 // pins affected by this interrupt request:["CHARGER_INT","SETUP_INT"]
-#define EXTERNAL_INTERRUPT_INT_IRQN                             (GPIOB_INT_IRQn)
-#define EXTERNAL_INTERRUPT_INT_IIDX             (DL_INTERRUPT_GROUP1_IIDX_GPIOB)
+#define EXTERNAL_INTERRUPT_GPIOB_INT_IRQN                       (GPIOB_INT_IRQn)
+#define EXTERNAL_INTERRUPT_GPIOB_INT_IIDX       (DL_INTERRUPT_GROUP1_IIDX_GPIOB)
 #define EXTERNAL_INTERRUPT_CHARGER_INT_IIDX                  (DL_GPIO_IIDX_DIO1)
 #define EXTERNAL_INTERRUPT_CHARGER_INT_PIN                       (DL_GPIO_PIN_1)
 #define EXTERNAL_INTERRUPT_CHARGER_INT_IOMUX                     (IOMUX_PINCM13)
@@ -182,6 +182,10 @@ extern "C" {
 #define EXTERNAL_INTERRUPT_SETUP_INT_IOMUX                       (IOMUX_PINCM48)
 /* Defines for STM_MCU_IO2: GPIOA.26 with pinCMx 59 on package pin 30 */
 #define EXTERNAL_INTERRUPT_STM_MCU_IO2_PORT                              (GPIOA)
+// pins affected by this interrupt request:["STM_MCU_IO2"]
+#define EXTERNAL_INTERRUPT_GPIOA_INT_IRQN                       (GPIOA_INT_IRQn)
+#define EXTERNAL_INTERRUPT_GPIOA_INT_IIDX       (DL_INTERRUPT_GROUP1_IIDX_GPIOA)
+#define EXTERNAL_INTERRUPT_STM_MCU_IO2_IIDX                 (DL_GPIO_IIDX_DIO26)
 #define EXTERNAL_INTERRUPT_STM_MCU_IO2_PIN                      (DL_GPIO_PIN_26)
 #define EXTERNAL_INTERRUPT_STM_MCU_IO2_IOMUX                     (IOMUX_PINCM59)
 /* Port definition for Pin Group DIGITAL_OUTPUT_PORTB */
