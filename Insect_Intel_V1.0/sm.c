@@ -26,6 +26,8 @@ extern SPI_Controller_Handle stm32Spi;
 /* ── Static variables ────────────────────────────────────── */
 static uint32_t last_safety_status = 0;
 static char json_buf[128];
+static uint32_t adapter_missing_tick = 0;
+static bool     adapter_was_missing  = false;
 
 /* ── Internal Prototypes ─────────────────────────────────── */
 static void SM_Handle_RTC_Tick(void);
@@ -100,6 +102,8 @@ void SM_Run(void) {
     switch (sm_context.current) {
         case SM_STATE_INIT: {
             if (!sm_context.entry_done) {
+                DL_GPIO_setPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_GAUGE_EN_PIN);
+                delay_cycles(1);
                 // 1. Check bus first
                 if (!I2C_TryAddress(I2C_0_INST, GAUGE_I2C_ADDR) ||
                     !I2C_TryAddress(I2C_0_INST, BQ25628E_I2C_ADDR)) {
@@ -137,8 +141,10 @@ void SM_Run(void) {
                         SM_Transition(SM_STATE_CRITICAL_FAULT);
                     }
                 } else {
-                    sm_context.wake_reason = SM_WAKE_NORMAL;
-                    SM_Transition(SM_STATE_POWER_STM);
+                    if (sm_context.wake_reason != SM_WAKE_SETUP) {
+                        sm_context.wake_reason = SM_WAKE_NORMAL;
+                        }
+                        SM_Transition(SM_STATE_POWER_STM);
                 }
             }
             break;
@@ -148,23 +154,53 @@ void SM_Run(void) {
             if (!sm_context.entry_done) {
                 DL_GPIO_clearPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_CHARGER_EN_PIN);
                 uart_printf("[SM] Charging started\n");
+                adapter_was_missing  = false;
+                adapter_missing_tick = 0;
                 sm_context.entry_done = true;
             }
-            // Polling actions on RTC tick - check every minute
+
             static uint32_t last_charging_tick = 0;
             if (sm_context.minute_counter != last_charging_tick) {
                 last_charging_tick = sm_context.minute_counter;
-                
+
                 BQ25628E_UpdateTelemetry();
                 BQ27Z746_UpdateTelemetry(I2C_0_INST);
                 BQ27Z746_GetSafetyStatus(I2C_0_INST, &last_safety_status);
-                
+
+                uint8_t stat1         = BQ25628E_ReadReg8(BQ25628E_REG_STAT1);
+                bool adapter_present  = (stat1 & BQ25628E_VBUS_STAT_MASK) != 0;
+                uint8_t chg_stat      = (stat1 >> 3) & 0x03;  // CHG_STAT[4:3]
+
+                /* Safety check */
                 if (last_safety_status != 0) {
                     sm_context.fault_source = SM_FAULT_GAUGE;
                     SM_Transition(SM_STATE_CRITICAL_FAULT);
-                } else if (BQ27Z746_IsFullyCharged()) {
+                    break;
+                }
+
+                /* Adapter presence watchdog */
+                if (!adapter_present) {
+                    if (!adapter_was_missing) {
+                        adapter_was_missing  = true;
+                        adapter_missing_tick = sm_context.minute_counter;
+                        uart_printf("[SM] Adapter removed — waiting 1 min before sleeping\n");
+                    } else if ((sm_context.minute_counter - adapter_missing_tick) >= 1) {
+                        DL_GPIO_setPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_CHARGER_EN_PIN);
+                        uart_printf("[SM] Adapter absent for 1 min — stopping charge, sleeping\n");
+                        SM_Transition(SM_STATE_SLEEP);
+                    }
+                    break;
+                } else {
+                    adapter_was_missing = false;
+                }
+
+                /* Charging complete: gauge reports full AND charger is in termination/top-off */
+                bool gauge_full  = BQ27Z746_IsFullyCharged();
+                bool charger_done = (chg_stat == 0 || chg_stat == 3); // 0=terminated, 3=top-off
+
+                if (gauge_full && charger_done) {
                     DL_GPIO_setPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_CHARGER_EN_PIN);
-                    uart_printf("[SM] Charging complete\n");
+                    uart_printf("[SM] Charging complete (gauge + charger confirmed)\n");
                     SM_Transition(SM_STATE_MONITOR);
                 }
             }
@@ -184,12 +220,17 @@ void SM_Run(void) {
                 uart_printf("[SM] STM32 powered — reason: %s\n", 
                             (sm_context.wake_reason == SM_WAKE_SETUP) ? "SETUP" : "NORMAL");
                 sm_context.entry_done = true;
+                DL_GPIO_disableInterrupt(EXTERNAL_INTERRUPT_CHARGER_INT_PORT, EXTERNAL_INTERRUPT_SETUP_INT_PIN);
+                DL_GPIO_enableInterrupt(EXTERNAL_INTERRUPT_STM_MCU_IO2_PORT, EXTERNAL_INTERRUPT_STM_MCU_IO2_PIN);
             }
 
             if (stm_io2_flag) {
                 stm_io2_flag = false;
+                uint8_t stat1_json = BQ25628E_ReadReg8(BQ25628E_REG_STAT1);
+                uint8_t chg_stat   = (stat1_json >> 3) & 0x03;
+
                 snprintf(json_buf, sizeof(json_buf),
-                    "{\"soc\":%d,\"soh\":%d,\"vchg\":%d,\"ichg\":%d,\"vbat\":%d,\"ibat\":%d,\"temp\":%d,\"prot\":\"0x%08X\"}",
+                    "{\"soc\":%d,\"soh\":%d,\"vchg\":%d,\"ichg\":%d,\"vbat\":%d,\"ibat\":%d,\"temp\":%d,\"prot\":\"0x%08X\",\"chg\":%d}",
                     BQ27Z746_Get_SOC_pct(),
                     BQ27Z746_Get_StateOfHealth_pct(),
                     BQ25628E_Get_VBUS_mV(),
@@ -197,9 +238,9 @@ void SM_Run(void) {
                     BQ27Z746_Get_Voltage_mV(),
                     BQ27Z746_Get_Current_mA(),
                     BQ27Z746_Get_InternalTemp_C(),
-                    (unsigned int)last_safety_status
-                );
-                
+                    (unsigned int)last_safety_status,
+                    chg_stat
+                );     
                 size_t len = strlen(json_buf);
                 memset(stm32Spi.txBuf, 0, stm32Spi.size);
                 memcpy(stm32Spi.txBuf, json_buf, (len < stm32Spi.size) ? len : stm32Spi.size);
@@ -236,8 +277,8 @@ void SM_Run(void) {
                 DL_GPIO_clearPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_EN3V8_PIN);
                 sm_context.sleep_entry_tick = sm_context.minute_counter;
                 
+                DL_GPIO_disableInterrupt(EXTERNAL_INTERRUPT_STM_MCU_IO2_PORT, EXTERNAL_INTERRUPT_STM_MCU_IO2_PIN);
                 DL_GPIO_enableInterrupt(EXTERNAL_INTERRUPT_CHARGER_INT_PORT, EXTERNAL_INTERRUPT_SETUP_INT_PIN);
-                DL_GPIO_enableInterrupt(EXTERNAL_INTERRUPT_STM_MCU_IO2_PORT, EXTERNAL_INTERRUPT_STM_MCU_IO2_PIN);
                 
                 uart_printf("[SM] Entering sleep\n");
                 sm_context.entry_done = true;
@@ -246,7 +287,10 @@ void SM_Run(void) {
             if (hall_wakeup_flag) {
                 hall_wakeup_flag = false;
                 sm_context.wake_reason = SM_WAKE_SETUP;
-                SM_Transition(SM_STATE_POWER_STM);
+                SM_Transition(SM_STATE_MONITOR);
+            }
+            else {
+                __WFI();
             }
             break;
         }
@@ -297,9 +341,20 @@ void SM_Run(void) {
 }
 
 static void SM_DecodeSafetyStatus(uint32_t status) {
-    if (status & BQ27Z746_SAFETY_OVP) uart_printf("[FAULT] OVP — Over Voltage Protection\n");
-    if (status & BQ27Z746_SAFETY_OCC) uart_printf("[FAULT] OCC — Over Current Charge\n");
-    if (status & BQ27Z746_SAFETY_OCD) uart_printf("[FAULT] OCD — Over Current Discharge\n");
-    if (status & BQ27Z746_SAFETY_CUV)  uart_printf("[FAULT] UV  — Under Voltage\n");
-    if (status & BQ27Z746_SAFETY_SCD) uart_printf("[FAULT] SCD — Short Circuit Discharge\n");
+    if (status & BQ27Z746_SAFETY_CUV)  uart_printf("[FAULT] CUV  — Cell Undervoltage\n");
+    if (status & BQ27Z746_SAFETY_OVP)  uart_printf("[FAULT] COV  — Cell Overvoltage\n");
+    if (status & BQ27Z746_SAFETY_OCC)  uart_printf("[FAULT] OCC  — Overcurrent During Charge\n");
+    if (status & BQ27Z746_SAFETY_OCD)  uart_printf("[FAULT] OCD  — Overcurrent During Discharge\n");
+    if (status & BQ27Z746_SAFETY_HOCD) uart_printf("[FAULT] HOCD — Overload During Discharge\n");
+    if (status & BQ27Z746_SAFETY_HOCC) uart_printf("[FAULT] HOCC — Short-Circuit During Charge\n");
+    if (status & BQ27Z746_SAFETY_SCD)  uart_printf("[FAULT] HSCD — Hardware Short-Circuit Discharge\n");
+    if (status & BQ27Z746_SAFETY_OTC)  uart_printf("[FAULT] OTC  — Over-Temperature During Charge\n");
+    if (status & BQ27Z746_SAFETY_OTD)  uart_printf("[FAULT] OTD  — Over-Temperature During Discharge\n");
+    if (status & BQ27Z746_SAFETY_OTF)  uart_printf("[FAULT] OTF  — Over-Temperature FET\n");
+    if (status & BQ27Z746_SAFETY_PTO)  uart_printf("[FAULT] PTO  — Precharge Timeout\n");
+    if (status & BQ27Z746_SAFETY_CTO)  uart_printf("[FAULT] CTO  — Charge Timeout\n");
+    if (status & BQ27Z746_SAFETY_UTC)  uart_printf("[FAULT] UTC  — Under-Temperature During Charge\n");
+    if (status & BQ27Z746_SAFETY_UTD)  uart_printf("[FAULT] UTD  — Under-Temperature During Discharge\n");
+    if (status & BQ27Z746_SAFETY_HCOV) uart_printf("[FAULT] HCOV — Hardware Cell Overvoltage\n");
+    if (status & BQ27Z746_SAFETY_HCUV) uart_printf("[FAULT] HCUV — Hardware Cell Undervoltage\n");
 }
