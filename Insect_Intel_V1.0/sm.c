@@ -127,7 +127,7 @@ static void SM_Handle_RTC_Tick(void) {
     rtc_minute_tick = false;
     sm_context.minute_counter++;
 
-    // Hall sensor duty cycle — ON 5 min, OFF 5 min
+    // Hall sensor duty cycle — ON x min, OFF x min
     uint32_t hall_phase = sm_context.minute_counter
                           % (SM_HALL_ON_MINUTES + SM_HALL_OFF_MINUTES);
     if (hall_phase < SM_HALL_ON_MINUTES) {
@@ -159,7 +159,6 @@ void SM_Run(void) {
         case SM_STATE_INIT: {
             if (!sm_context.entry_done) {
                 DL_GPIO_setPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_GAUGE_EN_PIN);
-                delay_cycles(1);
                 // 1. Check bus first
                 if (!I2C_TryAddress(I2C_0_INST, GAUGE_I2C_ADDR) ||
                     !I2C_TryAddress(I2C_0_INST, BQ25628E_I2C_ADDR)) {
@@ -283,6 +282,7 @@ void SM_Run(void) {
 
         case SM_STATE_SLEEP: {
             if (!sm_context.entry_done) {
+                sm_context.wake_reason = SM_WAKE_NORMAL;
                 DL_GPIO_clearPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_STM_PON_PIN);
                 DL_GPIO_clearPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_EN3V8_PIN);
                 sm_context.sleep_entry_tick = sm_context.minute_counter;
@@ -318,10 +318,10 @@ void SM_Run(void) {
                     case SM_FAULT_INIT_FAILED:  fault_str = "INIT_FAILED"; break;
                     default: break;
                 }
-                uart_printf("[SM] CRITICAL FAULT — source: %s\n", fault_str);
-
+                uart_printf("[SM] CRITICAL FAULT, source: %s\n", fault_str);
+                sm_context.fault_retry_ms = systick_ms;
                 if (sm_context.fault_source == SM_FAULT_I2C_BUS) {
-                    uart_printf("[SM] I2C bus failure —Cannot initialize system\n");
+                    uart_printf("[SM] I2C bus failure can't initialize system\n");
                 } else {
                     sm_context.fault_entry_tick = sm_context.minute_counter;
                     SM_DecodeSafetyStatus(last_safety_status);
@@ -329,10 +329,10 @@ void SM_Run(void) {
                 sm_context.entry_done = true;
             }
 
-            static uint32_t last_fault_tick = 0;
-            if (sm_context.fault_source != SM_FAULT_I2C_BUS && sm_context.minute_counter != last_fault_tick) {
-                last_fault_tick = sm_context.minute_counter;
-                
+            if (sm_context.fault_source != SM_FAULT_I2C_BUS &&
+                (systick_ms - sm_context.fault_retry_ms) >= 5000UL) {
+                sm_context.fault_retry_ms = systick_ms;
+                            
                 BQ27Z746_GetSafetyStatus(I2C_0_INST, &last_safety_status);
                 uint8_t stat1 = BQ25628E_ReadReg8(BQ25628E_REG_STAT1);
                 bool adapter_present = (stat1 & BQ25628E_VBUS_STAT_MASK) != 0;

@@ -43,7 +43,8 @@ typedef struct {
     bool             hall_powered;
     uint32_t        last_safety_check_ms; 
     uint32_t        adapter_missing_ms;  
-    bool             adapter_missing;       
+    bool             adapter_missing;      
+    uint32_t        fault_retry_ms; 
 } SM_Context_t;
 
 extern SM_Context_t sm_context;

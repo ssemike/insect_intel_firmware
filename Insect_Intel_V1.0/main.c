@@ -35,11 +35,12 @@ int main(void)
     setupCLI();  
     i2c_init();
     NVIC_EnableIRQ(SPI_1_INST_INT_IRQN);
-    NVIC_EnableIRQ(GPIOB_INT_IRQn);
-    NVIC_EnableIRQ(GPIOA_INT_IRQn);
+    NVIC_EnableIRQ(EXTERNAL_INTERRUPT_GPIOB_INT_IRQN);
+    NVIC_EnableIRQ(EXTERNAL_INTERRUPT_GPIOA_INT_IRQN);
     SPI_Controller_Init(&stm32Spi, SPI_1_INST,  DMA_CH0_CHAN_ID, DMA_CH1_CHAN_ID, gSPI_TxPacket, gSPI_RxPacket, SPI_PACKET_SIZE); 
     SM_Init();
-    
+    NVIC_EnableIRQ(RTC_INT_IRQn);
+    DL_RTC_enableClockControl(RTC);    
     char processingBuffer[MAX_INPUT_LEN];
 
     while (1) {
