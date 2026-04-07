@@ -48,18 +48,18 @@ void BQ25628E_UpdateBits8(uint8_t reg, uint8_t mask, uint8_t value) {
 /* Public API Implementation                                       */
 /* -------------------------------------------------------------------------- */
 bool BQ25628E_Init_Default(void) {
-
     BQ25628E_Set_VREG_mV(3600);
-    BQ25628E_Set_ICHG_mA(2000);
+    BQ25628E_Set_ICHG_mA(1000);
     BQ25628E_Set_IINDPM_mA(2000);
     BQ25628E_Set_VINDPM_mV(4500);     
-    BQ25628E_Set_VSYSMIN_mV(3200);  
+    BQ25628E_Set_VSYSMIN_mV(3600);  
     // BQ25628E_Set_Precharge_mA(100);   
     // BQ25628E_Set_Termination_mA(50); 
     BQ25628E_Set_TS_Ignore(true);  
     BQ25628E_Set_PeakDischarge_6A(); 
 
     BQ25628E_WriteReg8(BQ25628E_REG_ADC_CTRL, BQ25628E_ADC_EN);
+    BQ25628E_Disable_Watchdog();
     // BQ25628E_Set_ChargerEnable(true);
     return true;
 }
@@ -177,6 +177,14 @@ void BQ25628E_Set_PeakDischarge_6A(void) {
     BQ25628E_UpdateBits8(BQ25628E_REG_CTRL3,
                          BQ25628E_CTRL3_IBAT_PK_MASK,
                          BQ25628E_CTRL3_IBAT_PK_6A);
+}
+
+
+void BQ25628E_Disable_Watchdog(void) {
+    // We update bits 1:0 to 00b to disable the timer
+    BQ25628E_UpdateBits8(BQ25628E_REG_CTRL0, 
+                         BQ25628E_CTRL0_WATCHDOG_MASK, 
+                         BQ25628E_CTRL0_WATCHDOG_DIS);
 }
 
 /* Getters unchanged */

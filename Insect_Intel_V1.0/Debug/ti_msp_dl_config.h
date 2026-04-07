@@ -229,6 +229,8 @@ extern "C" {
 
 
 
+
+
 /* clang-format on */
 
 void SYSCFG_DL_init(void);
@@ -243,6 +245,7 @@ void SYSCFG_DL_SPI_1_init(void);
 void SYSCFG_DL_DMA_init(void);
 
 void SYSCFG_DL_RTC_init(void);
+void SYSCFG_DL_SYSTICK_init(void);
 
 bool SYSCFG_DL_saveConfiguration(void);
 bool SYSCFG_DL_restoreConfiguration(void);

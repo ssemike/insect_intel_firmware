@@ -7,7 +7,6 @@
 /* ── States ─────────────────────────────────────────────── */
 typedef enum {
     SM_STATE_INIT,
-    SM_STATE_MONITOR,
     SM_STATE_CHARGING,
     SM_STATE_POWER_STM,
     SM_STATE_SLEEP,
@@ -38,10 +37,13 @@ typedef struct {
     bool             sm_paused;
     bool             entry_done;
     uint32_t         minute_counter;
-    uint32_t         stm_power_on_tick;
-    uint32_t         sleep_entry_tick;    // for relative 15-min sleep wake
-    uint32_t         fault_entry_tick;    // for fault retry timing
+    uint32_t         stm_power_on_ms;
+    uint32_t         sleep_entry_tick;   
+    uint32_t         fault_entry_tick;  
     bool             hall_powered;
+    uint32_t        last_safety_check_ms; 
+    uint32_t        adapter_missing_ms;  
+    bool             adapter_missing;       
 } SM_Context_t;
 
 extern SM_Context_t sm_context;
@@ -52,5 +54,6 @@ void        SM_Run(void);
 SM_State_t  SM_GetState(void);
 const char* SM_GetStateString(void);
 void        SM_Transition(SM_State_t new_state);
+void SM_SafetyCheck(void);
 
 #endif

@@ -59,6 +59,7 @@ SYSCONFIG_WEAK void SYSCFG_DL_init(void)
     SYSCFG_DL_SPI_1_init();
     SYSCFG_DL_DMA_init();
     SYSCFG_DL_RTC_init();
+    SYSCFG_DL_SYSTICK_init();
     /* Ensure backup structures have no valid state */
 
 
@@ -100,6 +101,7 @@ SYSCONFIG_WEAK void SYSCFG_DL_initPower(void)
 
     DL_RTC_reset(RTC);
 
+
     DL_GPIO_enablePower(GPIOA);
     DL_GPIO_enablePower(GPIOB);
     DL_TimerG_enablePower(TIMER_0_INST);
@@ -109,6 +111,7 @@ SYSCONFIG_WEAK void SYSCFG_DL_initPower(void)
     DL_SPI_enablePower(SPI_1_INST);
 
     DL_RTC_enablePower(RTC);
+
     delay_cycles(POWER_STARTUP_DELAY);
 }
 
@@ -485,5 +488,14 @@ SYSCONFIG_WEAK void SYSCFG_DL_RTC_init(void)
 	DL_RTC_setIntervalAlarm(RTC, DL_RTC_INTERVAL_ALARM_MINUTECHANGE);
 	/* Configure Interrupts */
 	DL_RTC_enableInterrupt(RTC, DL_RTC_INTERRUPT_INTERVAL_ALARM);
+}
+
+SYSCONFIG_WEAK void SYSCFG_DL_SYSTICK_init(void)
+{
+    /*
+     * Initializes the SysTick period to 1.00 ms,
+     * enables the interrupt, and starts the SysTick Timer
+     */
+    DL_SYSTICK_config(32000);
 }
 

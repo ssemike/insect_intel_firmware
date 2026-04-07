@@ -11,10 +11,12 @@
 /* ── Timing Constants ────────────────────────────────────── */
 #define SM_STM_TIMEOUT_MINUTES    1    // max time to wait for STM32
 #define SM_SLEEP_WAKEUP_MINUTES   15   // full system wake interval
-#define SM_HALL_ON_MINUTES        5    // Hall sensor ON window
-#define SM_HALL_OFF_MINUTES       5    // Hall sensor OFF window
+#define SM_HALL_ON_MINUTES        1    // Hall sensor ON window
+#define SM_HALL_OFF_MINUTES       1    // Hall sensor OFF window
 #define SM_FAULT_RETRY_MINUTES    1    // re-check fault interval
 #define SM_VBAT_LOW_MV            3000 // low battery threshold
+#define SM_SAFETY_POLL_MS         500
+#define SM_ADAPTER_DEBOUNCE_MS    5000
 
 /* ── Global Context ──────────────────────────────────────── */
 SM_Context_t sm_context;
@@ -22,12 +24,11 @@ extern volatile bool rtc_minute_tick;
 extern volatile bool hall_wakeup_flag;
 extern volatile bool stm_io2_flag;
 extern SPI_Controller_Handle stm32Spi;
+extern volatile uint32_t systick_ms;
 
 /* ── Static variables ────────────────────────────────────── */
 static uint32_t last_safety_status = 0;
 static char json_buf[128];
-static uint32_t adapter_missing_tick = 0;
-static bool     adapter_was_missing  = false;
 
 /* ── Internal Prototypes ─────────────────────────────────── */
 static void SM_Handle_RTC_Tick(void);
@@ -52,7 +53,6 @@ void SM_Transition(SM_State_t new_state) {
 const char* SM_GetStateString(void) {
     switch (sm_context.current) {
         case SM_STATE_INIT:           return "INIT";
-        case SM_STATE_MONITOR:        return "MONITOR";
         case SM_STATE_CHARGING:       return "CHARGING";
         case SM_STATE_POWER_STM:      return "POWER_STM";
         case SM_STATE_SLEEP:          return "SLEEP";
@@ -63,6 +63,63 @@ const char* SM_GetStateString(void) {
 
 SM_State_t SM_GetState(void) {
     return sm_context.current;
+}
+
+void SM_SafetyCheck(void) {
+    // Don't run during sleep or fault — sleep is low power, fault handles itself
+    if (sm_context.current == SM_STATE_SLEEP ||
+        sm_context.current == SM_STATE_CRITICAL_FAULT ||
+        sm_context.current == SM_STATE_INIT) return;
+
+    if ((systick_ms - sm_context.last_safety_check_ms) < SM_SAFETY_POLL_MS) return;
+    sm_context.last_safety_check_ms = systick_ms;
+
+    // Safety status check
+    uint32_t safety = 0;
+    BQ27Z746_GetSafetyStatus(I2C_0_INST, &safety);
+    if (safety != 0) {
+        sm_context.fault_source = SM_FAULT_GAUGE;
+        SM_Transition(SM_STATE_CRITICAL_FAULT);
+        return;
+    }
+
+    // Adapter presence — only relevant during CHARGING
+    if (sm_context.current == SM_STATE_CHARGING) {
+        uint8_t stat1 = BQ25628E_ReadReg8(BQ25628E_REG_STAT1);
+        bool adapter_present = (stat1 & BQ25628E_VBUS_STAT_MASK) != 0;
+
+        if (!adapter_present) {
+            if (!sm_context.adapter_missing) {
+                sm_context.adapter_missing = true;
+                sm_context.adapter_missing_ms = systick_ms;
+                uart_printf("[SM] Adapter removed — 5s debounce started\n");
+            } else if ((systick_ms - sm_context.adapter_missing_ms) >= SM_ADAPTER_DEBOUNCE_MS) {
+                DL_GPIO_setPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_CHARGER_EN_PIN);
+                uart_printf("[SM] Adapter absent 5s — stopping charge, sleeping\n");
+                sm_context.adapter_missing = false;
+                SM_Transition(SM_STATE_SLEEP);
+            }
+        } else {
+            sm_context.adapter_missing = false;
+        }
+    }
+}
+
+static void SM_PostWake_Branch(void) {
+    BQ27Z746_UpdateTelemetry(I2C_0_INST);
+    uint16_t vbat_mv = BQ27Z746_Get_Voltage_mV();
+    uint8_t stat1 = BQ25628E_ReadReg8(BQ25628E_REG_STAT1);
+    bool adapter_present = (stat1 & BQ25628E_VBUS_STAT_MASK) != 0;
+    if (vbat_mv < SM_VBAT_LOW_MV) {
+        if (adapter_present) {
+            SM_Transition(SM_STATE_CHARGING);
+        } else {
+            sm_context.fault_source = SM_FAULT_LOW_BATTERY;
+            SM_Transition(SM_STATE_CRITICAL_FAULT);
+        }
+    } else {
+        SM_Transition(SM_STATE_POWER_STM);
+    }
 }
 
 static void SM_Handle_RTC_Tick(void) {
@@ -86,13 +143,12 @@ static void SM_Handle_RTC_Tick(void) {
             sm_context.hall_powered = false;
         }
     }
-
     // 15-minute relative sleep wake
     if (sm_context.current == SM_STATE_SLEEP) {
         uint32_t elapsed = sm_context.minute_counter
                            - sm_context.sleep_entry_tick;
         if (elapsed >= SM_SLEEP_WAKEUP_MINUTES) {
-            SM_Transition(SM_STATE_MONITOR);
+            SM_PostWake_Branch();
         }
     }
 }
@@ -117,45 +173,16 @@ void SM_Run(void) {
                     sm_context.fault_source = SM_FAULT_INIT_FAILED;
                     SM_Transition(SM_STATE_CRITICAL_FAULT);
                 }else {
-                    SM_Transition(SM_STATE_MONITOR);
+                    SM_PostWake_Branch();
                 }
             }
             break;
         }
-        case SM_STATE_MONITOR: {
-            if (!sm_context.entry_done) {
-                BQ27Z746_UpdateTelemetry(I2C_0_INST);
-                BQ27Z746_GetSafetyStatus(I2C_0_INST, &last_safety_status);
-                uint16_t vbat_mv = BQ27Z746_Get_Voltage_mV();
-                uint8_t stat1 = BQ25628E_ReadReg8(BQ25628E_REG_STAT1);
-                bool adapter_present = (stat1 & BQ25628E_VBUS_STAT_MASK) != 0;
-
-                if (last_safety_status != 0) {
-                    sm_context.fault_source = SM_FAULT_GAUGE;
-                    SM_Transition(SM_STATE_CRITICAL_FAULT);
-                } else if (vbat_mv < SM_VBAT_LOW_MV) {
-                    if (adapter_present) {
-                        SM_Transition(SM_STATE_CHARGING);
-                    } else {
-                        sm_context.fault_source = SM_FAULT_LOW_BATTERY;
-                        SM_Transition(SM_STATE_CRITICAL_FAULT);
-                    }
-                } else {
-                    if (sm_context.wake_reason != SM_WAKE_SETUP) {
-                        sm_context.wake_reason = SM_WAKE_NORMAL;
-                        }
-                        SM_Transition(SM_STATE_POWER_STM);
-                }
-            }
-            break;
-        }
-
         case SM_STATE_CHARGING: {
             if (!sm_context.entry_done) {
                 DL_GPIO_clearPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_CHARGER_EN_PIN);
                 uart_printf("[SM] Charging started\n");
-                adapter_was_missing  = false;
-                adapter_missing_tick = 0;
+                sm_context.adapter_missing = false;
                 sm_context.entry_done = true;
             }
 
@@ -177,23 +204,6 @@ void SM_Run(void) {
                     SM_Transition(SM_STATE_CRITICAL_FAULT);
                     break;
                 }
-
-                /* Adapter presence watchdog */
-                if (!adapter_present) {
-                    if (!adapter_was_missing) {
-                        adapter_was_missing  = true;
-                        adapter_missing_tick = sm_context.minute_counter;
-                        uart_printf("[SM] Adapter removed — waiting 1 min before sleeping\n");
-                    } else if ((sm_context.minute_counter - adapter_missing_tick) >= 1) {
-                        DL_GPIO_setPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_CHARGER_EN_PIN);
-                        uart_printf("[SM] Adapter absent for 1 min — stopping charge, sleeping\n");
-                        SM_Transition(SM_STATE_SLEEP);
-                    }
-                    break;
-                } else {
-                    adapter_was_missing = false;
-                }
-
                 /* Charging complete: gauge reports full AND charger is in termination/top-off */
                 bool gauge_full  = BQ27Z746_IsFullyCharged();
                 bool charger_done = (chg_stat == 0 || chg_stat == 3); // 0=terminated, 3=top-off
@@ -201,7 +211,7 @@ void SM_Run(void) {
                 if (gauge_full && charger_done) {
                     DL_GPIO_setPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_CHARGER_EN_PIN);
                     uart_printf("[SM] Charging complete (gauge + charger confirmed)\n");
-                    SM_Transition(SM_STATE_MONITOR);
+                    SM_PostWake_Branch();
                 }
             }
             break;
@@ -216,16 +226,16 @@ void SM_Run(void) {
                 }
                 DL_GPIO_setPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_EN3V8_PIN);
                 DL_GPIO_setPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_STM_PON_PIN);
-                sm_context.stm_power_on_tick = sm_context.minute_counter;
+                sm_context.stm_power_on_ms = systick_ms;
                 uart_printf("[SM] STM32 powered — reason: %s\n", 
                             (sm_context.wake_reason == SM_WAKE_SETUP) ? "SETUP" : "NORMAL");
+                stm_io2_flag = false;
                 sm_context.entry_done = true;
                 DL_GPIO_disableInterrupt(EXTERNAL_INTERRUPT_CHARGER_INT_PORT, EXTERNAL_INTERRUPT_SETUP_INT_PIN);
                 DL_GPIO_enableInterrupt(EXTERNAL_INTERRUPT_STM_MCU_IO2_PORT, EXTERNAL_INTERRUPT_STM_MCU_IO2_PIN);
             }
 
             if (stm_io2_flag) {
-                stm_io2_flag = false;
                 uint8_t stat1_json = BQ25628E_ReadReg8(BQ25628E_REG_STAT1);
                 uint8_t chg_stat   = (stat1_json >> 3) & 0x03;
 
@@ -256,13 +266,13 @@ void SM_Run(void) {
                     // Given the constraint "SM_Run() is non-blocking", I will check and return if not low.
                     return; 
                 }
-                
+                stm_io2_flag = false;
                 DL_GPIO_clearPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_STM_PON_PIN);
                 DL_GPIO_clearPins(DIGITAL_OUTPUT_PORTA_PORT, DIGITAL_OUTPUT_PORTA_STM_MCU_IO1_PIN);
                 SM_Transition(SM_STATE_SLEEP);
             }
 
-            if ((sm_context.minute_counter - sm_context.stm_power_on_tick) >= SM_STM_TIMEOUT_MINUTES) {
+            if ((systick_ms - sm_context.stm_power_on_ms) >= 60000UL) {
                 uart_printf("[SM] STM32 timeout — forcing sleep\n");
                 DL_GPIO_clearPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_STM_PON_PIN);
                 DL_GPIO_clearPins(DIGITAL_OUTPUT_PORTA_PORT, DIGITAL_OUTPUT_PORTA_STM_MCU_IO1_PIN);
@@ -279,7 +289,7 @@ void SM_Run(void) {
                 
                 DL_GPIO_disableInterrupt(EXTERNAL_INTERRUPT_STM_MCU_IO2_PORT, EXTERNAL_INTERRUPT_STM_MCU_IO2_PIN);
                 DL_GPIO_enableInterrupt(EXTERNAL_INTERRUPT_CHARGER_INT_PORT, EXTERNAL_INTERRUPT_SETUP_INT_PIN);
-                
+                hall_wakeup_flag = false;
                 uart_printf("[SM] Entering sleep\n");
                 sm_context.entry_done = true;
             }
@@ -287,7 +297,7 @@ void SM_Run(void) {
             if (hall_wakeup_flag) {
                 hall_wakeup_flag = false;
                 sm_context.wake_reason = SM_WAKE_SETUP;
-                SM_Transition(SM_STATE_MONITOR);
+                SM_PostWake_Branch();
             }
             else {
                 __WFI();
@@ -332,7 +342,7 @@ void SM_Run(void) {
                 } else if (adapter_present) {
                     SM_Transition(SM_STATE_CHARGING);
                 } else {
-                    SM_Transition(SM_STATE_MONITOR);
+                    SM_PostWake_Branch();
                 }
             }
             break;

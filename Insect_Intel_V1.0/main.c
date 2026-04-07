@@ -14,6 +14,7 @@ volatile bool gauge_monitor_active = false;
 volatile bool rtc_minute_tick  = false;
 volatile bool hall_wakeup_flag = false;
 volatile bool stm_io2_flag     = false;
+volatile uint32_t systick_ms = 0;
 
 void setupCLI(void) {
     CLI_RegisterCommand("help", cmd_help, "Show available commands");
@@ -48,6 +49,7 @@ int main(void)
         }
         
         if (!sm_context.sm_paused) {
+            SM_SafetyCheck();
             SM_Run();
         }
     }
@@ -89,4 +91,8 @@ void GROUP1_IRQHandler(void) {
         default:
             break;
     }
+}
+
+void SysTick_Handler(void) {
+    systick_ms++;
 }
