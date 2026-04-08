@@ -39,7 +39,6 @@ GPIO1.associatedPins[0].$name            = "CHARGER_INT";
 GPIO1.associatedPins[0].direction        = "INPUT";
 GPIO1.associatedPins[0].assignedPin      = "any";
 GPIO1.associatedPins[0].ioStructure      = "SD";
-GPIO1.associatedPins[0].interruptEn      = true;
 GPIO1.associatedPins[0].polarity         = "FALL";
 GPIO1.associatedPins[0].pin.$assign      = "PB1";
 GPIO1.associatedPins[1].$name            = "SETUP_INT";

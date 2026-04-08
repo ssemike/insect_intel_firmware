@@ -169,14 +169,13 @@ extern "C" {
 
 /* Defines for CHARGER_INT: GPIOB.1 with pinCMx 13 on package pin 48 */
 #define EXTERNAL_INTERRUPT_CHARGER_INT_PORT                              (GPIOB)
-// pins affected by this interrupt request:["CHARGER_INT","SETUP_INT"]
-#define EXTERNAL_INTERRUPT_GPIOB_INT_IRQN                       (GPIOB_INT_IRQn)
-#define EXTERNAL_INTERRUPT_GPIOB_INT_IIDX       (DL_INTERRUPT_GROUP1_IIDX_GPIOB)
-#define EXTERNAL_INTERRUPT_CHARGER_INT_IIDX                  (DL_GPIO_IIDX_DIO1)
 #define EXTERNAL_INTERRUPT_CHARGER_INT_PIN                       (DL_GPIO_PIN_1)
 #define EXTERNAL_INTERRUPT_CHARGER_INT_IOMUX                     (IOMUX_PINCM13)
 /* Defines for SETUP_INT: GPIOB.20 with pinCMx 48 on package pin 19 */
 #define EXTERNAL_INTERRUPT_SETUP_INT_PORT                                (GPIOB)
+// pins affected by this interrupt request:["SETUP_INT"]
+#define EXTERNAL_INTERRUPT_GPIOB_INT_IRQN                       (GPIOB_INT_IRQn)
+#define EXTERNAL_INTERRUPT_GPIOB_INT_IIDX       (DL_INTERRUPT_GROUP1_IIDX_GPIOB)
 #define EXTERNAL_INTERRUPT_SETUP_INT_IIDX                   (DL_GPIO_IIDX_DIO20)
 #define EXTERNAL_INTERRUPT_SETUP_INT_PIN                        (DL_GPIO_PIN_20)
 #define EXTERNAL_INTERRUPT_SETUP_INT_IOMUX                       (IOMUX_PINCM48)

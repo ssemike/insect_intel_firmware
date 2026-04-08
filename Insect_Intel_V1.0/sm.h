@@ -41,10 +41,11 @@ typedef struct {
     uint32_t         sleep_entry_tick;   
     uint32_t         fault_entry_tick;  
     bool             hall_powered;
-    uint32_t        last_safety_check_ms; 
-    uint32_t        adapter_missing_ms;  
+    uint32_t         last_safety_check_ms; 
+    uint32_t         adapter_missing_ms;  
     bool             adapter_missing;      
-    uint32_t        fault_retry_ms; 
+    uint32_t         fault_retry_ms; 
+    bool             stm_data_sent;
 } SM_Context_t;
 
 extern SM_Context_t sm_context;
@@ -56,5 +57,6 @@ SM_State_t  SM_GetState(void);
 const char* SM_GetStateString(void);
 void        SM_Transition(SM_State_t new_state);
 void SM_SafetyCheck(void);
+void SM_AdapterCheck(void);
 
 #endif
