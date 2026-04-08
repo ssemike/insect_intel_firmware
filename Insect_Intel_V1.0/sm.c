@@ -11,7 +11,7 @@
 /* ── Timing Constants ────────────────────────────────────── */
 #define SM_STM_TIMEOUT_MINUTES    1    // max time to wait for STM32
 #define SM_SLEEP_WAKEUP_MINUTES   15   // full system wake interval
-#define SM_HALL_ON_MINUTES        1    // Hall sensor ON window
+#define SM_HALL_ON_MINUTES        5    // Hall sensor ON window
 #define SM_HALL_OFF_MINUTES       1    // Hall sensor OFF window
 #define SM_FAULT_RETRY_MINUTES    1    // re-check fault interval
 #define SM_VBAT_LOW_MV            3000 // low battery threshold
@@ -25,10 +25,11 @@ extern volatile bool hall_wakeup_flag;
 extern volatile bool stm_io2_flag;
 extern SPI_Controller_Handle stm32Spi;
 extern volatile uint32_t systick_ms;
+extern volatile bool adapter_check_flag;
 
 /* ── Static variables ────────────────────────────────────── */
 static uint32_t last_safety_status = 0;
-static char json_buf[128];
+static char json_buf[256];
 
 /* ── Internal Prototypes ─────────────────────────────────── */
 static void SM_Handle_RTC_Tick(void);
@@ -65,6 +66,26 @@ SM_State_t SM_GetState(void) {
     return sm_context.current;
 }
 
+static void SM_PostWake_Branch(void) {
+    BQ27Z746_UpdateTelemetry(I2C_0_INST);
+    uint16_t vbat_mv = BQ27Z746_Get_Voltage_mV();
+    uint8_t stat1 = BQ25628E_ReadReg8(BQ25628E_REG_STAT1);
+    bool adapter_present = (stat1 & BQ25628E_VBUS_STAT_MASK) != 0;
+
+    if (vbat_mv < SM_VBAT_LOW_MV) {
+        if (adapter_present) {
+            SM_Transition(SM_STATE_CHARGING);
+        } else {
+            sm_context.fault_source = SM_FAULT_LOW_BATTERY;
+            SM_Transition(SM_STATE_CRITICAL_FAULT);
+        }
+    } else if (adapter_present && vbat_mv < 3600) {
+        SM_Transition(SM_STATE_CHARGING);
+    } else {
+        SM_Transition(SM_STATE_POWER_STM);
+    }
+}
+
 void SM_SafetyCheck(void) {
     // Don't run during sleep or fault — sleep is low power, fault handles itself
     if (sm_context.current == SM_STATE_SLEEP ||
@@ -95,9 +116,9 @@ void SM_SafetyCheck(void) {
                 uart_printf("[SM] Adapter removed — 5s debounce started\n");
             } else if ((systick_ms - sm_context.adapter_missing_ms) >= SM_ADAPTER_DEBOUNCE_MS) {
                 DL_GPIO_setPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_CHARGER_EN_PIN);
-                uart_printf("[SM] Adapter absent 5s — stopping charge, sleeping\n");
+                uart_printf("[SM] Adapter absent 5s — stopping charge\n");
                 sm_context.adapter_missing = false;
-                SM_Transition(SM_STATE_SLEEP);
+                SM_PostWake_Branch();
             }
         } else {
             sm_context.adapter_missing = false;
@@ -105,22 +126,6 @@ void SM_SafetyCheck(void) {
     }
 }
 
-static void SM_PostWake_Branch(void) {
-    BQ27Z746_UpdateTelemetry(I2C_0_INST);
-    uint16_t vbat_mv = BQ27Z746_Get_Voltage_mV();
-    uint8_t stat1 = BQ25628E_ReadReg8(BQ25628E_REG_STAT1);
-    bool adapter_present = (stat1 & BQ25628E_VBUS_STAT_MASK) != 0;
-    if (vbat_mv < SM_VBAT_LOW_MV) {
-        if (adapter_present) {
-            SM_Transition(SM_STATE_CHARGING);
-        } else {
-            sm_context.fault_source = SM_FAULT_LOW_BATTERY;
-            SM_Transition(SM_STATE_CRITICAL_FAULT);
-        }
-    } else {
-        SM_Transition(SM_STATE_POWER_STM);
-    }
-}
 
 static void SM_Handle_RTC_Tick(void) {
     if (!rtc_minute_tick) return;
@@ -159,12 +164,16 @@ void SM_Run(void) {
         case SM_STATE_INIT: {
             if (!sm_context.entry_done) {
                 DL_GPIO_setPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_GAUGE_EN_PIN);
-                // 1. Check bus first
                 if (!I2C_TryAddress(I2C_0_INST, GAUGE_I2C_ADDR) ||
                     !I2C_TryAddress(I2C_0_INST, BQ25628E_I2C_ADDR)) {
-                    sm_context.fault_source = SM_FAULT_I2C_BUS;
-                    SM_Transition(SM_STATE_CRITICAL_FAULT);
-                    return;
+                    DL_GPIO_clearPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_GAUGE_EN_PIN);
+                    DL_GPIO_setPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_GAUGE_EN_PIN);
+                    if (!I2C_TryAddress(I2C_0_INST, GAUGE_I2C_ADDR) ||
+                        !I2C_TryAddress(I2C_0_INST, BQ25628E_I2C_ADDR)) {
+                        sm_context.fault_source = SM_FAULT_I2C_BUS;
+                        SM_Transition(SM_STATE_CRITICAL_FAULT);
+                        return;
+                    }
                 }
                 bool gauge_ok   = BQ27Z746_Init(I2C_0_INST);
                 bool charger_ok = BQ25628E_Init_Default();
@@ -179,6 +188,12 @@ void SM_Run(void) {
         }
         case SM_STATE_CHARGING: {
             if (!sm_context.entry_done) {
+                if (last_safety_status != 0) {
+                    uart_printf("[SM] Charging blocked — gauge fault active\n");
+                    sm_context.fault_source = SM_FAULT_GAUGE;
+                    SM_Transition(SM_STATE_CRITICAL_FAULT);
+                    return;
+                }
                 DL_GPIO_clearPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_CHARGER_EN_PIN);
                 uart_printf("[SM] Charging started\n");
                 sm_context.adapter_missing = false;
@@ -197,23 +212,42 @@ void SM_Run(void) {
                 bool adapter_present  = (stat1 & BQ25628E_VBUS_STAT_MASK) != 0;
                 uint8_t chg_stat      = (stat1 >> 3) & 0x03;  // CHG_STAT[4:3]
 
-                /* Safety check */
-                if (last_safety_status != 0) {
-                    sm_context.fault_source = SM_FAULT_GAUGE;
+            if (last_safety_status != 0) {
+                sm_context.fault_source = SM_FAULT_GAUGE;
+                SM_Transition(SM_STATE_CRITICAL_FAULT);
+                break;
+            }
+
+            // Low battery check — if adapter gone and still under 3V, back to fault
+            if (!adapter_present) {
+                uint16_t vbat = BQ27Z746_Get_Voltage_mV();
+                if (vbat < 3000) {
+                    sm_context.fault_source = SM_FAULT_LOW_BATTERY;
                     SM_Transition(SM_STATE_CRITICAL_FAULT);
                     break;
                 }
-                /* Charging complete: gauge reports full AND charger is in termination/top-off */
-                bool gauge_full  = BQ27Z746_IsFullyCharged();
-                bool charger_done = (chg_stat == 0 || chg_stat == 3); // 0=terminated, 3=top-off
-
-                if (gauge_full && charger_done) {
-                    DL_GPIO_setPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_CHARGER_EN_PIN);
-                    uart_printf("[SM] Charging complete (gauge + charger confirmed)\n");
-                    SM_PostWake_Branch();
-                }
             }
-            break;
+
+            // Charging complete: voltage at or above 3600mV, gauge full, charger done
+            bool gauge_full   = BQ27Z746_IsFullyCharged();
+            bool charger_done = (chg_stat == 0 || chg_stat == 3);
+            uint16_t vbat     = BQ27Z746_Get_Voltage_mV();
+            if ((gauge_full && charger_done) || vbat >= 3600) {
+                DL_GPIO_setPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_CHARGER_EN_PIN);
+                uart_printf("[SM] Charging complete\n");
+                SM_PostWake_Branch();
+            } else {
+                uart_printf("[SM] CHARGING | VBUS:%4dmV VBAT:%4dmV IBUS:%4dmA IBAT:%4dmA SOC:%3d%% CHG_STAT:%d\n",
+                    BQ25628E_Get_VBUS_mV(),
+                    BQ27Z746_Get_Voltage_mV(),
+                    BQ25628E_Get_IBUS_mA(),
+                    BQ27Z746_Get_Current_mA(),
+                    BQ27Z746_Get_SOC_pct(),
+                    chg_stat);
+            }
+           
+            }
+             break;
         }
 
         case SM_STATE_POWER_STM: {
@@ -321,9 +355,8 @@ void SM_Run(void) {
                 uart_printf("[SM] CRITICAL FAULT, source: %s\n", fault_str);
                 sm_context.fault_retry_ms = systick_ms;
                 if (sm_context.fault_source == SM_FAULT_I2C_BUS) {
-                    uart_printf("[SM] I2C bus failure can't initialize system\n");
+                    uart_printf("[SM] I2C bus failure can't initialize system(Power cycle system)\n");
                 } else {
-                    sm_context.fault_entry_tick = sm_context.minute_counter;
                     SM_DecodeSafetyStatus(last_safety_status);
                 }
                 sm_context.entry_done = true;
@@ -332,22 +365,28 @@ void SM_Run(void) {
             if (sm_context.fault_source != SM_FAULT_I2C_BUS &&
                 (systick_ms - sm_context.fault_retry_ms) >= 5000UL) {
                 sm_context.fault_retry_ms = systick_ms;
-                            
                 BQ27Z746_GetSafetyStatus(I2C_0_INST, &last_safety_status);
-                uint8_t stat1 = BQ25628E_ReadReg8(BQ25628E_REG_STAT1);
-                bool adapter_present = (stat1 & BQ25628E_VBUS_STAT_MASK) != 0;
 
-                if (last_safety_status != 0) {
+                if (sm_context.fault_source == SM_FAULT_LOW_BATTERY) {
+                    uint8_t stat1 = BQ25628E_ReadReg8(BQ25628E_REG_STAT1);
+                    bool adapter_present = (stat1 & BQ25628E_VBUS_STAT_MASK) != 0;
+                    if (adapter_present) {
+                        uart_printf("[SM] Adapter detected — resuming charge\n");
+                        SM_PostWake_Branch();
+                    } else {
+                        uart_printf("[SM] Low battery fault — still waiting for adapter\n");
+                    }
+                } else if (last_safety_status != 0) {
                     uart_printf("[SM] Fault still active: 0x%08X\n", (unsigned int)last_safety_status);
-                } else if (adapter_present) {
-                    SM_Transition(SM_STATE_CHARGING);
+                    SM_DecodeSafetyStatus(last_safety_status);
                 } else {
                     SM_PostWake_Branch();
                 }
             }
             break;
+            }
+
         }
-    }
 }
 
 static void SM_DecodeSafetyStatus(uint32_t status) {

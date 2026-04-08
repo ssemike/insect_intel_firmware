@@ -10,7 +10,7 @@
 volatile bool bq_monitor_active    = false;
 volatile bool hall_monitor_active  = false;
 volatile bool gauge_monitor_active = false;
-
+volatile bool adapter_check_flag = false;
 volatile bool rtc_minute_tick  = false;
 volatile bool hall_wakeup_flag = false;
 volatile bool stm_io2_flag     = false;
@@ -51,6 +51,21 @@ int main(void)
         
         if (!sm_context.sm_paused) {
             SM_SafetyCheck();
+            if (adapter_check_flag) {
+                adapter_check_flag = false;
+                if (sm_context.current == SM_STATE_SLEEP) {
+                    BQ27Z746_UpdateTelemetry(I2C_0_INST);
+                    uint8_t stat1 = BQ25628E_ReadReg8(BQ25628E_REG_STAT1);
+                    bool adapter_present = (stat1 & BQ25628E_VBUS_STAT_MASK) != 0;
+                    uint16_t vbat = BQ27Z746_Get_Voltage_mV();
+                    if (adapter_present && vbat < 3600) {
+                        SM_Transition(SM_STATE_CHARGING);
+                    }
+                }
+            }
+            //  if (hall_monitor_active || bq_monitor_active || gauge_monitor_active) {
+            //     Run_Legacy_Monitors(processingBuffer);
+            // }
             SM_Run();
         }
     }
@@ -81,19 +96,24 @@ void RTC_IRQHandler(void)
 
 void GROUP1_IRQHandler(void) {
     switch (DL_Interrupt_getPendingGroup(DL_INTERRUPT_GROUP_1)) {
-        case EXTERNAL_INTERRUPT_SETUP_INT_IIDX: // Hall sensor
-            hall_wakeup_flag = true;
-            break;
-
-        case EXTERNAL_INTERRUPT_STM_MCU_IO2_IIDX: // STM32 IO2
+        
+        case EXTERNAL_INTERRUPT_GPIOA_INT_IIDX: 
+            DL_GPIO_clearInterruptStatus(GPIOA, EXTERNAL_INTERRUPT_STM_MCU_IO2_PIN);
             stm_io2_flag = true;
             break;
 
-        default:
+        case EXTERNAL_INTERRUPT_GPIOB_INT_IIDX: 
+            DL_GPIO_clearInterruptStatus(GPIOB, EXTERNAL_INTERRUPT_SETUP_INT_PIN);
+            hall_wakeup_flag = true;
             break;
     }
 }
 
 void SysTick_Handler(void) {
     systick_ms++;
+    static uint32_t adapter_check_ms = 0;
+    if (++adapter_check_ms >= 15000) {
+        adapter_check_ms = 0;
+        adapter_check_flag = true;
+    }
 }

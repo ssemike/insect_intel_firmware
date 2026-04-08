@@ -144,7 +144,7 @@ all: $(OBJS) $(GEN_CMDS)
 HW_SW_interface_CCS.out: $(OBJS) $(GEN_CMDS)
 	@echo 'Building target: "$@"'
 	@echo 'Invoking: Arm Linker'
-	"C:/ti/ccs2031/ccs/tools/compiler/ti-cgt-armllvm_4.0.4.LTS/bin/tiarmclang.exe" @"device.opt"  -march=thumbv6m -mcpu=cortex-m0plus -mfloat-abi=soft -mlittle-endian -mthumb -O2 -gdwarf-3 -Wl,-m"HW_SW_interface_CCS.map" -Wl,-i"C:/ti/mspm0_sdk_2_09_00_01/source" -Wl,-i"C:/Users/Admin/Desktop/Software code/Final Software/Insect Intel/Insect_Intel_V1.0" -Wl,-i"C:/Users/Admin/Desktop/Software code/Final Software/Insect Intel/Insect_Intel_V1.0/Debug/syscfg" -Wl,-i"C:/ti/ccs2031/ccs/tools/compiler/ti-cgt-armllvm_4.0.4.LTS/lib" -Wl,--diag_wrap=off -Wl,--display_error_number -Wl,--warn_sections -Wl,--xml_link_info="HW_SW_interface_CCS_linkInfo.xml" -Wl,--rom_model -o "HW_SW_interface_CCS.out" $(ORDERED_OBJS)
+	"C:/ti/ccs2031/ccs/tools/compiler/ti-cgt-armllvm_4.0.4.LTS/bin/tiarmclang.exe" @"device.opt"  -march=thumbv6m -mcpu=cortex-m0plus -mfloat-abi=soft -mlittle-endian -mthumb -O1 -gdwarf-3 -Wl,-m"HW_SW_interface_CCS.map" -Wl,-i"C:/ti/mspm0_sdk_2_09_00_01/source" -Wl,-i"C:/Users/Admin/Desktop/Software code/Final Software/Insect Intel/Insect_Intel_V1.0" -Wl,-i"C:/Users/Admin/Desktop/Software code/Final Software/Insect Intel/Insect_Intel_V1.0/Debug/syscfg" -Wl,-i"C:/ti/ccs2031/ccs/tools/compiler/ti-cgt-armllvm_4.0.4.LTS/lib" -Wl,--diag_wrap=off -Wl,--display_error_number -Wl,--warn_sections -Wl,--xml_link_info="HW_SW_interface_CCS_linkInfo.xml" -Wl,--rom_model -o "HW_SW_interface_CCS.out" $(ORDERED_OBJS)
 	@echo 'Finished building target: "$@"'
 	@echo ' '
 
