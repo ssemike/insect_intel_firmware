@@ -17,6 +17,7 @@ volatile bool rtc_minute_tick  = false;
 volatile bool hall_wakeup_flag = false;
 volatile bool stm_io2_flag     = false;
 volatile uint32_t systick_ms = 0;
+volatile uint32_t monitor_rate = 200; 
 
 void setupCLI(void) {
     CLI_RegisterCommand("help", cmd_help, "Show available commands");
@@ -24,7 +25,6 @@ void setupCLI(void) {
     CLI_RegisterCommand("i2cscan", cmd_i2cscan, "Scan I2C bus: i2cscan <0|1>");
     CLI_RegisterCommand("hall", cmd_hall, "Hall sensor: hall <pwr|status>");
     CLI_RegisterCommand("bq", cmd_bq, "BQ25628E charger control - type bq for full help");
-    CLI_RegisterCommand("spi", cmd_spi, "SPI Master tx_view, tx_write, test");
     CLI_RegisterCommand("gauge",   cmd_gauge,   "BQ27Z746 gauge - type gauge for help");
     CLI_RegisterCommand("sm", cmd_sm, "State Machine control: status, start, stop");
 }
@@ -58,6 +58,8 @@ int main(void)
                 SM_AdapterCheck();
             }
             SM_Run();
+        }else {
+            Run_Legacy_Monitors(processingBuffer);
         }
     }
 }

@@ -275,11 +275,7 @@ void cmd_bq(char *args) {
     if (tokenCount == 0) {
         uart_printf("BQ25628E Bring-up CLI\n"
                     "  bq init             - full charger init\n"
-                    "  bq read <reg> [len] - read 8-bit (hex reg)\n"
-                    "  bq read16 <reg>     - read 16-bit\n"
                     "  bq dump             - read all key registers\n"
-                    "  bq write <reg> <val>- write 8-bit\n"
-                    "  bq write16 <reg> <val> - write 16-bit\n"
                     "  bq enable           - start charging (EN_CHG + CE=LOW)\n"
                     "  bq disable          - stop charging (EN_CHG=0 + CE=HIGH)\n"
                     "  bq monitor          - 200ms status + flag monitor\n"
@@ -305,24 +301,7 @@ void cmd_bq(char *args) {
         uart_printf("ERROR: Charger initialization failed\n");
     }
     }
-    /* Read single register / register set (8-bit) */
-    else if (strcmp(sub, "read") == 0 && tokenCount >= 2) {
-        uint8_t reg = (uint8_t)strtol(tokens[1], NULL, 16);
-        uint8_t len = (tokenCount >= 3) ? (uint8_t)atoi(tokens[2]) : 1;
-        uart_printf("0x%02X = ", reg);
-        for (uint8_t i = 0; i < len; i++) {
-            uint8_t v = BQ25628E_ReadReg8(reg + i);
-            uart_printf("0x%02X (%3d)  ", v, v);
-        }
-        uart_printf("\n");
-    }
 
-    /* Read 16-bit register */
-    else if (strcmp(sub, "read16") == 0 && tokenCount >= 2) {
-        uint8_t reg = (uint8_t)strtol(tokens[1], NULL, 16);
-        uint16_t v = BQ25628E_ReadReg16(reg);
-        uart_printf("0x%02X (16-bit) = 0x%04X (%5d)\n", reg, v, v);
-    }
 
     /* Read ALL configuration registers */
     else if (strcmp(sub, "dump") == 0) {
@@ -341,20 +320,6 @@ void cmd_bq(char *args) {
                     BQ25628E_ReadReg8(0x1E), (BQ25628E_ReadReg8(0x1E)>>3)&0x03);
         uart_printf("CHG_FLAG0 0x20: 0x%02X\n", BQ25628E_ReadReg8(0x20));
         uart_printf("FAULT_FLAG0 0x22: 0x%02X\n", BQ25628E_ReadReg8(0x22));
-    }
-
-    /* Write register / register set */
-    else if (strcmp(sub, "write") == 0 && tokenCount >= 3) {
-        uint8_t reg = (uint8_t)strtol(tokens[1], NULL, 16);
-        uint8_t val = (uint8_t)strtol(tokens[2], NULL, 0);
-        BQ25628E_WriteReg8(reg, val);
-        uart_printf("Wrote 0x%02X to 0x%02X\n", val, reg);
-    }
-    else if (strcmp(sub, "write16") == 0 && tokenCount >= 3) {
-        uint8_t reg = (uint8_t)strtol(tokens[1], NULL, 16);
-        uint16_t val = (uint16_t)strtol(tokens[2], NULL, 0);
-        BQ25628E_WriteReg16(reg, val);
-        uart_printf("Wrote 0x%04X to 0x%02X (16-bit)\n", val, reg);
     }
 
     /* Enable Charging */
@@ -388,67 +353,6 @@ void cmd_bq(char *args) {
     }
 }
 
-void cmd_spi(char *args) {
-    char *tokens[3];
-    int tokenCount = CLI_Tokenize(args, tokens, 3);
-
-    if (tokenCount == 0) {
-        uart_printf("SPI Master Testing CLI:\n"
-                    "  spi tx_view             - View current 16-byte Outbox\n"
-                    "  spi tx_write <idx> <val>- Update byte in Outbox\n"
-                    "  spi test            - test comms over SPI\n" );
-        return;
-    }
-
-    char *sub = tokens[0];
-
-    /* 2. TX_VIEW */
-    if (strcmp(sub, "tx_view") == 0) {
-        uart_printf("Current TX Buffer (Outbox):\n");
-        for (int i = 0; i < stm32Spi.size; i++) {
-            uart_printf("0x%02X ", stm32Spi.txBuf[i]);
-            if ((i + 1) % 8 == 0) uart_printf("\n");
-        }
-    }
-
-    /* 3. TX_WRITE */
-    else if (strcmp(sub, "tx_write") == 0 && tokenCount >= 3) {
-        uint8_t idx = (uint8_t)atoi(tokens[1]);
-        uint8_t val = (uint8_t)strtol(tokens[2], NULL, 0);
-
-        if (idx < stm32Spi.size) {
-            stm32Spi.txBuf[idx] = val;
-            uart_printf("Updated TX Buffer[%d] to 0x%02X\n", idx, val);
-        } else {
-            uart_printf("Error: Index out of bounds (0-15)\n");
-        }
-    }
-
-    /* 4. MONITOR */
-    else if (strcmp(sub, "test") == 0) {
-        uart_printf("Communicating over SPI (MSP -> STM32)... Press any key to stop.\n");
-        SPI_Controller_Arm(&stm32Spi);
-        while (1) {
-            if (stm32Spi.rxDone) {
-                uart_printf("Received from STM32:\n");
-                for (int i = 0; i < stm32Spi.size; i++) {
-                    uart_printf("%02X ", stm32Spi.rxBuf[i]);
-                }
-                uart_printf("\n---\n");
-                stm32Spi.rxDone = false;
-            }
-            // Check for UART input to break the loop (same logic as your BQ monitor)
-            if (DL_UART_Main_isRXFIFOEmpty(UART_0_INST) == false) {
-                DL_UART_Main_receiveData(UART_0_INST);
-                uart_printf("SPI Monitor Stopped.\n");
-                break;
-            }
-        }
-    }
-    else {
-        uart_printf("Unknown SPI sub-command.\n");
-    }
-}
 
 static void print_battery_status(uint16_t status)
 {
@@ -484,16 +388,8 @@ void cmd_gauge(char *args)
             "  gauge dump           - read all telemetry registers\n"
             "  gauge status         - decode BatteryStatus bits\n"
             "  gauge info           - device type, FW version, ChemID\n"
-            "  gauge read <reg>     - raw 16-bit register read\n"
-            "  gauge mac <cmd>      - issue MAC command\n"
-            "  gauge fet            - read FET Options DF (0x45C0)\n"
-            "  gauge utfet <0|1>    - disable/enable UTFET bit\n"
             "  gauge monitor        - 200ms live telemetry\n"
             "  gauge stop           - stop monitor\n"
-            "  gauge reset          - reset gauge\n"
-            "  gauge security       - print current security mode\n"
-            "  gauge unseal         - unseal using default keys\n"
-            "  gauge seal           - seal device\n"
             "\n");
         return;
     }
@@ -624,63 +520,6 @@ void cmd_gauge(char *args)
             uart_printf("Temp Config      : read failed\n");
         }
     }
-
-    else if (strcmp(sub, "read") == 0 && tokenCount >= 2) {
-        uint8_t reg = (uint8_t)strtol(tokens[1], NULL, 16);
-        uint16_t val = (uint16_t)gauge_cmd_read(I2C_0_INST, reg);
-        uart_printf("0x%02X = 0x%04X (%d)\n", reg, val, val);
-    }
-
-    else if (strcmp(sub, "mac") == 0 && tokenCount >= 2) {
-        uint16_t cmd = (uint16_t)strtol(tokens[1], NULL, 16);
-        uint8_t  data[BQ27Z746_MAC_DATA_LEN];
-        uint8_t  len = 0u;
-
-        uart_printf("Sending MAC cmd 0x%04X...\n", cmd);
-
-        if (!BQ27Z746_MAC_Read(I2C_0_INST, cmd, data, &len)) {
-            uart_printf("ERROR: MAC read failed (checksum mismatch or comms error)\n");
-            return;
-        }
-
-        uart_printf("Response (%d bytes):\n", len);
-        for (uint8_t i = 0u; i < len; i++) {
-            uart_printf("  [%02d] 0x%02X (%3d)\n", i, data[i], data[i]);
-        }
-
-        if (len >= 2u) {
-            uint16_t as_u16 = (uint16_t)(data[0] | ((uint16_t)data[1] << 8u));
-            uart_printf("  => as uint16 (LE): 0x%04X (%d)\n", as_u16, as_u16);
-        }
-    }
-
-    else if (strcmp(sub, "fet") == 0) {
-        uint16_t fetOptions = 0u;
-        if (!BQ27Z746_GetFETOptions(I2C_0_INST, &fetOptions)) {
-            uart_printf("ERROR: Failed to read FET Options\n");
-            return;
-        }
-        uart_printf("FET Options (0x45C0): 0x%04X\n", fetOptions);
-        uart_printf("  UTFET : %d\n", (fetOptions & (1u << 1)) != 0u);
-    }
-
-    else if (strcmp(sub, "utfet") == 0) {
-        if (tokenCount < 2) {
-            uart_printf("Usage: gauge utfet <0|1>\n");
-            return;
-        }
-        bool enable = (atoi(tokens[1]) != 0);
-        if (!BQ27Z746_SetUTFET_Direct(I2C_0_INST, enable)) {
-            uart_printf("ERROR: Failed to write UTFET\n");
-            return;
-        }
-        uart_printf("UTFET %s\n", enable ? "ENABLED" : "DISABLED");
-
-        uint16_t verify = 0u;
-        if (BQ27Z746_GetFETOptions(I2C_0_INST, &verify))
-            uart_printf("FET Options now: 0x%04X\n", verify);
-    }
-
     else if (strcmp(sub, "monitor") == 0) {
         gauge_monitor_active = true;
         uart_printf("Gauge monitor started — type any command to stop\n");
@@ -689,47 +528,6 @@ void cmd_gauge(char *args)
     else if (strcmp(sub, "stop") == 0) {
         gauge_monitor_active = false;
         uart_printf("Gauge monitor stopped\n");
-    }
-
-    else if (strcmp(sub, "reset") == 0) {
-        uart_printf("Resetting BQ27Z746...\n");
-        if (!BQ27Z746_MAC_Send(I2C_0_INST, BQ27Z746_MAC_RESET)) {
-            uart_printf("ERROR: Reset command failed\n");
-            return;
-        }
-        uart_printf("Reset sent\n");
-    }
-
-    /* ----------------------------------------------------------
-     * Security debug commands
-     * ---------------------------------------------------------- */
-    else if (strcmp(sub, "security") == 0) {
-        uint8_t mode = BQ27Z746_GetSecurityMode(I2C_0_INST);
-        const char *label;
-        switch (mode) {
-            case BQ27Z746_SEC_FULL_ACCESS: label = "FULL ACCESS"; break;
-            case BQ27Z746_SEC_UNSEALED:    label = "UNSEALED";    break;
-            case BQ27Z746_SEC_SEALED:      label = "SEALED";      break;
-            case 0xFFu:                    label = "READ ERROR";  break;
-            default:                       label = "RESERVED";    break;
-        }
-        uart_printf("Security mode: %s (0x%02X)\n", label, mode);
-    }
-
-    else if (strcmp(sub, "unseal") == 0) {
-        uart_printf("Unsealing...\n");
-        if (BQ27Z746_Unseal(I2C_0_INST, BQ27Z746_UNSEAL_KEY1, BQ27Z746_UNSEAL_KEY2))
-            uart_printf("OK — device is now unsealed\n");
-        else
-            uart_printf("ERROR: Unseal failed — wrong keys or comms error\n");
-    }
-
-    else if (strcmp(sub, "seal") == 0) {
-        uart_printf("Sealing...\n");
-        if (BQ27Z746_Seal(I2C_0_INST))
-            uart_printf("OK — device is now sealed\n");
-        else
-            uart_printf("ERROR: Seal failed\n");
     }
 
     else {

@@ -5,7 +5,7 @@
 #include <stdbool.h>
 #include "ti_msp_dl_config.h"
 
-#define SPI_PACKET_SIZE (256)
+#define SPI_PACKET_SIZE (400)
 
 /**
  * @brief SPI Controller Handle

@@ -9,7 +9,7 @@ static uint16_t g_vsys_mV = 0;
 static uint16_t g_vbus_mV = 0;
 static int16_t  g_ibus_mA = 0;
 static int16_t  g_ibat_mA = 0;
-
+static int16_t g_tdie_C = 0;
 
 
 /* -------------------------------------------------------------------------- */
@@ -93,6 +93,10 @@ void BQ25628E_UpdateTelemetry(void) {
         int16_t ibat_code = (int16_t) (raw >> 2);
         g_ibat_mA = ibat_code * 4;
     }
+    raw = BQ25628E_ReadReg16(BQ25628E_REG_TDIE_ADC);
+    int16_t tdie_code = (int16_t)(raw & 0x0FFFu);
+    if (tdie_code > 0x7FF) tdie_code -= 0x1000;
+    g_tdie_C = (int16_t)roundf(tdie_code * 0.5f);
 }
 void BQ25628E_PetWatchdog(void) {
     BQ25628E_UpdateBits8(BQ25628E_REG_CTRL0, BQ25628E_CTRL0_WD_RST, BQ25628E_CTRL0_WD_RST);
@@ -194,3 +198,4 @@ uint16_t BQ25628E_Get_VSYS_mV(void) { return g_vsys_mV; }
 uint16_t BQ25628E_Get_VBUS_mV(void) { return g_vbus_mV; }
 int16_t  BQ25628E_Get_IBUS_mA(void) { return g_ibus_mA; }
 int16_t  BQ25628E_Get_IBAT_mA(void) { return g_ibat_mA; }
+int16_t  BQ25628E_Get_TDIE_C(void) { return g_tdie_C; }

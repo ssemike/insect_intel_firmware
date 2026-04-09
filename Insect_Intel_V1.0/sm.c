@@ -11,7 +11,7 @@
 /* ── Timing Constants ────────────────────────────────────── */
 #define SM_STM_TIMEOUT_MINUTES    1    // max time to wait for STM32
 #define SM_SLEEP_WAKEUP_MINUTES   15   // full system wake interval
-#define SM_HALL_ON_MINUTES        5    // Hall sensor ON window
+#define SM_HALL_ON_MINUTES        1    // Hall sensor ON window
 #define SM_HALL_OFF_MINUTES       1    // Hall sensor OFF window
 #define SM_FAULT_RETRY_MINUTES    1    // re-check fault interval
 #define SM_VBAT_LOW_MV            3000 // low battery threshold
@@ -30,7 +30,7 @@ extern volatile bool adapter_check_flag;
 
 /* ── Static variables ────────────────────────────────────── */
 static uint32_t last_safety_status = 0;
-static char json_buf[256];
+static char json_buf[400];
 
 /* ── Internal Prototypes ─────────────────────────────────── */
 static void SM_Handle_RTC_Tick(void);
@@ -187,12 +187,13 @@ void SM_Run(void) {
                     SM_PostWake_Branch();
                 } else {
                     const char* desc = SM_GetChargeString(chg_stat);
-                    uart_printf("[SM] CHARGING | VBUS:%4dmV VBAT:%4dmV IBUS:%4dmA IBAT:%4dmA SOC:%3d%% CHG_STAT:%s\n",
+                    uart_printf("[SM] CHARGING | VBUS:%4dmV VBAT:%4dmV IBUS:%4dmA IBAT:%4dmA SOC:%3d%% TDIE:%3dC CHG_STAT:%s\n",
                         BQ25628E_Get_VBUS_mV(),
                         BQ27Z746_Get_Voltage_mV(),
                         BQ25628E_Get_IBUS_mA(),
                         BQ27Z746_Get_Current_mA(),
                         BQ27Z746_Get_SOC_pct(),
+                        BQ25628E_Get_TDIE_C(),
                         desc);
                 }
             }
@@ -211,7 +212,6 @@ void SM_Run(void) {
                 sm_context.stm_power_on_ms = systick_ms;
                 uart_printf("[SM] STM32 powered : reason: %s\n", 
                             (sm_context.wake_reason == SM_WAKE_SETUP) ? "SETUP" : "NORMAL");
-                stm_io2_flag = false;
                 sm_context.entry_done = true;
                 sm_context.stm_data_sent = false;
                 stm_io2_flag = false; 
@@ -222,22 +222,63 @@ void SM_Run(void) {
                 BQ25628E_UpdateTelemetry();
                 BQ27Z746_UpdateTelemetry(I2C_0_INST);
                 BQ27Z746_GetSafetyStatus(I2C_0_INST, &last_safety_status);
-                uint8_t stat1_json = BQ25628E_ReadReg8(BQ25628E_REG_STAT1);
-                uint8_t chg_stat   = (stat1_json >> 3) & 0x03;
-                const char* desc = SM_GetChargeString(chg_stat);
 
+                uint8_t  stat1       = BQ25628E_ReadReg8(BQ25628E_REG_STAT1); 
+                bool     adapter     = (stat1 & BQ25628E_VBUS_STAT_MASK) != 0;
+                uint8_t chg_stat   = (stat1 >> 3) & 0x03;
+                const char* desc   = SM_GetChargeString(chg_stat);
+                uint8_t  chg_flags   = BQ25628E_ReadReg8(BQ25628E_REG_CHG_FLAG0);
+                uint8_t  fault_flags = BQ25628E_ReadReg8(BQ25628E_REG_FAULT_FLAG0);
+
+                uint16_t batt_status = BQ27Z746_Get_BatteryStatus();
+                uint16_t tte         = BQ27Z746_Get_TimeToEmpty_min();
+                uint16_t ttf         = BQ27Z746_Get_TimeToFull_min();
+                uint16_t cycles      = BQ27Z746_Get_CycleCount();
+                uint16_t vsys        = BQ25628E_Get_VSYS_mV();
+                int16_t  avg_i       = BQ27Z746_Get_AvgCurrent_mA();
+                int16_t  avg_pwr     = BQ27Z746_Get_AvgPower_mW(); 
+
+                int tte_json = (tte == 0xFFFFu) ? -1 : (int)tte;
+                int ttf_json = (ttf == 0xFFFFu) ? -1 : (int)ttf;
+
+                const char* sm_state_str = SM_GetStateString();
+                const char* wake_str     = (sm_context.wake_reason == SM_WAKE_SETUP) ? "SETUP" : "NORMAL";
+
+                /* ── Final JSON payload ── */
                 snprintf(json_buf, sizeof(json_buf),
-                    "{\"soc\":%d,\"soh\":%d,\"vchg\":%d,\"ichg\":%d,\"vbat\":%d,\"ibat\":%d,\"temp\":%d,\"prot\":\"0x%08X\",\"chgstat\":%s}",
+                    "{\"soc\":%d,\"soh\":%d,"
+                    "\"vbat\":%d,\"ibat\":%d,\"vchg\":%d,\"vsys\":%d,\"ichg\":%d,\"avgi\":%d,\"avgpwr\":%d,"
+                    "\"temp\":%d,\"tdie\":%d,"
+                    "\"tte\":%d,\"ttf\":%d,\"cycles\":%d,"
+                    "\"adapter\":%d,\"hall\":%d,"
+                    "\"state\":\"%s\",\"wake\":\"%s\","
+                    "\"safety\":\"0x%08X\",\"battstat\":\"0x%04X\","
+                    "\"chgflags\":\"0x%02X\",\"faultflags\":\"0x%02X\","
+                    "\"chgstat\":\"%s\"}",
                     BQ27Z746_Get_SOC_pct(),
                     BQ27Z746_Get_StateOfHealth_pct(),
-                    BQ25628E_Get_VBUS_mV(),
-                    BQ25628E_Get_IBUS_mA(),
                     BQ27Z746_Get_Voltage_mV(),
                     BQ27Z746_Get_Current_mA(),
+                    BQ25628E_Get_VBUS_mV(),
+                    vsys,
+                    BQ25628E_Get_IBUS_mA(),
+                    avg_i,
+                    avg_pwr,  
                     BQ27Z746_Get_InternalTemp_C(),
+                    BQ25628E_Get_TDIE_C(),
+                    tte_json,
+                    ttf_json,
+                    cycles,
+                    adapter ? 1 : 0,
+                    sm_context.hall_powered ? 1 : 0,
+                    sm_state_str,
+                    wake_str,
                     (unsigned int)last_safety_status,
+                    batt_status,
+                    chg_flags,
+                    fault_flags,
                     desc
-                );     
+                );   
                 size_t len = strlen(json_buf);
                 memset(stm32Spi.txBuf, 0, stm32Spi.size);
                 memcpy(stm32Spi.txBuf, json_buf, (len < stm32Spi.size) ? len : stm32Spi.size);

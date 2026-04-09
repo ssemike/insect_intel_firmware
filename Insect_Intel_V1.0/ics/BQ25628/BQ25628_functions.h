@@ -105,6 +105,7 @@ uint16_t BQ25628E_Get_VSYS_mV(void);
 uint16_t BQ25628E_Get_VBUS_mV(void);
 int16_t  BQ25628E_Get_IBUS_mA(void);
 int16_t  BQ25628E_Get_IBAT_mA(void);
+int16_t  BQ25628E_Get_TDIE_C(void);
 
 /* Setters (old + all the  ones you asked for) */
 
