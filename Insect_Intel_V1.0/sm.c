@@ -108,15 +108,23 @@ static void SM_Handle_RTC_Tick(void) {
                           % (SM_HALL_ON_MINUTES + SM_HALL_OFF_MINUTES);
     if (hall_phase < SM_HALL_ON_MINUTES) {
         if (!sm_context.hall_powered) {
-            DL_GPIO_setPins(DIGITAL_OUTPUT_PORTA_PORT,
-                            DIGITAL_OUTPUT_PORTA_HALL_3V_PIN);
+            DL_GPIO_disableInterrupt(GPIOB, EXTERNAL_INTERRUPT_SETUP_INT_PIN);
+            
+            DL_GPIO_setPins(DIGITAL_OUTPUT_PORTA_PORT, DIGITAL_OUTPUT_PORTA_HALL_3V_PIN);
             sm_context.hall_powered = true;
+            delay_cycles(1000); 
+
+            DL_GPIO_clearInterruptStatus(GPIOB, EXTERNAL_INTERRUPT_SETUP_INT_PIN);
+            DL_GPIO_enableInterrupt(GPIOB, EXTERNAL_INTERRUPT_SETUP_INT_PIN);
         }
     } else {
         if (sm_context.hall_powered) {
-            DL_GPIO_clearPins(DIGITAL_OUTPUT_PORTA_PORT,
-                              DIGITAL_OUTPUT_PORTA_HALL_3V_PIN);
+            DL_GPIO_disableInterrupt(GPIOB, EXTERNAL_INTERRUPT_SETUP_INT_PIN);
+            
+            DL_GPIO_clearPins(DIGITAL_OUTPUT_PORTA_PORT, DIGITAL_OUTPUT_PORTA_HALL_3V_PIN);
             sm_context.hall_powered = false;
+            
+            DL_GPIO_clearInterruptStatus(GPIOB, EXTERNAL_INTERRUPT_SETUP_INT_PIN);
         }
     }
     // 15-minute relative sleep wake
