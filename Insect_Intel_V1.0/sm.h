@@ -39,16 +39,21 @@ typedef struct {
     uint32_t         minute_counter;
     uint32_t         stm_power_on_ms;
     uint32_t         sleep_entry_tick;   
-    uint32_t         fault_entry_tick;  
     bool             hall_powered;
     uint32_t         last_safety_check_ms; 
     uint32_t         adapter_missing_ms;  
     bool             adapter_missing;      
     uint32_t         fault_retry_ms; 
     bool             stm_data_sent;
+    uint32_t         last_io2_activity_ms;  
 } SM_Context_t;
 
 extern SM_Context_t sm_context;
+
+/* ── SPI Command Protocol ──────────────────────────────── */
+#define STM32_CMD_CONTINUE  0xAA  // Continue operation, may request data again
+#define STM32_CMD_SHUTDOWN  0x55  // Done, request shutdown
+#define STM32_CMD_NONE      0x00  // Default/no command
 
 /* ── Public API ──────────────────────────────────────────── */
 void        SM_Init(void);
@@ -58,5 +63,6 @@ const char* SM_GetStateString(void);
 void        SM_Transition(SM_State_t new_state);
 void SM_SafetyCheck(void);
 void SM_AdapterCheck(void);
+void SM_SendTelemetryToSTM32(void);
 
 #endif
