@@ -53,9 +53,14 @@ void Run_Legacy_Monitors(char* processingBuffer) {
         uart_printf("=== BQ25628E MONITOR (200ms) ===\n");
         uart_printf("CHARGER_INT : %s\n", charger_int ? "HIGH" : "LOW");
         uart_printf("Charging Status : %s  (CHG_STAT[4:3] = 0b%02b)\n", desc, chg_stat);
-        uart_printf("VBUS:%4dmV VBAT:%4dmV  VSYS:%4dmV  IBUS:%4dmA  IBAT:%4dmA\n",BQ25628E_Get_VBUS_mV(),
-                    BQ25628E_Get_VBAT_mV(), BQ25628E_Get_VSYS_mV(),
-                    BQ25628E_Get_IBUS_mA(), BQ25628E_Get_IBAT_mA());
+        uart_printf("VBUS:%4dmV VBAT:%4dmV VSYS:%4dmV IBUS:%4dmA IBAT:%4dmA TBAT:%3.1fC TDIE:%3dC\n",
+                    BQ25628E_Get_VBUS_mV(),
+                    BQ25628E_Get_VBAT_mV(), 
+                    BQ25628E_Get_VSYS_mV(),
+                    BQ25628E_Get_IBUS_mA(), 
+                    BQ25628E_Get_IBAT_mA(),
+                    BQ25628E_Get_TBAT_C(), // Battery NTC temperature
+                    BQ25628E_Get_TDIE_C()); // Charger chip internal temperature
         uart_printf("ChgFlag0:0x%02X  FaultFlag0:0x%02X\n",
                     BQ25628E_ReadReg8(BQ25628E_REG_CHG_FLAG0),
                     BQ25628E_ReadReg8(BQ25628E_REG_FAULT_FLAG0));

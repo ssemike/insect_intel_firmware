@@ -6,6 +6,21 @@
 /* I2C Address */
 #define BQ25628E_I2C_ADDR 0x6Au
 
+#define RT1_KOHM            5.23f
+#define RT2_KOHM            30.0f
+#define TS_ADC_STEP_PCT     0.000961f  // 0.0961% per LSB
+
+typedef struct {
+    float temp;    // Temperature in °C
+    float resist;  // Resistance in kΩ
+} TempResistPair;
+
+
+typedef enum {
+    E3103JT2A
+} NTC;
+
+
 /* -------------------------------------------------------------------------- */
 /* 16-bit Configuration Registers                                             */
 /* -------------------------------------------------------------------------- */
@@ -106,6 +121,7 @@ uint16_t BQ25628E_Get_VBUS_mV(void);
 int16_t  BQ25628E_Get_IBUS_mA(void);
 int16_t  BQ25628E_Get_IBAT_mA(void);
 int16_t  BQ25628E_Get_TDIE_C(void);
+float BQ25628E_Get_TBAT_C(void);
 
 /* Setters (old + all the  ones you asked for) */
 

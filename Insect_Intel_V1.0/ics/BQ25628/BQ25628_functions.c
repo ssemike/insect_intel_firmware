@@ -10,6 +10,7 @@ static uint16_t g_vbus_mV = 0;
 static int16_t  g_ibus_mA = 0;
 static int16_t  g_ibat_mA = 0;
 static int16_t g_tdie_C = 0;
+static float g_tbat_C = 0.0f;
 
 
 /* -------------------------------------------------------------------------- */
@@ -44,6 +45,48 @@ void BQ25628E_UpdateBits8(uint8_t reg, uint8_t mask, uint8_t value) {
     if (v != old) BQ25628E_WriteReg8(reg, v);
 }
 
+// the lookup table from your data
+const TempResistPair thermistor_table_E3103JT2A[] = {
+    {-40, 332.094}, {-35, 239.900}, {-30, 175.200}, {-25, 129.287}, 
+    {-20, 96.358}, {-15, 72.500}, {-10, 55.046}, {-5, 42.157},
+    {0, 32.554}, {5, 25.339}, {10, 19.872}, {15, 15.698},
+    {20, 12.488}, {25, 10.000}, {30, 8.059}, {35, 6.535},
+    {40, 5.330}, {45, 4.372}, {50, 3.605}, {55, 2.989},
+    {60, 2.490}, {65, 2.084}, {70, 1.753}, {75, 1.481},
+    {80, 1.256}, {85, 1.070}, {90,0.915}, {95, 0.786},
+    {100, 0.677}, {105, 0.585}, {110, 0.508}, {115, 0.442},
+    {120, 0.386}, {125, 0.338}, {130, 0.297}, {135, 0.262},
+    {140,  0.231}, {145, 0.205}, {150, 0.182}
+};
+
+float _calculateTempFromRt(float Rt, NTC ntc) {
+    const TempResistPair* thermistor_table = NULL;
+    uint16_t table_size = 0;
+
+    if (ntc == E3103JT2A) {
+        thermistor_table = thermistor_table_E3103JT2A;
+        table_size = sizeof(thermistor_table_E3103JT2A) / sizeof(TempResistPair);
+    } 
+    if (thermistor_table == NULL) return -300.0f;
+
+    // Handle out-of-range
+    if (Rt >= thermistor_table[0].resist) return thermistor_table[0].temp;
+    if (Rt <= thermistor_table[table_size-1].resist) return thermistor_table[table_size-1].temp;
+
+    // Linear Interpolation
+    int j;
+    for (j = 0; j < table_size - 1; j++) {
+        if (Rt <= thermistor_table[j].resist && Rt >= thermistor_table[j+1].resist) {
+            break;
+        }
+    }
+
+    float temp_diff = thermistor_table[j+1].temp - thermistor_table[j].temp;
+    float res_diff = thermistor_table[j+1].resist - thermistor_table[j].resist;
+    
+    return thermistor_table[j].temp + (Rt - thermistor_table[j].resist) * (temp_diff / res_diff);
+}
+
 /* -------------------------------------------------------------------------- */
 /* Public API Implementation                                       */
 /* -------------------------------------------------------------------------- */
@@ -63,9 +106,7 @@ bool BQ25628E_Init_Default(void) {
     // BQ25628E_Set_ChargerEnable(true);
     return true;
 }
-
-
-#include <math.h>  // For roundf if needed; otherwise use casts.
+  
 
 void BQ25628E_UpdateTelemetry(void) {
     uint16_t raw;
@@ -97,6 +138,17 @@ void BQ25628E_UpdateTelemetry(void) {
     int16_t tdie_code = (int16_t)(raw & 0x0FFFu);
     if (tdie_code > 0x7FF) tdie_code -= 0x1000;
     g_tdie_C = (int16_t)roundf(tdie_code * 0.5f);
+
+    raw = BQ25628E_ReadReg16(BQ25628E_REG_ADC_TS);
+    uint16_t ts_code = raw & 0x0FFF;     
+    float ts_pct = ts_code * TS_ADC_STEP_PCT;
+    if (ts_pct > 0.84f) {
+        g_tbat_C = -100.0f; // NTC Open
+    } else {
+        float r_bottom = RT1_KOHM * (ts_pct / (1.0f - ts_pct));
+        float r_ntc = (r_bottom * RT2_KOHM) / (RT2_KOHM - r_bottom);
+        g_tbat_C = _calculateTempFromRt(r_ntc, E3103JT2A);
+    }
 }
 void BQ25628E_PetWatchdog(void) {
     BQ25628E_UpdateBits8(BQ25628E_REG_CTRL0, BQ25628E_CTRL0_WD_RST, BQ25628E_CTRL0_WD_RST);
@@ -104,7 +156,6 @@ void BQ25628E_PetWatchdog(void) {
 
 /* --- Setters --- */
 
-/* --- 16-bit Setters (CORRECTED with proper bit alignment) --- */
 void BQ25628E_Set_VREG_mV(uint16_t voltage_mV) {
     if (voltage_mV < 3500) voltage_mV = 3500;
     if (voltage_mV > 4800) voltage_mV = 4800;
@@ -199,3 +250,4 @@ uint16_t BQ25628E_Get_VBUS_mV(void) { return g_vbus_mV; }
 int16_t  BQ25628E_Get_IBUS_mA(void) { return g_ibus_mA; }
 int16_t  BQ25628E_Get_IBAT_mA(void) { return g_ibat_mA; }
 int16_t  BQ25628E_Get_TDIE_C(void) { return g_tdie_C; }
+float BQ25628E_Get_TBAT_C(void) { return g_tbat_C; }

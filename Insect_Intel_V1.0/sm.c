@@ -197,12 +197,12 @@ void SM_Run(void) {
                     SM_PostWake_Branch();
                 } else {
                     const char* desc = SM_GetChargeString(chg_stat);
-                    uart_printf("[SM] CHARGING | VBUS:%4dmV VBAT:%4dmV IBUS:%4dmA IBAT:%4dmA SOC:%3d%% TDIE:%3dC CHG_STAT:%s\n",
+                    uart_printf("[SM] CHARGING | VBUS:%4dmV VBAT:%4dmV IBAT:%4dmA SOC:%3d%% TBAT:%3.1fC TDIE:%3dC CHG_STAT:%s\n",
                         BQ25628E_Get_VBUS_mV(),
                         BQ27Z746_Get_Voltage_mV(),
-                        BQ25628E_Get_IBUS_mA(),
                         BQ27Z746_Get_Current_mA(),
                         BQ27Z746_Get_SOC_pct(),
+                        BQ25628E_Get_TBAT_C(), 
                         BQ25628E_Get_TDIE_C(),
                         desc);
                 }
@@ -440,7 +440,7 @@ void SM_SendTelemetryToSTM32(void) {
     snprintf(json_buf, sizeof(json_buf),
         "{\"soc\":%d,\"soh\":%d,"
         "\"vbat\":%d,\"ibat\":%d,\"vchg\":%d,\"vsys\":%d,\"ichg\":%d,\"avgi\":%d,\"avgpwr\":%d,"
-        "\"temp\":%d,\"tdie\":%d,"
+        "\"gtmp\":%d,\"ctmp\":%d,\"btmp\":%.1f," 
         "\"tte\":%d,\"ttf\":%d,\"cycles\":%d,"
         "\"adapter\":%d,\"hall\":%d,"
         "\"state\":\"%s\",\"wake\":\"%s\","
@@ -456,8 +456,9 @@ void SM_SendTelemetryToSTM32(void) {
         BQ25628E_Get_IBUS_mA(),
         avg_i,
         avg_pwr,  
-        BQ27Z746_Get_InternalTemp_C(),
+        (int)BQ27Z746_Get_InternalTemp_C(), 
         BQ25628E_Get_TDIE_C(),
+        BQ25628E_Get_TBAT_C(),      
         tte_json,
         ttf_json,
         cycles,
