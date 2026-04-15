@@ -73,15 +73,12 @@ extern "C" {
 #define POWER_STARTUP_DELAY                                                (16)
 
 
-#define CPUCLK_FREQ                                                     32000000
-
-
-
-/* Defines for TIMER_0 */
-#define TIMER_0_INST                                                     (TIMG8)
-#define TIMER_0_INST_IRQHandler                                 TIMG8_IRQHandler
-#define TIMER_0_INST_INT_IRQN                                   (TIMG8_INT_IRQn)
-#define TIMER_0_INST_LOAD_VALUE                                         (62499U)
+#define GPIO_LFXT_PORT                                                     GPIOA
+#define GPIO_LFXIN_PIN                                             DL_GPIO_PIN_3
+#define GPIO_LFXIN_IOMUX                                          (IOMUX_PINCM8)
+#define GPIO_LFXOUT_PIN                                            DL_GPIO_PIN_4
+#define GPIO_LFXOUT_IOMUX                                         (IOMUX_PINCM9)
+#define CPUCLK_FREQ                                                      4000000
 
 
 
@@ -117,7 +114,7 @@ extern "C" {
 
 /* Defines for UART_0 */
 #define UART_0_INST                                                        UART0
-#define UART_0_INST_FREQUENCY                                           32000000
+#define UART_0_INST_FREQUENCY                                              32768
 #define UART_0_INST_IRQHandler                                  UART0_IRQHandler
 #define UART_0_INST_INT_IRQN                                      UART0_INT_IRQn
 #define GPIO_UART_0_RX_PORT                                                GPIOA
@@ -128,9 +125,9 @@ extern "C" {
 #define GPIO_UART_0_IOMUX_TX                                     (IOMUX_PINCM21)
 #define GPIO_UART_0_IOMUX_RX_FUNC                      IOMUX_PINCM22_PF_UART0_RX
 #define GPIO_UART_0_IOMUX_TX_FUNC                      IOMUX_PINCM21_PF_UART0_TX
-#define UART_0_BAUD_RATE                                                (115200)
-#define UART_0_IBRD_32_MHZ_115200_BAUD                                      (17)
-#define UART_0_FBRD_32_MHZ_115200_BAUD                                      (23)
+#define UART_0_BAUD_RATE                                                  (9600)
+#define UART_0_IBRD_33_kHZ_9600_BAUD                                         (1)
+#define UART_0_FBRD_33_kHZ_9600_BAUD                                         (9)
 
 
 
@@ -228,15 +225,12 @@ extern "C" {
 
 
 
-
-
 /* clang-format on */
 
 void SYSCFG_DL_init(void);
 void SYSCFG_DL_initPower(void);
 void SYSCFG_DL_GPIO_init(void);
 void SYSCFG_DL_SYSCTL_init(void);
-void SYSCFG_DL_TIMER_0_init(void);
 void SYSCFG_DL_I2C_0_init(void);
 void SYSCFG_DL_I2C_1_init(void);
 void SYSCFG_DL_UART_0_init(void);
@@ -244,7 +238,6 @@ void SYSCFG_DL_SPI_1_init(void);
 void SYSCFG_DL_DMA_init(void);
 
 void SYSCFG_DL_RTC_init(void);
-void SYSCFG_DL_SYSTICK_init(void);
 
 bool SYSCFG_DL_saveConfiguration(void);
 bool SYSCFG_DL_restoreConfiguration(void);

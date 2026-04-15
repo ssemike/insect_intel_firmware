@@ -12,6 +12,15 @@ static int16_t  g_ibat_mA = 0;
 static int16_t g_tdie_C = 0;
 static float g_tbat_C = 0.0f;
 
+/* Charging Profile Configuration */
+#define BQ_INIT_VREG_MV          3600   
+#define BQ_INIT_ICHG_MA          1000    
+#define BQ_INIT_IINDPM_MA        2000   
+#define BQ_INIT_VINDPM_MV        4500   
+#define BQ_INIT_VSYSMIN_MV       3600  
+
+#define BQ_INIT_IPRECHG_MA       100    
+#define BQ_INIT_ITERM_MA         50  
 
 /* -------------------------------------------------------------------------- */
 /* Low-Level I2C Helpers (unchanged)                                          */
@@ -91,13 +100,13 @@ float _calculateTempFromRt(float Rt, NTC ntc) {
 /* Public API Implementation                                       */
 /* -------------------------------------------------------------------------- */
 bool BQ25628E_Init_Default(void) {
-    BQ25628E_Set_VREG_mV(3600);
-    BQ25628E_Set_ICHG_mA(1000);
-    BQ25628E_Set_IINDPM_mA(2000);
-    BQ25628E_Set_VINDPM_mV(4500);     
-    BQ25628E_Set_VSYSMIN_mV(3600);  
-    // BQ25628E_Set_Precharge_mA(100);   
-    // BQ25628E_Set_Termination_mA(50); 
+BQ25628E_Set_VREG_mV(BQ_INIT_VREG_MV);
+    BQ25628E_Set_ICHG_mA(BQ_INIT_ICHG_MA);
+    BQ25628E_Set_IINDPM_mA(BQ_INIT_IINDPM_MA);
+    BQ25628E_Set_VINDPM_mV(BQ_INIT_VINDPM_MV);
+    BQ25628E_Set_VSYSMIN_mV(BQ_INIT_VSYSMIN_MV);
+    // BQ25628E_Set_Precharge_mA(BQ_INIT_IPRECHG_MA);   
+    // BQ25628E_Set_Termination_mA(BQ_INIT_ITERM_MA); 
     BQ25628E_Set_TS_Ignore(true);  
     BQ25628E_Set_PeakDischarge_6A(); 
 

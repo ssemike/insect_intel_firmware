@@ -52,16 +52,13 @@ SYSCONFIG_WEAK void SYSCFG_DL_init(void)
     SYSCFG_DL_GPIO_init();
     /* Module-Specific Initializations*/
     SYSCFG_DL_SYSCTL_init();
-    SYSCFG_DL_TIMER_0_init();
     SYSCFG_DL_I2C_0_init();
     SYSCFG_DL_I2C_1_init();
     SYSCFG_DL_UART_0_init();
     SYSCFG_DL_SPI_1_init();
     SYSCFG_DL_DMA_init();
     SYSCFG_DL_RTC_init();
-    SYSCFG_DL_SYSTICK_init();
     /* Ensure backup structures have no valid state */
-
 
 	gSPI_1Backup.backupRdy 	= false;
 
@@ -93,7 +90,6 @@ SYSCONFIG_WEAK void SYSCFG_DL_initPower(void)
 {
     DL_GPIO_reset(GPIOA);
     DL_GPIO_reset(GPIOB);
-    DL_TimerG_reset(TIMER_0_INST);
     DL_I2C_reset(I2C_0_INST);
     DL_I2C_reset(I2C_1_INST);
     DL_UART_Main_reset(UART_0_INST);
@@ -101,22 +97,22 @@ SYSCONFIG_WEAK void SYSCFG_DL_initPower(void)
 
     DL_RTC_reset(RTC);
 
-
     DL_GPIO_enablePower(GPIOA);
     DL_GPIO_enablePower(GPIOB);
-    DL_TimerG_enablePower(TIMER_0_INST);
     DL_I2C_enablePower(I2C_0_INST);
     DL_I2C_enablePower(I2C_1_INST);
     DL_UART_Main_enablePower(UART_0_INST);
     DL_SPI_enablePower(SPI_1_INST);
 
     DL_RTC_enablePower(RTC);
-
     delay_cycles(POWER_STARTUP_DELAY);
 }
 
 SYSCONFIG_WEAK void SYSCFG_DL_GPIO_init(void)
 {
+
+    DL_GPIO_initPeripheralAnalogFunction(GPIO_LFXIN_IOMUX);
+    DL_GPIO_initPeripheralAnalogFunction(GPIO_LFXOUT_IOMUX);
 
     
 	DL_GPIO_initPeripheralInputFunctionFeatures(
@@ -220,57 +216,26 @@ SYSCONFIG_WEAK void SYSCFG_DL_GPIO_init(void)
 }
 
 
+
+static const DL_SYSCTL_LFCLKConfig gLFCLKConfig = {
+    .lowCap   = false,
+    .monitor  = false,
+    .xt1Drive = DL_SYSCTL_LFXT_DRIVE_STRENGTH_HIGHEST,
+};
 SYSCONFIG_WEAK void SYSCFG_DL_SYSCTL_init(void)
 {
 
-	//Low Power Mode is configured to be SLEEP0
+	//Low Power Mode is configured to be STANDBY0
+    DL_SYSCTL_setPowerPolicySTANDBY0();
     DL_SYSCTL_setBORThreshold(DL_SYSCTL_BOR_THRESHOLD_LEVEL_0);
 
-    DL_SYSCTL_setSYSOSCFreq(DL_SYSCTL_SYSOSC_FREQ_BASE);
-    /* Set default configuration */
-    DL_SYSCTL_disableHFXT();
-    DL_SYSCTL_disableSYSPLL();
-    DL_SYSCTL_setULPCLKDivider(DL_SYSCTL_ULPCLK_DIV_1);
+    
+	DL_SYSCTL_setSYSOSCFreq(DL_SYSCTL_SYSOSC_FREQ_4M);
+	/* Set default configuration */
+	DL_SYSCTL_disableHFXT();
+	DL_SYSCTL_disableSYSPLL();
     DL_SYSCTL_setMCLKDivider(DL_SYSCTL_MCLK_DIVIDER_DISABLE);
-
-}
-
-
-
-/*
- * Timer clock configuration to be sourced by BUSCLK /  (32000000 Hz)
- * timerClkFreq = (timerClkSrc / (timerClkDivRatio * (timerClkPrescale + 1)))
- *   125000 Hz = 32000000 Hz / (1 * (255 + 1))
- */
-static const DL_TimerG_ClockConfig gTIMER_0ClockConfig = {
-    .clockSel    = DL_TIMER_CLOCK_BUSCLK,
-    .divideRatio = DL_TIMER_CLOCK_DIVIDE_1,
-    .prescale    = 255U,
-};
-
-/*
- * Timer load value (where the counter starts from) is calculated as (timerPeriod * timerClockFreq) - 1
- * TIMER_0_INST_LOAD_VALUE = (500 ms * 125000 Hz) - 1
- */
-static const DL_TimerG_TimerConfig gTIMER_0TimerConfig = {
-    .period     = TIMER_0_INST_LOAD_VALUE,
-    .timerMode  = DL_TIMER_TIMER_MODE_PERIODIC,
-    .startTimer = DL_TIMER_STOP,
-};
-
-SYSCONFIG_WEAK void SYSCFG_DL_TIMER_0_init(void) {
-
-    DL_TimerG_setClockConfig(TIMER_0_INST,
-        (DL_TimerG_ClockConfig *) &gTIMER_0ClockConfig);
-
-    DL_TimerG_initTimerMode(TIMER_0_INST,
-        (DL_TimerG_TimerConfig *) &gTIMER_0TimerConfig);
-    DL_TimerG_enableInterrupt(TIMER_0_INST , DL_TIMERG_INTERRUPT_ZERO_EVENT);
-    DL_TimerG_enableClock(TIMER_0_INST);
-
-
-
-
+    DL_SYSCTL_setLFCLKSourceLFXT((DL_SYSCTL_LFCLKConfig *) &gLFCLKConfig);
 
 }
 
@@ -291,7 +256,7 @@ SYSCONFIG_WEAK void SYSCFG_DL_I2C_0_init(void) {
     /* Configure Controller Mode */
     DL_I2C_resetControllerTransfer(I2C_0_INST);
     /* Set frequency to 100000 Hz*/
-    DL_I2C_setTimerPeriod(I2C_0_INST, 31);
+    DL_I2C_setTimerPeriod(I2C_0_INST, 3);
     DL_I2C_setControllerTXFIFOThreshold(I2C_0_INST, DL_I2C_TX_FIFO_LEVEL_EMPTY);
     DL_I2C_setControllerRXFIFOThreshold(I2C_0_INST, DL_I2C_RX_FIFO_LEVEL_BYTES_1);
     DL_I2C_enableControllerClockStretching(I2C_0_INST);
@@ -327,7 +292,7 @@ SYSCONFIG_WEAK void SYSCFG_DL_I2C_1_init(void) {
     /* Configure Controller Mode */
     DL_I2C_resetControllerTransfer(I2C_1_INST);
     /* Set frequency to 100000 Hz*/
-    DL_I2C_setTimerPeriod(I2C_1_INST, 31);
+    DL_I2C_setTimerPeriod(I2C_1_INST, 3);
     DL_I2C_setControllerTXFIFOThreshold(I2C_1_INST, DL_I2C_TX_FIFO_LEVEL_EMPTY);
     DL_I2C_setControllerRXFIFOThreshold(I2C_1_INST, DL_I2C_RX_FIFO_LEVEL_BYTES_1);
     DL_I2C_enableControllerClockStretching(I2C_1_INST);
@@ -349,7 +314,7 @@ SYSCONFIG_WEAK void SYSCFG_DL_I2C_1_init(void) {
 }
 
 static const DL_UART_Main_ClockConfig gUART_0ClockConfig = {
-    .clockSel    = DL_UART_MAIN_CLOCK_BUSCLK,
+    .clockSel    = DL_UART_MAIN_CLOCK_LFCLK,
     .divideRatio = DL_UART_MAIN_CLOCK_DIVIDE_RATIO_1
 };
 
@@ -369,11 +334,11 @@ SYSCONFIG_WEAK void SYSCFG_DL_UART_0_init(void)
     DL_UART_Main_init(UART_0_INST, (DL_UART_Main_Config *) &gUART_0Config);
     /*
      * Configure baud rate by setting oversampling and baud rate divisors.
-     *  Target baud rate: 115200
-     *  Actual baud rate: 115211.52
+     *  Target baud rate: 9600
+     *  Actual baud rate: 9576.04
      */
-    DL_UART_Main_setOversampling(UART_0_INST, DL_UART_OVERSAMPLING_RATE_16X);
-    DL_UART_Main_setBaudRateDivisor(UART_0_INST, UART_0_IBRD_32_MHZ_115200_BAUD, UART_0_FBRD_32_MHZ_115200_BAUD);
+    DL_UART_Main_setOversampling(UART_0_INST, DL_UART_OVERSAMPLING_RATE_3X);
+    DL_UART_Main_setBaudRateDivisor(UART_0_INST, UART_0_IBRD_33_kHZ_9600_BAUD, UART_0_FBRD_33_kHZ_9600_BAUD);
 
 
     /* Configure Interrupts */
@@ -408,9 +373,9 @@ SYSCONFIG_WEAK void SYSCFG_DL_SPI_1_init(void) {
     /*
      * Set the bit rate clock divider to generate the serial output clock
      *     outputBitRate = (spiInputClock) / ((1 + SCR) * 2)
-     *     500000 = (32000000)/((1 + 31) * 2)
+     *     500000 = (4000000)/((1 + 3) * 2)
      */
-    DL_SPI_setBitRateSerialClockDivider(SPI_1_INST, 31);
+    DL_SPI_setBitRateSerialClockDivider(SPI_1_INST, 3);
 
     /* Enable SPI TX interrupt as a trigger for DMA */
     DL_SPI_enableDMATransmitEvent(SPI_1_INST);
@@ -484,16 +449,11 @@ SYSCONFIG_WEAK void SYSCFG_DL_RTC_init(void)
 
 	/* Configure Interval Alarm */
 	DL_RTC_setIntervalAlarm(RTC, DL_RTC_INTERVAL_ALARM_MINUTECHANGE);
-	/* Configure Interrupts */
-	DL_RTC_enableInterrupt(RTC, DL_RTC_INTERRUPT_INTERVAL_ALARM);
-}
+	/* Configure Periodic Alarm 1 frequency to 1Hz */
+	DL_RTC_setPeriodicAlarm1(RTC, DL_RTC_PRESCALER1_DIVIDE_128);
 
-SYSCONFIG_WEAK void SYSCFG_DL_SYSTICK_init(void)
-{
-    /*
-     * Initializes the SysTick period to 1.00 ms,
-     * enables the interrupt, and starts the SysTick Timer
-     */
-    DL_SYSTICK_config(32000);
+	/* Configure Interrupts */
+	DL_RTC_enableInterrupt(RTC, DL_RTC_INTERRUPT_INTERVAL_ALARM
+	 | DL_RTC_INTERRUPT_PRESCALER1);
 }
 

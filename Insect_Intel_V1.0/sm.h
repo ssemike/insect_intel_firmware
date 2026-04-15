@@ -9,7 +9,7 @@ typedef enum {
     SM_STATE_INIT,
     SM_STATE_CHARGING,
     SM_STATE_POWER_STM,
-    SM_STATE_SLEEP,
+    SM_STATE_IDLE,
     SM_STATE_CRITICAL_FAULT
 } SM_State_t;
 
@@ -37,15 +37,14 @@ typedef struct {
     bool             sm_paused;
     bool             entry_done;
     uint32_t         minute_counter;
-    uint32_t         stm_power_on_ms;
+    uint32_t         second_counter;
+    uint32_t         stm_power_on_s;
     uint32_t         sleep_entry_tick;   
-    bool             hall_powered;
-    uint32_t         last_safety_check_ms; 
-    uint32_t         adapter_missing_ms;  
-    bool             adapter_missing;      
-    uint32_t         fault_retry_ms; 
+    uint32_t         last_safety_check_s;     
+    uint32_t         fault_retry_s; 
     bool             stm_data_sent;
-    uint32_t         last_io2_activity_ms;  
+    uint32_t         last_io2_activity_s;  
+    uint32_t         last_stm_periodic_minute;
 } SM_Context_t;
 
 extern SM_Context_t sm_context;
@@ -62,7 +61,9 @@ SM_State_t  SM_GetState(void);
 const char* SM_GetStateString(void);
 void        SM_Transition(SM_State_t new_state);
 void SM_SafetyCheck(void);
-void SM_AdapterCheck(void);
 void SM_SendTelemetryToSTM32(void);
+void hall_init(void);
+void SM_DisablePrescaler(void);
+void SM_EnablePrescaler(void);
 
 #endif

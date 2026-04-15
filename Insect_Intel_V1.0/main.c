@@ -7,16 +7,13 @@
 #include "HAL/spi_master.h"
 #include "sm.h"
 
-#define SM_ADAPTER_POLL_MS 10000
-
 volatile bool bq_monitor_active    = false;
 volatile bool hall_monitor_active  = false;
 volatile bool gauge_monitor_active = false;
-volatile bool adapter_check_flag = false;
 volatile bool rtc_minute_tick  = false;
+volatile bool rtc_second_tick  = false;
 volatile bool hall_wakeup_flag = false;
 volatile bool stm_io2_flag     = false;
-volatile uint32_t systick_ms = 0;
 volatile uint32_t monitor_rate = 200; 
 
 void setupCLI(void) {
@@ -36,27 +33,21 @@ int main(void)
     uart_init();  
     setupCLI();  
     i2c_init();
+    hall_init();  
     NVIC_EnableIRQ(SPI_1_INST_INT_IRQN);
     NVIC_EnableIRQ(EXTERNAL_INTERRUPT_GPIOB_INT_IRQN);
     NVIC_EnableIRQ(EXTERNAL_INTERRUPT_GPIOA_INT_IRQN);
     SPI_Controller_Init(&stm32Spi, SPI_1_INST,  DMA_CH0_CHAN_ID, DMA_CH1_CHAN_ID, gSPI_TxPacket, gSPI_RxPacket, SPI_PACKET_SIZE); 
     SM_Init();
     NVIC_EnableIRQ(RTC_INT_IRQn);
-    DL_RTC_enableClockControl(RTC);    
+    DL_RTC_enableClockControl(RTC); 
     char processingBuffer[MAX_INPUT_LEN];
-
     while (1) {
         if (data_received) {
             get_UART_buffer(processingBuffer);
             CLI_ProcessInput(processingBuffer);
         }
-        
         if (!sm_context.sm_paused) {
-            SM_SafetyCheck();
-            if (adapter_check_flag) {
-                adapter_check_flag = false;
-                SM_AdapterCheck();
-            }
             SM_Run();
         }else {
             Run_Legacy_Monitors(processingBuffer);
@@ -79,8 +70,12 @@ void RTC_IRQHandler(void)
 {
     switch (DL_RTC_getPendingInterrupt(RTC)) {
         case DL_RTC_IIDX_INTERVAL_TIMER:
-            rtc_minute_tick = true;
-            break;
+                rtc_minute_tick = true;
+                break;
+
+        case DL_RTC_IIDX_PRESCALER1:
+                rtc_second_tick = true;
+                break;
         default:
             break;
     }
@@ -99,14 +94,5 @@ void GROUP1_IRQHandler(void) {
             DL_GPIO_clearInterruptStatus(GPIOB, EXTERNAL_INTERRUPT_SETUP_INT_PIN);
             hall_wakeup_flag = true;
             break;
-    }
-}
-
-void SysTick_Handler(void) {
-    systick_ms++;
-    static uint32_t adapter_check_ms = 0;
-    if (++adapter_check_ms >= SM_ADAPTER_POLL_MS) {
-        adapter_check_ms = 0;
-        adapter_check_flag = true;
     }
 }
