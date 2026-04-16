@@ -24,9 +24,39 @@ typedef enum {
     SM_FAULT_NONE,
     SM_FAULT_I2C_BUS,         // I2C failed at INIT — skip I2C in fault state
     SM_FAULT_GAUGE,           // Safety status flagged by gauge
-    SM_FAULT_LOW_BATTERY,     // Voltage below threshold, no adapter
+    SM_FAULT_CHARGER,         // Safety status flagged by charger
     SM_FAULT_INIT_FAILED      // Generic init failure
 } SM_FaultSource_t;
+/* ── Helper Structs ──────────────────────────────────────── */
+typedef struct {
+    uint16_t vbus_mv;
+    uint16_t vbat_mv;
+    uint8_t stat1;
+    bool adapter_present;
+    uint8_t chg_stat;
+    bool charger_done;
+    bool is_critical_low;
+    bool is_charging;
+} SM_PowerContext_t;
+typedef struct {
+    uint16_t year;                    // full year (e.g. 2026)
+    uint8_t  month;                   // 1-12
+    uint8_t  day;                     // 1-31
+    uint8_t  hour;                    // 0-23
+    uint8_t  minute;                  // 0-59
+    uint8_t  second;                  // 0-59
+    uint8_t  wake_interval_minutes;   // replaces SM_SLEEP_WAKEUP_MINUTES
+} SM_RTCConfig_t;
+
+typedef struct {
+    uint16_t vreg_mV;       // Charge regulation voltage
+    uint16_t ichg_mA;       // Fast charge current 
+    uint16_t iindpm_mA;     // Input current limit (IINDPM)
+    uint16_t vindpm_mV;     // Input voltage limit (VINDPM)  
+    uint16_t vsysmin_mV;    // System minimum voltage  
+    uint16_t iprechg_mA;    // Pre-charge current            
+    uint16_t iterm_mA;      // Termination current       
+} SM_ChargerConfig_t;
 
 /* ── Context ─────────────────────────────────────────────── */
 typedef struct {
@@ -45,9 +75,16 @@ typedef struct {
     bool             stm_data_sent;
     uint32_t         last_io2_activity_s;  
     uint32_t         last_stm_periodic_minute;
+    bool             critical_msg_sent;
+    uint32_t         last_charging_tick;
+    SM_ChargerConfig_t   sm_charger_config;
+    SM_RTCConfig_t       sm_rtc_config;
+    bool                 charger_configured;
 } SM_Context_t;
 
 extern SM_Context_t sm_context;
+
+
 
 /* ── SPI Command Protocol ──────────────────────────────── */
 #define STM32_CMD_CONTINUE  0xAA  // Continue operation, may request data again
@@ -60,10 +97,14 @@ void        SM_Run(void);
 SM_State_t  SM_GetState(void);
 const char* SM_GetStateString(void);
 void        SM_Transition(SM_State_t new_state);
-void SM_SafetyCheck(void);
+bool SM_SafetyCheck(void);
+bool SM_ChargingSafetyCheck(void);
 void SM_SendTelemetryToSTM32(void);
 void hall_init(void);
 void SM_DisablePrescaler(void);
 void SM_EnablePrescaler(void);
 
+
+void RTC_GetTime(SM_RTCConfig_t *out);
+void RTC_SetTime(const SM_RTCConfig_t *in);
 #endif

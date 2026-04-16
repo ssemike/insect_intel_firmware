@@ -85,7 +85,10 @@ sm.o: ../sm.c ../sm.h \
  C:/ti/mspm0_sdk_2_09_00_01/source/ti/driverlib/m0p/dl_interrupt.h \
  C:/ti/mspm0_sdk_2_09_00_01/source/ti/driverlib/m0p/dl_systick.h \
  ../HAL/uart.h ../HAL/i2c.h ../HAL/spi_master.h \
- ../ics/BQ25628/BQ25628_functions.h ../ics/BQ27Z7/BQ27Z7_functions.h \
+ ../ics/BQ25628/BQ25628_functions.h \
+ C:/Users/Admin/Desktop/Software\ code/Final\ Software/Insect\ Intel/Insect_Intel_V1.0/spi_protocol.h \
+ C:/Users/Admin/Desktop/Software\ code/Final\ Software/Insect\ Intel/Insect_Intel_V1.0/sm.h \
+ ../ics/BQ27Z7/BQ27Z7_functions.h \
  C:/Users/Admin/Desktop/Software\ code/Final\ Software/Insect\ Intel/Insect_Intel_V1.0/HAL/i2c.h \
  ../ics/BQ27Z7/gauge.h
 ../sm.h:
@@ -176,6 +179,8 @@ C:/ti/mspm0_sdk_2_09_00_01/source/ti/driverlib/m0p/dl_systick.h:
 ../HAL/i2c.h:
 ../HAL/spi_master.h:
 ../ics/BQ25628/BQ25628_functions.h:
+C:/Users/Admin/Desktop/Software\ code/Final\ Software/Insect\ Intel/Insect_Intel_V1.0/spi_protocol.h:
+C:/Users/Admin/Desktop/Software\ code/Final\ Software/Insect\ Intel/Insect_Intel_V1.0/sm.h:
 ../ics/BQ27Z7/BQ27Z7_functions.h:
 C:/Users/Admin/Desktop/Software\ code/Final\ Software/Insect\ Intel/Insect_Intel_V1.0/HAL/i2c.h:
 ../ics/BQ27Z7/gauge.h:

@@ -2,7 +2,7 @@
 #define BQ25628E_H
 #include <stdint.h>
 #include <stdbool.h>
-
+#include "spi_protocol.h"
 /* I2C Address */
 #define BQ25628E_I2C_ADDR 0x6Au
 
@@ -19,6 +19,16 @@ typedef struct {
 typedef enum {
     E3103JT2A
 } NTC;
+
+/* Charging Profile Configuration */
+#define BQ_INIT_VREG_MV          3600   
+#define BQ_INIT_ICHG_MA          1000    
+#define BQ_INIT_IINDPM_MA        2000   
+#define BQ_INIT_VINDPM_MV        4500   
+#define BQ_INIT_VSYSMIN_MV       3600  
+
+#define BQ_INIT_IPRECHG_MA       100    
+#define BQ_INIT_ITERM_MA         50  
 
 
 /* -------------------------------------------------------------------------- */
@@ -106,6 +116,13 @@ typedef enum {
 #define BQ25628E_VBUS_STAT_NONE     0x00u   /* 000b: Not powered from VBUS */
 #define BQ25628E_VBUS_STAT_UNKNOWN  0x04u   /* 100b: Unknown Adapter */
 
+/* FAULT_FLAG0 Bit Definitions (Reg 0x22) */
+#define BQ25628E_VBUS_FAULT_FLAG (1u << 7)
+#define BQ25628E_BAT_FAULT_FLAG  (1u << 6)
+#define BQ25628E_SYS_FAULT_FLAG  (1u << 5)
+#define BQ25628E_TSHUT_FLAG      (1u << 3)
+#define BQ25628E_TS_FLAG         (1u << 0)
+
 
 /* -------------------------------------------------------------------------- */
 /* Public API                                                                 */
@@ -122,6 +139,7 @@ int16_t  BQ25628E_Get_IBUS_mA(void);
 int16_t  BQ25628E_Get_IBAT_mA(void);
 int16_t  BQ25628E_Get_TDIE_C(void);
 float BQ25628E_Get_TBAT_C(void);
+uint8_t BQ25628E_GetFaultFlags(void);
 
 /* Setters (old + all the  ones you asked for) */
 
@@ -129,15 +147,16 @@ void BQ25628E_Set_VREG_mV(uint16_t voltage_mV);
 void BQ25628E_Set_ICHG_mA(uint16_t current_mA);
 void BQ25628E_Set_VREG_mV(uint16_t voltage_mV);
 void BQ25628E_Set_IINDPM_mA(uint16_t current_mA);
-void BQ25628E_Set_VINDPM_mV(uint16_t voltage_mV);      /*  */
-void BQ25628E_Set_VSYSMIN_mV(uint16_t voltage_mV);     /*  */
-void BQ25628E_Set_Precharge_mA(uint16_t current_mA);   /*  */
-void BQ25628E_Set_Termination_mA(uint16_t current_mA); /*  */
+void BQ25628E_Set_VINDPM_mV(uint16_t voltage_mV);      
+void BQ25628E_Set_VSYSMIN_mV(uint16_t voltage_mV);     
+void BQ25628E_Set_Precharge_mA(uint16_t current_mA);  
+void BQ25628E_Set_Termination_mA(uint16_t current_mA); 
 void BQ25628E_Set_ChargerEnable(bool enable);
 void BQ25628E_Set_HIZ(bool enable);
 void BQ25628E_Set_TS_Ignore(bool ignore);           
 void BQ25628E_Set_PeakDischarge_6A(void);  
 void BQ25628E_Disable_Watchdog(void);
+void BQ25628E_ADC_Control(bool enable);
 
 /* -------------------------------------------------------------------------- */
 /* Low-level access (required for CLI dump/monitor/read/write)                */
@@ -146,5 +165,7 @@ extern uint8_t  BQ25628E_ReadReg8(uint8_t reg);
 extern void     BQ25628E_WriteReg8(uint8_t reg, uint8_t val);
 extern uint16_t BQ25628E_ReadReg16(uint8_t reg);
 extern void     BQ25628E_WriteReg16(uint8_t reg, uint16_t val);
+void BQ25628E_HardwareInit(void);
+void BQ25628E_ApplyProfile(const SM_ChargerConfig_t *cfg);
 
 #endif /* BQ25628E_H */

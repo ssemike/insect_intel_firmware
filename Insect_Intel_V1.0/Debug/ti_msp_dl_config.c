@@ -429,13 +429,13 @@ SYSCONFIG_WEAK void SYSCFG_DL_DMA_init(void){
 
 
 static const DL_RTC_Calendar gRTCCalendarConfig = {
-		.seconds    = 0,   /* Seconds = 0 */
-		.minutes    = 0,   /* Minute = 0 */
-		.hours      = 0,   /* Hour = 0 */
-		.dayOfWeek  = 0,    /* Day of week = 0 (Sunday) */
+		.seconds    = 1,   /* Seconds = 1 */
+		.minutes    = 1,   /* Minute = 1 */
+		.hours      = 2,   /* Hour = 2 */
+		.dayOfWeek  = 4,    /* Day of week = 4 (Thursday) */
 		.dayOfMonth = 1,    /* Day of month = 1*/
-		.month      = 1,    /* Month = 1 (January) */
-		.year       = 2022, /* Year = 2022 */
+		.month      = 6,    /* Month = 6 (June) */
+		.year       = 2000, /* Year = 2000 */
 };
 
 
@@ -455,5 +455,6 @@ SYSCONFIG_WEAK void SYSCFG_DL_RTC_init(void)
 	/* Configure Interrupts */
 	DL_RTC_enableInterrupt(RTC, DL_RTC_INTERRUPT_INTERVAL_ALARM
 	 | DL_RTC_INTERRUPT_PRESCALER1);
+	DL_RTC_enableClockControl(RTC);
 }
 

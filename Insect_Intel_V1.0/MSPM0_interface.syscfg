@@ -140,6 +140,13 @@ RTC.enIntervalAlarm   = true;
 RTC.enabledInterrupts = ["INTERVAL_ALARM","PRESCALER1"];
 RTC.enPerAlarm1       = true;
 RTC.perAlarm1Divider  = "DIVIDE_128";
+RTC.enableClock       = true;
+RTC.calHour           = 2;
+RTC.calMin            = 1;
+RTC.calSec            = 1;
+RTC.calDOW            = "4";
+RTC.calMonth          = "6";
+RTC.calYear           = 2000;
 
 SPI1.$name                                 = "SPI_1";
 SPI1.peripheralChipSelect                  = "1";

@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <math.h>
 
+
 /* Internal Telemetry Cache */
 static uint16_t g_vbat_mV = 0;
 static uint16_t g_vsys_mV = 0;
@@ -11,16 +12,6 @@ static int16_t  g_ibus_mA = 0;
 static int16_t  g_ibat_mA = 0;
 static int16_t g_tdie_C = 0;
 static float g_tbat_C = 0.0f;
-
-/* Charging Profile Configuration */
-#define BQ_INIT_VREG_MV          3600   
-#define BQ_INIT_ICHG_MA          1000    
-#define BQ_INIT_IINDPM_MA        2000   
-#define BQ_INIT_VINDPM_MV        4500   
-#define BQ_INIT_VSYSMIN_MV       3600  
-
-#define BQ_INIT_IPRECHG_MA       100    
-#define BQ_INIT_ITERM_MA         50  
 
 /* -------------------------------------------------------------------------- */
 /* Low-Level I2C Helpers (unchanged)                                          */
@@ -100,22 +91,39 @@ float _calculateTempFromRt(float Rt, NTC ntc) {
 /* Public API Implementation                                       */
 /* -------------------------------------------------------------------------- */
 bool BQ25628E_Init_Default(void) {
-BQ25628E_Set_VREG_mV(BQ_INIT_VREG_MV);
+    BQ25628E_Set_VREG_mV(BQ_INIT_VREG_MV);
     BQ25628E_Set_ICHG_mA(BQ_INIT_ICHG_MA);
     BQ25628E_Set_IINDPM_mA(BQ_INIT_IINDPM_MA);
     BQ25628E_Set_VINDPM_mV(BQ_INIT_VINDPM_MV);
     BQ25628E_Set_VSYSMIN_mV(BQ_INIT_VSYSMIN_MV);
-    // BQ25628E_Set_Precharge_mA(BQ_INIT_IPRECHG_MA);   
-    // BQ25628E_Set_Termination_mA(BQ_INIT_ITERM_MA); 
+    BQ25628E_Set_Precharge_mA(BQ_INIT_IPRECHG_MA);   
+    BQ25628E_Set_Termination_mA(BQ_INIT_ITERM_MA); 
     BQ25628E_Set_TS_Ignore(true);  
     BQ25628E_Set_PeakDischarge_6A(); 
 
     BQ25628E_WriteReg8(BQ25628E_REG_ADC_CTRL, BQ25628E_ADC_EN);
     BQ25628E_Disable_Watchdog();
-    // BQ25628E_Set_ChargerEnable(true);
     return true;
 }
-  
+
+void BQ25628E_HardwareInit(void)
+{
+    BQ25628E_WriteReg8(BQ25628E_REG_ADC_CTRL, BQ25628E_ADC_EN);
+    BQ25628E_Disable_Watchdog();
+    BQ25628E_Set_TS_Ignore(true);
+    BQ25628E_Set_PeakDischarge_6A();
+}
+
+void BQ25628E_ApplyProfile(const SM_ChargerConfig_t *cfg)
+{
+    BQ25628E_Set_VREG_mV(cfg->vreg_mV);
+    BQ25628E_Set_ICHG_mA(cfg->ichg_mA);
+    BQ25628E_Set_IINDPM_mA(cfg->iindpm_mA);
+    BQ25628E_Set_VINDPM_mV(cfg->vindpm_mV);
+    BQ25628E_Set_VSYSMIN_mV(cfg->vsysmin_mV);
+    BQ25628E_Set_Precharge_mA(cfg->iprechg_mA);
+    BQ25628E_Set_Termination_mA(cfg->iterm_mA);
+}
 
 void BQ25628E_UpdateTelemetry(void) {
     uint16_t raw;
@@ -251,6 +259,15 @@ void BQ25628E_Disable_Watchdog(void) {
                          BQ25628E_CTRL0_WATCHDOG_DIS);
 }
 
+void BQ25628E_ADC_Control(bool enable) {
+    if (enable) {
+        BQ25628E_WriteReg8(BQ25628E_REG_ADC_CTRL, BQ25628E_ADC_EN);
+        delay_cycles(40000); 
+    } else {
+        BQ25628E_WriteReg8(BQ25628E_REG_ADC_CTRL, 0x00);
+    }
+}
+
 /* Getters unchanged */
 /* --- Getters --- */
 uint16_t BQ25628E_Get_VBAT_mV(void) { return g_vbat_mV; }
@@ -260,3 +277,6 @@ int16_t  BQ25628E_Get_IBUS_mA(void) { return g_ibus_mA; }
 int16_t  BQ25628E_Get_IBAT_mA(void) { return g_ibat_mA; }
 int16_t  BQ25628E_Get_TDIE_C(void) { return g_tdie_C; }
 float BQ25628E_Get_TBAT_C(void) { return g_tbat_C; }
+uint8_t BQ25628E_GetFaultFlags(void) {
+    return BQ25628E_ReadReg8(BQ25628E_REG_FAULT_FLAG0);
+}

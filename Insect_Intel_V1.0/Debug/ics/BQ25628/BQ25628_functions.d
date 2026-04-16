@@ -2,6 +2,8 @@
 
 ics/BQ25628/BQ25628_functions.o: ../ics/BQ25628/BQ25628_functions.c \
  ../ics/BQ25628/BQ25628_functions.h \
+ C:/Users/Admin/Desktop/Software\ code/Final\ Software/Insect\ Intel/Insect_Intel_V1.0/spi_protocol.h \
+ C:/Users/Admin/Desktop/Software\ code/Final\ Software/Insect\ Intel/Insect_Intel_V1.0/sm.h \
  C:/Users/Admin/Desktop/Software\ code/Final\ Software/Insect\ Intel/Insect_Intel_V1.0/HAL/i2c.h \
  ti_msp_dl_config.h \
  C:/ti/mspm0_sdk_2_09_00_01/source/ti/devices/msp/msp.h \
@@ -87,6 +89,8 @@ ics/BQ25628/BQ25628_functions.o: ../ics/BQ25628/BQ25628_functions.c \
  C:/ti/mspm0_sdk_2_09_00_01/source/ti/driverlib/m0p/dl_interrupt.h \
  C:/ti/mspm0_sdk_2_09_00_01/source/ti/driverlib/m0p/dl_systick.h
 ../ics/BQ25628/BQ25628_functions.h:
+C:/Users/Admin/Desktop/Software\ code/Final\ Software/Insect\ Intel/Insect_Intel_V1.0/spi_protocol.h:
+C:/Users/Admin/Desktop/Software\ code/Final\ Software/Insect\ Intel/Insect_Intel_V1.0/sm.h:
 C:/Users/Admin/Desktop/Software\ code/Final\ Software/Insect\ Intel/Insect_Intel_V1.0/HAL/i2c.h:
 ti_msp_dl_config.h:
 C:/ti/mspm0_sdk_2_09_00_01/source/ti/devices/msp/msp.h:
