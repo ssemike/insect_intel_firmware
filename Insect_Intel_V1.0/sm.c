@@ -70,7 +70,7 @@ static SM_PowerContext_t SM_FetchPowerContext(void) {
     ctx.chg_stat = (ctx.stat1 >> 3) & 0x03;
     ctx.charger_done = (ctx.chg_stat == 0 || ctx.chg_stat == 3);
     ctx.is_critical_low = (ctx.vbat_mv < SM_VBAT_LOW_MV) && !ctx.adapter_present;
-    ctx.is_charging  = (batt_status & BQ27Z746_STATUS_DSG) != 0;
+    ctx.is_charging  = (batt_status & BQ27Z746_STATUS_DSG) == 0;
     return ctx;
 }
 
@@ -221,6 +221,7 @@ void SM_Run(void) {
             }
             if (sm_context.minute_counter != sm_context.last_charging_tick) {
                 sm_context.last_charging_tick = sm_context.minute_counter; 
+                sm_context.last_stm_periodic_minute = sm_context.minute_counter;
                 if (SM_SafetyCheck()) return;
                 if (SM_ChargingSafetyCheck()) return;
                 SM_PowerContext_t pwr = SM_FetchPowerContext();
@@ -253,7 +254,6 @@ void SM_Run(void) {
                 }
 
                 SM_EnablePrescaler();
-                sm_context.last_stm_periodic_minute = sm_context.minute_counter;
 
                 SM_SetSTMPower(true);
                 sm_context.stm_power_on_s = sm_context.second_counter;
@@ -276,8 +276,8 @@ void SM_Run(void) {
             /* Process STM32 reply and send next packet immediately */
             if (sm_context.stm_data_sent && stm32Spi.rxDone) {
                 stm32Spi.rxDone = false;
+                sm_context.stm_data_sent = false;
                 SM_DispatchIncomingPacket();
-                sm_context.stm_data_sent = true;
             }
 
             /* Inactivity timeout (works for multi-packet sessions) */
@@ -310,11 +310,15 @@ void SM_Run(void) {
                 if (pwr.vbat_mv < SM_VBAT_CHARGE_START_MV) {
                     DL_GPIO_clearPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_CHARGER_EN_PIN);
                     uart_printf("[SM] Charging in IDLE enabled\n");
-                }           
+                } else {
+                    DL_GPIO_setPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_CHARGER_EN_PIN);
+                    uart_printf("[SM] Charging in IDLE disabled\n");
+                }      
                 uart_printf("[SM] Entering IDLE\n");
                 sm_context.entry_done = true;
             }
             if (sm_context.sleep_entry_tick != sm_context.minute_counter) {
+                sm_context.last_stm_periodic_minute = sm_context.minute_counter;
                 if (SM_SafetyCheck()) return;
                 SM_PowerContext_t pwr = SM_FetchPowerContext();
                 if (pwr.is_charging) {
@@ -505,7 +509,9 @@ static void SM_PrepareTelemetryResponse(void)
     pkt->pkt.header.length     = (uint16_t)len;
 
     memcpy(pkt->pkt.payload.telemetry.json, json_buf, len);
-
+    if(pwr.is_critical_low) {
+        sm_context.critical_msg_sent = true;
+    }
     SPI_Controller_Arm(&stm32Spi);
 }
 
