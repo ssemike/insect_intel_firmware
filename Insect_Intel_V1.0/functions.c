@@ -138,11 +138,51 @@ void cmd_sm(char *args) {
 
     char *sub = tokens[0];
 
-    if (strcmp(sub, "status") == 0) {
-        uart_printf("Current State: %s\n", SM_GetStateString());
-        uart_printf("SM Paused: %s\n", sm_context.sm_paused ? "YES" : "NO");
-        uart_printf("Minute Counter: %lu\n", sm_context.minute_counter);
+if (strcmp(sub, "status") == 0) {
+    uart_printf("=== State Machine ===\n");
+    uart_printf("  State         : %s -> %s\n",
+        sm_context.previous == SM_STATE_INIT           ? "INIT"           :
+        sm_context.previous == SM_STATE_CHARGING       ? "CHARGING"       :
+        sm_context.previous == SM_STATE_POWER_STM      ? "POWER_STM"      :
+        sm_context.previous == SM_STATE_IDLE           ? "IDLE"           :
+        sm_context.previous == SM_STATE_CRITICAL_FAULT ? "CRITICAL_FAULT" : "UNKNOWN",
+        SM_GetStateString());
+    uart_printf("  Wake Reason   : %s\n", sm_context.wake_reason == SM_WAKE_SETUP ? "SETUP" : "NORMAL");
+    uart_printf("  Paused        : %s\n", sm_context.sm_paused ? "YES" : "NO");
+    uart_printf("  Minute Counter: %lu\n", sm_context.minute_counter);
+    uart_printf("  Second Counter: %lu\n", sm_context.second_counter);
+
+    if (sm_context.current == SM_STATE_CRITICAL_FAULT) {
+        const char* fault_str = "UNKNOWN";
+        switch (sm_context.fault_source) {
+            case SM_FAULT_I2C_BUS:     fault_str = "I2C_BUS";    break;
+            case SM_FAULT_GAUGE:       fault_str = "GAUGE";       break;
+            case SM_FAULT_CHARGER:     fault_str = "CHARGER";     break;
+            case SM_FAULT_INIT_FAILED: fault_str = "INIT_FAILED"; break;
+            default: break;
+        }
+        uart_printf("  Fault Source  : %s\n", fault_str);
     }
+
+    uart_printf("\n=== Charger Config ===\n");
+    uart_printf("  VREG          : %d mV\n", sm_context.sm_charger_config.vreg_mV);
+    uart_printf("  ICHG          : %d mA\n", sm_context.sm_charger_config.ichg_mA);
+    uart_printf("  IINDPM        : %d mA\n", sm_context.sm_charger_config.iindpm_mA);
+    uart_printf("  VINDPM        : %d mV\n", sm_context.sm_charger_config.vindpm_mV);
+    uart_printf("  Configured    : %s\n", sm_context.charger_configured ? "YES (STM32)" : "NO (defaults)");
+
+    uart_printf("\n=== RTC ===\n");
+    RTC_GetTime(&sm_context.sm_rtc_config);
+    uart_printf("  Time          : %02d:%02d:%02d\n",
+        sm_context.sm_rtc_config.hour,
+        sm_context.sm_rtc_config.minute,
+        sm_context.sm_rtc_config.second);
+    uart_printf("  Date          : %02d/%02d/%04d\n",
+        sm_context.sm_rtc_config.day,
+        sm_context.sm_rtc_config.month,
+        sm_context.sm_rtc_config.year);
+    uart_printf("  Wake Interval : %d min\n", sm_context.sm_rtc_config.wake_interval_minutes);
+}
     else if (strcmp(sub, "start") == 0) {
         sm_context.sm_paused = false;
         uart_printf("State machine RESUMED\n");

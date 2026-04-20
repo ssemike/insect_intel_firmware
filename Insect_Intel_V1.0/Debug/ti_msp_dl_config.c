@@ -230,11 +230,10 @@ SYSCONFIG_WEAK void SYSCFG_DL_SYSCTL_init(void)
     DL_SYSCTL_setBORThreshold(DL_SYSCTL_BOR_THRESHOLD_LEVEL_0);
 
     
-	DL_SYSCTL_setSYSOSCFreq(DL_SYSCTL_SYSOSC_FREQ_4M);
+	DL_SYSCTL_setSYSOSCFreq(DL_SYSCTL_SYSOSC_FREQ_BASE);
 	/* Set default configuration */
 	DL_SYSCTL_disableHFXT();
 	DL_SYSCTL_disableSYSPLL();
-    DL_SYSCTL_setMCLKDivider(DL_SYSCTL_MCLK_DIVIDER_DISABLE);
     DL_SYSCTL_setLFCLKSourceLFXT((DL_SYSCTL_LFCLKConfig *) &gLFCLKConfig);
 
 }
@@ -256,7 +255,7 @@ SYSCONFIG_WEAK void SYSCFG_DL_I2C_0_init(void) {
     /* Configure Controller Mode */
     DL_I2C_resetControllerTransfer(I2C_0_INST);
     /* Set frequency to 100000 Hz*/
-    DL_I2C_setTimerPeriod(I2C_0_INST, 3);
+    DL_I2C_setTimerPeriod(I2C_0_INST, 31);
     DL_I2C_setControllerTXFIFOThreshold(I2C_0_INST, DL_I2C_TX_FIFO_LEVEL_EMPTY);
     DL_I2C_setControllerRXFIFOThreshold(I2C_0_INST, DL_I2C_RX_FIFO_LEVEL_BYTES_1);
     DL_I2C_enableControllerClockStretching(I2C_0_INST);
@@ -292,7 +291,7 @@ SYSCONFIG_WEAK void SYSCFG_DL_I2C_1_init(void) {
     /* Configure Controller Mode */
     DL_I2C_resetControllerTransfer(I2C_1_INST);
     /* Set frequency to 100000 Hz*/
-    DL_I2C_setTimerPeriod(I2C_1_INST, 3);
+    DL_I2C_setTimerPeriod(I2C_1_INST, 31);
     DL_I2C_setControllerTXFIFOThreshold(I2C_1_INST, DL_I2C_TX_FIFO_LEVEL_EMPTY);
     DL_I2C_setControllerRXFIFOThreshold(I2C_1_INST, DL_I2C_RX_FIFO_LEVEL_BYTES_1);
     DL_I2C_enableControllerClockStretching(I2C_1_INST);
@@ -373,9 +372,9 @@ SYSCONFIG_WEAK void SYSCFG_DL_SPI_1_init(void) {
     /*
      * Set the bit rate clock divider to generate the serial output clock
      *     outputBitRate = (spiInputClock) / ((1 + SCR) * 2)
-     *     500000 = (4000000)/((1 + 3) * 2)
+     *     500000 = (32000000)/((1 + 31) * 2)
      */
-    DL_SPI_setBitRateSerialClockDivider(SPI_1_INST, 3);
+    DL_SPI_setBitRateSerialClockDivider(SPI_1_INST, 31);
 
     /* Enable SPI TX interrupt as a trigger for DMA */
     DL_SPI_enableDMATransmitEvent(SPI_1_INST);

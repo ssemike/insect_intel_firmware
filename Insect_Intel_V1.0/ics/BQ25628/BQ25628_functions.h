@@ -17,7 +17,8 @@ typedef struct {
 
 
 typedef enum {
-    E3103JT2A
+    E3103JT2A,
+    NTCC_10K
 } NTC;
 
 /* Charging Profile Configuration */

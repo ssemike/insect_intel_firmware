@@ -69,7 +69,7 @@ typedef struct {
     uint32_t         minute_counter;
     uint32_t         second_counter;
     uint32_t         stm_power_on_s;
-    uint32_t         sleep_entry_tick;   
+    uint32_t         sleep_entry_minute;   
     uint32_t         last_safety_check_s;     
     uint32_t         fault_retry_s; 
     bool             stm_data_sent;

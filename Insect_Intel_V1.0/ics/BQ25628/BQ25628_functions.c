@@ -59,6 +59,50 @@ const TempResistPair thermistor_table_E3103JT2A[] = {
     {140,  0.231}, {145, 0.205}, {150, 0.182}
 };
 
+// Updated NTCC_10K (103AT-type) thermistor lookup table
+// Source: your corrected data (156 entries, -30 °C to +125 °C)
+const TempResistPair thermistor_table_ntcc_10k[] = {
+    {-30, 193.5f},   {-29, 181.461f}, {-28, 170.268f}, {-27, 159.85f},
+    {-26, 150.146f}, {-25, 141.1f},   {-24, 132.659f}, {-23, 124.779f},
+    {-22, 117.418f}, {-21, 110.537f}, {-20, 104.101f}, {-19, 98.079f},
+    {-18, 92.44f},   {-17, 87.159f},  {-16, 82.21f},   {-15, 77.571f},
+    {-14, 73.219f},  {-13, 69.137f},  {-12, 65.305f},  {-11, 61.707f},
+    {-10, 58.328f},  {-9,  55.153f},  {-8,  52.169f},  {-7,  49.363f},
+    {-6,  46.724f},  {-5,  44.241f},  {-4,  41.904f},  {-3,  39.704f},
+    {-2,  37.633f},  {-1,  35.681f},  {0,   33.8f},    {1,   32.108f},
+    {2,   30.474f},  {3,   28.932f},  {4,   27.477f},  {5,   26.104f},
+    {6,   24.807f},  {7,   23.583f},  {8,   22.426f},  {9,   21.333f},
+    {10,  20.3f},    {11,  19.322f},  {12,  18.398f},  {13,  17.523f},
+    {14,  16.695f},  {15,  15.912f},  {16,  15.169f},  {17,  14.466f},
+    {18,  13.799f},  {19,  13.167f},  {20,  12.568f},  {21,  11.999f},
+    {22,  11.46f},   {23,  10.948f},  {24,  10.461f},  {25,  10.0f},
+    {26,  9.561f},   {27,  9.144f},   {28,  8.747f},   {29,  8.37f},
+    {30,  8.011f},   {31,  7.67f},    {32,  7.345f},   {33,  7.036f},
+    {34,  6.741f},   {35,  6.461f},   {36,  6.193f},   {37,  5.938f},
+    {38,  5.695f},   {39,  5.464f},   {40,  5.242f},   {41,  5.031f},
+    {42,  4.83f},    {43,  4.638f},   {44,  4.454f},   {45,  4.279f},
+    {46,  4.111f},   {47,  3.951f},   {48,  3.797f},   {49,  3.651f},
+    {50,  3.511f},   {51,  3.377f},   {52,  3.248f},   {53,  3.126f},
+    {54,  3.008f},   {55,  2.896f},   {56,  2.788f},   {57,  2.684f},
+    {58,  2.585f},   {59,  2.49f},    {60,  2.4f},     {61,  2.312f},
+    {62,  2.229f},   {63,  2.148f},   {64,  2.071f},   {65,  1.997f},
+    {66,  1.927f},   {67,  1.858f},   {68,  1.793f},   {69,  1.73f},
+    {70,  1.67f},    {71,  1.612f},   {72,  1.556f},   {73,  1.503f},
+    {74,  1.451f},   {75,  1.402f},   {76,  1.354f},   {77,  1.309f},
+    {78,  1.265f},   {79,  1.222f},   {80,  1.181f},   {81,  1.142f},
+    {82,  1.104f},   {83,  1.068f},   {84,  1.033f},   {85,  1.0f},
+    {86,  0.967f},   {87,  0.936f},   {88,  0.906f},   {89,  0.877f},
+    {90,  0.849f},   {91,  0.822f},   {92,  0.796f},   {93,  0.771f},
+    {94,  0.747f},   {95,  0.723f},   {96,  0.701f},   {97,  0.679f},
+    {98,  0.658f},   {99,  0.638f},   {100, 0.6f},     {101, 0.6f},
+    {102, 0.582f},   {103, 0.564f},   {104, 0.548f},   {105, 0.531f},
+    {106, 0.516f},   {107, 0.5f},     {108, 0.486f},   {109, 0.472f},
+    {110, 0.458f},   {111, 0.445f},   {112, 0.432f},   {113, 0.419f},
+    {114, 0.407f},   {115, 0.396f},   {116, 0.385f},   {117, 0.374f},
+    {118, 0.364f},   {119, 0.353f},   {120, 0.344f},   {121, 0.334f},
+    {122, 0.325f},   {123, 0.316f},   {124, 0.308f},   {125, 0.3f}
+};
+
 float _calculateTempFromRt(float Rt, NTC ntc) {
     const TempResistPair* thermistor_table = NULL;
     uint16_t table_size = 0;
@@ -66,6 +110,9 @@ float _calculateTempFromRt(float Rt, NTC ntc) {
     if (ntc == E3103JT2A) {
         thermistor_table = thermistor_table_E3103JT2A;
         table_size = sizeof(thermistor_table_E3103JT2A) / sizeof(TempResistPair);
+    }else if (ntc == NTCC_10K) {
+        thermistor_table = thermistor_table_ntcc_10k;
+        table_size = sizeof(thermistor_table_ntcc_10k) / sizeof(TempResistPair);
     } 
     if (thermistor_table == NULL) return -300.0f;
 
@@ -98,7 +145,7 @@ bool BQ25628E_Init_Default(void) {
     BQ25628E_Set_VSYSMIN_mV(BQ_INIT_VSYSMIN_MV);
     BQ25628E_Set_Precharge_mA(BQ_INIT_IPRECHG_MA);   
     BQ25628E_Set_Termination_mA(BQ_INIT_ITERM_MA); 
-    BQ25628E_Set_TS_Ignore(true);  
+    // BQ25628E_Set_TS_Ignore(true); 
     BQ25628E_Set_PeakDischarge_6A(); 
 
     BQ25628E_WriteReg8(BQ25628E_REG_ADC_CTRL, BQ25628E_ADC_EN);
@@ -110,7 +157,7 @@ void BQ25628E_HardwareInit(void)
 {
     BQ25628E_WriteReg8(BQ25628E_REG_ADC_CTRL, BQ25628E_ADC_EN);
     BQ25628E_Disable_Watchdog();
-    BQ25628E_Set_TS_Ignore(true);
+    // BQ25628E_Set_TS_Ignore(true);
     BQ25628E_Set_PeakDischarge_6A();
 }
 
@@ -164,7 +211,7 @@ void BQ25628E_UpdateTelemetry(void) {
     } else {
         float r_bottom = RT1_KOHM * (ts_pct / (1.0f - ts_pct));
         float r_ntc = (r_bottom * RT2_KOHM) / (RT2_KOHM - r_bottom);
-        g_tbat_C = _calculateTempFromRt(r_ntc, E3103JT2A);
+        g_tbat_C = _calculateTempFromRt(r_ntc, NTCC_10K);
     }
 }
 void BQ25628E_PetWatchdog(void) {

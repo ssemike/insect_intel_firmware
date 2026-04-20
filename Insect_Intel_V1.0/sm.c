@@ -9,11 +9,11 @@
 #include <string.h>
 
 /* ── Timing Constants ────────────────────────────────────── */
-#define SM_SLEEP_WAKEUP_MINUTES   15   
+#define SM_SLEEP_WAKEUP_MINUTES   3  
 #define SM_VBAT_LOW_MV            3000 
 #define SM_VBAT_FULL_MV           3650
-#define SM_VBAT_CHARGE_START_MV   3500
-#define SM_SAFETY_POLL_S          1
+#define SM_VBAT_CHARGE_START_MV   3400
+#define SM_SAFETY_POLL_S          5
 #define SM_ADAPTER_DEBOUNCE_S     10
 #define SM_SETUP_INACTIVITY_TIMEOUT_S   120
 #define SM_NORMAL_INACTIVITY_TIMEOUT_S  60
@@ -41,6 +41,8 @@ static SM_PowerContext_t SM_FetchPowerContext(void);
 static void SM_SetSTMPower(bool enable);
 static void SM_SendOffer(void);
 static void SM_DispatchIncomingPacket(void);
+static bool SM_ProcessFault(uint32_t gauge_safety, uint8_t charger_fault);
+static void SM_PrepareTelemetryResponse(void);
 
 
 /* ── Hardware Abstraction Helpers ────────────────────────── */
@@ -68,9 +70,11 @@ static SM_PowerContext_t SM_FetchPowerContext(void) {
     ctx.stat1 = BQ25628E_ReadReg8(BQ25628E_REG_STAT1);
     ctx.adapter_present = (ctx.stat1 & BQ25628E_VBUS_STAT_MASK) != 0;
     ctx.chg_stat = (ctx.stat1 >> 3) & 0x03;
-    ctx.charger_done = (ctx.chg_stat == 0 || ctx.chg_stat == 3);
     ctx.is_critical_low = (ctx.vbat_mv < SM_VBAT_LOW_MV) && !ctx.adapter_present;
-    ctx.is_charging  = (batt_status & BQ27Z746_STATUS_DSG) == 0;
+    bool gauge_charging = (batt_status & BQ27Z746_STATUS_DSG) == 0;
+    bool charger_active = (ctx.chg_stat == 1 || ctx.chg_stat == 2);   
+    ctx.is_charging = gauge_charging || charger_active;
+    ctx.charger_done = (ctx.chg_stat == 0 || ctx.chg_stat == 3);
     return ctx;
 }
 
@@ -131,6 +135,7 @@ SM_State_t SM_GetState(void) {
 static void SM_PostWake_Branch(void) {
     SM_PowerContext_t pwr = SM_FetchPowerContext();
     if (pwr.is_critical_low) {
+        uart_printf("[SM] Critical low battery detected, entering IDLE to conserve power\n");
         SM_Transition(SM_STATE_IDLE);      
     } else if (pwr.vbat_mv < SM_VBAT_CHARGE_START_MV && pwr.adapter_present) {
         SM_Transition(SM_STATE_CHARGING);
@@ -209,8 +214,9 @@ void SM_Run(void) {
                 uart_printf("[SM] Charging started\n");
                 sm_context.critical_msg_sent = false;
                 sm_context.entry_done = true;
-                sm_context.last_charging_tick = sm_context.minute_counter; 
+                sm_context.last_charging_tick = sm_context.minute_counter-1; 
                 SM_DisablePrescaler();
+                DL_GPIO_enableInterrupt(GPIOB, EXTERNAL_INTERRUPT_SETUP_INT_PIN);
             }
             if (hall_wakeup_flag) {
                 hall_wakeup_flag = false;
@@ -221,7 +227,6 @@ void SM_Run(void) {
             }
             if (sm_context.minute_counter != sm_context.last_charging_tick) {
                 sm_context.last_charging_tick = sm_context.minute_counter; 
-                sm_context.last_stm_periodic_minute = sm_context.minute_counter;
                 if (SM_SafetyCheck()) return;
                 if (SM_ChargingSafetyCheck()) return;
                 SM_PowerContext_t pwr = SM_FetchPowerContext();
@@ -231,13 +236,16 @@ void SM_Run(void) {
                     SM_Transition(SM_STATE_IDLE);
                     break;
                 } else {
+                    BQ25628E_ADC_Control(true);
                     uart_printf("[SM] CHARGING | VBUS:%4dmV VBAT:%4dmV IBAT:%4dmA SOC:%3d%% TBAT:%3.1fC TDIE:%3dC CHG_STAT:%s\n",
                         BQ25628E_Get_VBUS_mV(), pwr.vbat_mv, BQ27Z746_Get_Current_mA(),
                         BQ27Z746_Get_SOC_pct(), BQ25628E_Get_TBAT_C(), BQ25628E_Get_TDIE_C(),
                         SM_GetChargeString(pwr.chg_stat));
+                    BQ25628E_ADC_Control(false);
                 }            
                 if (SM_NeedsPeriodicSTMWake(pwr)) {
                     SM_EnablePrescaler();
+                    sm_context.last_stm_periodic_minute = sm_context.minute_counter;
                     SM_Transition(SM_STATE_POWER_STM);
                     break;
                 }
@@ -257,6 +265,7 @@ void SM_Run(void) {
 
                 SM_SetSTMPower(true);
                 sm_context.stm_power_on_s = sm_context.second_counter;
+                sm_context.last_io2_activity_s = sm_context.second_counter;
 
                 uart_printf("[SM] STM32 powered : reason: %s\n",
                     (sm_context.wake_reason == SM_WAKE_SETUP) ? "SETUP" : "NORMAL");
@@ -272,7 +281,7 @@ void SM_Run(void) {
                 stm_io2_flag = false;
                 SM_SendOffer();
             }
-
+      
             /* Process STM32 reply and send next packet immediately */
             if (sm_context.stm_data_sent && stm32Spi.rxDone) {
                 stm32Spi.rxDone = false;
@@ -300,7 +309,7 @@ void SM_Run(void) {
             if (!sm_context.entry_done) {
                 sm_context.wake_reason = SM_WAKE_NORMAL;
                 SM_SetSTMPower(false);
-                sm_context.sleep_entry_tick = sm_context.minute_counter;
+                sm_context.sleep_entry_minute = sm_context.minute_counter;
                 DL_GPIO_disableInterrupt(EXTERNAL_INTERRUPT_STM_MCU_IO2_PORT, EXTERNAL_INTERRUPT_STM_MCU_IO2_PIN);
                 DL_GPIO_clearInterruptStatus(GPIOB, EXTERNAL_INTERRUPT_SETUP_INT_PIN);
                 DL_GPIO_enableInterrupt(GPIOB, EXTERNAL_INTERRUPT_SETUP_INT_PIN);
@@ -317,8 +326,8 @@ void SM_Run(void) {
                 uart_printf("[SM] Entering IDLE\n");
                 sm_context.entry_done = true;
             }
-            if (sm_context.sleep_entry_tick != sm_context.minute_counter) {
-                sm_context.last_stm_periodic_minute = sm_context.minute_counter;
+            if (sm_context.sleep_entry_minute != sm_context.minute_counter) {
+                sm_context.sleep_entry_minute = sm_context.minute_counter;
                 if (SM_SafetyCheck()) return;
                 SM_PowerContext_t pwr = SM_FetchPowerContext();
                 if (pwr.is_charging) {
@@ -327,6 +336,7 @@ void SM_Run(void) {
                 }
                 if (SM_NeedsPeriodicSTMWake(pwr)) {
                     SM_EnablePrescaler();
+                    sm_context.last_stm_periodic_minute = sm_context.minute_counter;
                     SM_Transition(SM_STATE_POWER_STM);
                     break;
                 }
@@ -397,13 +407,17 @@ void SM_Run(void) {
 bool SM_SafetyCheck(void) {
     if (sm_context.current == SM_STATE_CRITICAL_FAULT || 
         sm_context.current == SM_STATE_INIT) return false;
+
     uint32_t safety = 0;
     BQ27Z746_GetSafetyStatus(I2C_0_INST, &safety);
     if (safety != 0) {
         last_safety_status = safety; 
-        sm_context.fault_source = SM_FAULT_GAUGE;
-        SM_Transition(SM_STATE_CRITICAL_FAULT);
-        return true; 
+        if (SM_ProcessFault(safety, 0)) {
+            sm_context.fault_source = SM_FAULT_GAUGE;
+            SM_Transition(SM_STATE_CRITICAL_FAULT);
+            return true; 
+        }
+        return false;  
     }
     return false;
 }
@@ -412,9 +426,12 @@ bool SM_ChargingSafetyCheck(void) {
     uint8_t fault_flags = BQ25628E_GetFaultFlags();
     if (fault_flags != 0U) {
         last_charger_status = fault_flags;
-        sm_context.fault_source = SM_FAULT_CHARGER;
-        SM_Transition(SM_STATE_CRITICAL_FAULT);
-        return true; 
+        if (SM_ProcessFault(0, fault_flags)) {
+            sm_context.fault_source = SM_FAULT_CHARGER;
+            SM_Transition(SM_STATE_CRITICAL_FAULT);
+            return true; 
+        }
+        return false; 
     }
     return false;
 }
@@ -433,7 +450,7 @@ static void SM_ResumeSystemContext(void) {
         sm_context.entry_done = true;
         SM_DisablePrescaler();
     } else if (pwr.is_critical_low) {
-        uart_printf("[SM] Critical low battery detected — entering stable IDLE\n");
+        uart_printf("[SM] Critical low battery detected, entering IDLE to conserve power\n");
         SM_Transition(SM_STATE_IDLE);
     } else {
         SM_Transition(SM_STATE_IDLE);
@@ -462,6 +479,7 @@ static void SM_PrepareTelemetryResponse(void)
 {
     SM_PowerContext_t pwr = SM_FetchPowerContext();
     BQ27Z746_GetSafetyStatus(I2C_0_INST, &last_safety_status);
+    BQ25628E_ADC_Control(true);
 
     uint8_t  chg_flags   = BQ25628E_ReadReg8(BQ25628E_REG_CHG_FLAG0);
     uint8_t  fault_flags = BQ25628E_ReadReg8(BQ25628E_REG_FAULT_FLAG0);
@@ -499,7 +517,7 @@ static void SM_PrepareTelemetryResponse(void)
         (sm_context.wake_reason == SM_WAKE_SETUP) ? "SETUP" : "NORMAL",
         (unsigned int)last_safety_status, batt_status, chg_flags, fault_flags,
         SM_GetChargeString(pwr.chg_stat), pwr.is_critical_low ? 1 : 0);
-
+    BQ25628E_ADC_Control(false);
     SM_SpiPacket_t *pkt = (SM_SpiPacket_t *)stm32Spi.txBuf;
     memset(stm32Spi.txBuf, 0, stm32Spi.size);
 
@@ -511,6 +529,7 @@ static void SM_PrepareTelemetryResponse(void)
     memcpy(pkt->pkt.payload.telemetry.json, json_buf, len);
     if(pwr.is_critical_low) {
         sm_context.critical_msg_sent = true;
+        uart_printf("[SM] Critical low battery detected, sending last packet till charge\n");
     }
     SPI_Controller_Arm(&stm32Spi);
 }
@@ -650,4 +669,59 @@ void RTC_SetTime(const SM_RTCConfig_t *in)
     calendar.dayOfWeek  = 1;
 
     DL_RTC_initCalendar(RTC, calendar, DL_RTC_FORMAT_BINARY);
+}
+
+static bool SM_ProcessFault(uint32_t gauge_safety, uint8_t charger_fault)
+{
+    bool is_critical = false;
+    bool disable_charging = false;
+    if (gauge_safety != 0) {
+        SM_DecodeBatterySafetyStatus(gauge_safety);
+        if (gauge_safety & (BQ27Z746_SAFETY_HOCC  |
+                            BQ27Z746_SAFETY_SCD   |
+                            BQ27Z746_SAFETY_OTF)) {
+            is_critical = true;
+        }
+        /* Recoverable faults : just disable charging, stay in current state */
+        if (gauge_safety & (BQ27Z746_SAFETY_OVP   | BQ27Z746_SAFETY_HCOV |   // Overvoltage
+                                 BQ27Z746_SAFETY_OCC                           |   // Overcurrent charge
+                                 BQ27Z746_SAFETY_PTO  | BQ27Z746_SAFETY_CTO    |   // Timeouts
+                                 BQ27Z746_SAFETY_OTC  | BQ27Z746_SAFETY_UTC)) {    // Temperature charge
+            disable_charging = true;
+        }
+        /* CUV/HCUV, OCD/HOCD, OTD, UTC/UTD : log only (CUV already prevented by SM_VBAT_LOW_MV) */
+    }
+
+    /* ── Charger faults (using your exact defines) ──────────── */
+    if (charger_fault != 0) {
+        SM_DecodeChargingSafetyStatus(charger_fault);
+
+        /* Critical faults */
+        if (charger_fault & (BQ25628E_SYS_FAULT_FLAG | BQ25628E_TSHUT_FLAG)) {
+            is_critical = true;
+        }
+        /* VBUS_FAULT_FLAG : only real fault if adapter is actually present */
+        if (charger_fault & BQ25628E_VBUS_FAULT_FLAG) {
+            SM_PowerContext_t pwr = SM_FetchPowerContext();
+            if (pwr.adapter_present) {
+                disable_charging = true;
+                uart_printf("[SM] VBUS fault while adapter present : charging disabled\n");
+            } else {
+                uart_printf("[SM] VBUS sleep (no adapter) : ignored\n");
+            }
+        }
+        /* BAT_FAULT_FLAG : recoverable */
+        if (charger_fault & BQ25628E_BAT_FAULT_FLAG) {
+            disable_charging = true;
+        }
+        /* TS_FLAG : completely ignored (as agreed) */
+    }
+
+    /* Apply the recoverable action */
+    if (disable_charging && !is_critical) {
+        DL_GPIO_setPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_CHARGER_EN_PIN);
+        uart_printf("[SM] Recoverable fault : charging disabled (system continues running)\n");
+    }
+
+    return is_critical;   // true = go to CRITICAL_FAULT, false = stay in current state
 }

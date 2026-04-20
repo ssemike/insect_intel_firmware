@@ -33,9 +33,6 @@ mux5.inputSelect = "EXLFMUX_XTAL";
 const mux9       = system.clockTree["LFXTMUX"];
 mux9.inputSelect = "LFXTMUX_TRUE";
 
-const oscillator2           = system.clockTree["SYSOSC"];
-oscillator2.frequencySelect = 4;
-
 const pinFunction6     = system.clockTree["LFXT"];
 pinFunction6.enable    = true;
 pinFunction6.inputFreq = 32.768;
@@ -187,9 +184,9 @@ SPI1.peripheral.cs1Pin.$assign             = "PB27";
 SPI1.cs1PinConfig.$name                    = "ti_driverlib_gpio_GPIOPinGeneric8";
 
 SYSCTL.VDD                   = 3;
-SYSCTL.clockTreeEn           = true;
 SYSCTL.powerPolicy           = "STANDBY0";
 SYSCTL.forceDefaultClkConfig = true;
+SYSCTL.clockTreeEn           = true;
 
 UART1.$name                    = "UART_0";
 UART1.enabledInterrupts        = ["RX","TX"];

@@ -78,7 +78,7 @@ extern "C" {
 #define GPIO_LFXIN_IOMUX                                          (IOMUX_PINCM8)
 #define GPIO_LFXOUT_PIN                                            DL_GPIO_PIN_4
 #define GPIO_LFXOUT_IOMUX                                         (IOMUX_PINCM9)
-#define CPUCLK_FREQ                                                      4000000
+#define CPUCLK_FREQ                                                     32000000
 
 
 

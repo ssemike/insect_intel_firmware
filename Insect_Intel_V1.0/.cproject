@@ -45,7 +45,7 @@
                                     <listOptionValue value="${COM_TI_MSPM0_SDK_SYMBOLS}"/>
                                     <listOptionValue value="${SYSCONFIG_TOOL_SYMBOLS}"/>
                                 </option>
-                                <option id="com.ti.ccstudio.buildDefinitions.TMS470_TICLANG_4.0.compilerID.OPT_LEVEL.1586916361" superClass="com.ti.ccstudio.buildDefinitions.TMS470_TICLANG_4.0.compilerID.OPT_LEVEL" value="com.ti.ccstudio.buildDefinitions.TMS470_TICLANG_4.0.compilerID.OPT_LEVEL.1" valueType="enumerated"/>
+                                <option id="com.ti.ccstudio.buildDefinitions.TMS470_TICLANG_4.0.compilerID.OPT_LEVEL.1586916361" superClass="com.ti.ccstudio.buildDefinitions.TMS470_TICLANG_4.0.compilerID.OPT_LEVEL" value="com.ti.ccstudio.buildDefinitions.TMS470_TICLANG_4.0.compilerID.OPT_LEVEL.0" valueType="enumerated"/>
                                 <option id="com.ti.ccstudio.buildDefinitions.TMS470_TICLANG_4.0.compilerID.CMD_FILE.730459594" superClass="com.ti.ccstudio.buildDefinitions.TMS470_TICLANG_4.0.compilerID.CMD_FILE" valueType="stringList">
                                     <listOptionValue value="device.opt"/>
                                 </option>
