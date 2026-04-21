@@ -120,6 +120,7 @@ GEN_OPTS__QUOTED :=
 SUBDIRS := \
 . \
 HAL \
+emulation_type_b \
 ics/BQ25628 \
 ics/BQ27Z7 \
 

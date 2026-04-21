@@ -155,7 +155,7 @@ bool BQ25628E_Init_Default(void) {
 
 void BQ25628E_HardwareInit(void)
 {
-    BQ25628E_WriteReg8(BQ25628E_REG_ADC_CTRL, BQ25628E_ADC_EN);
+    // BQ25628E_WriteReg8(BQ25628E_REG_ADC_CTRL, BQ25628E_ADC_EN);
     BQ25628E_Disable_Watchdog();
     // BQ25628E_Set_TS_Ignore(true);
     BQ25628E_Set_PeakDischarge_6A();
@@ -309,7 +309,7 @@ void BQ25628E_Disable_Watchdog(void) {
 void BQ25628E_ADC_Control(bool enable) {
     if (enable) {
         BQ25628E_WriteReg8(BQ25628E_REG_ADC_CTRL, BQ25628E_ADC_EN);
-        delay_cycles(40000); 
+        delay_cycles(64000000); 
     } else {
         BQ25628E_WriteReg8(BQ25628E_REG_ADC_CTRL, 0x00);
     }

@@ -6,6 +6,7 @@
 "./HAL/i2c.o"
 "./HAL/spi_master.o"
 "./HAL/uart.o"
+"./emulation_type_b/eeprom_emulation_type_b.o"
 "./ics/BQ25628/BQ25628_functions.o"
 "./ics/BQ27Z7/BQ27Z7_functions.o"
 "./ics/BQ27Z7/gauge.o"

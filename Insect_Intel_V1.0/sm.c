@@ -9,7 +9,7 @@
 #include <string.h>
 
 /* ── Timing Constants ────────────────────────────────────── */
-#define SM_SLEEP_WAKEUP_MINUTES   3  
+#define SM_SLEEP_WAKEUP_MINUTES   15  
 #define SM_VBAT_LOW_MV            3000 
 #define SM_VBAT_FULL_MV           3650
 #define SM_VBAT_CHARGE_START_MV   3400
@@ -17,6 +17,7 @@
 #define SM_ADAPTER_DEBOUNCE_S     10
 #define SM_SETUP_INACTIVITY_TIMEOUT_S   120
 #define SM_NORMAL_INACTIVITY_TIMEOUT_S  60
+#define SM_I2C_RETRY_S   10
 
 /* ── Global Context ──────────────────────────────────────── */
 SM_Context_t sm_context;
@@ -59,11 +60,10 @@ static void SM_SetSTMPower(bool enable) {
 
 // Single source of truth for current power state
 static SM_PowerContext_t SM_FetchPowerContext(void) {
+    BQ25628E_UpdateTelemetry();
     BQ25628E_ADC_Control(true);
     SM_PowerContext_t ctx;
     BQ27Z746_UpdateTelemetry(I2C_0_INST);
-    BQ25628E_UpdateTelemetry();
-    BQ25628E_ADC_Control(false);
     uint16_t batt_status = BQ27Z746_Get_BatteryStatus();
     ctx.vbus_mv = BQ25628E_Get_VBUS_mV();
     ctx.vbat_mv = BQ27Z746_Get_Voltage_mV();
@@ -75,6 +75,7 @@ static SM_PowerContext_t SM_FetchPowerContext(void) {
     bool charger_active = (ctx.chg_stat == 1 || ctx.chg_stat == 2);   
     ctx.is_charging = gauge_charging || charger_active;
     ctx.charger_done = (ctx.chg_stat == 0 || ctx.chg_stat == 3);
+    BQ25628E_ADC_Control(false);
     return ctx;
 }
 
@@ -183,17 +184,10 @@ void SM_Run(void) {
                 DL_GPIO_setPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_GAUGE_EN_PIN);
                 
                 if (!I2C_TryAddress(I2C_0_INST, GAUGE_I2C_ADDR) || !I2C_TryAddress(I2C_0_INST, BQ25628E_I2C_ADDR)) {
-                    DL_GPIO_clearPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_GAUGE_EN_PIN);
-                    delay_cycles(3200);
-                    DL_GPIO_setPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_GAUGE_EN_PIN);
-                    delay_cycles(3200);
-                    
-                    if (!I2C_TryAddress(I2C_0_INST, GAUGE_I2C_ADDR) || !I2C_TryAddress(I2C_0_INST, BQ25628E_I2C_ADDR)) {
-                        sm_context.fault_source = SM_FAULT_I2C_BUS;
-                        SM_Transition(SM_STATE_CRITICAL_FAULT);
-                        return;
-                    }
-                } 
+                    sm_context.fault_source = SM_FAULT_I2C_BUS;
+                    SM_Transition(SM_STATE_CRITICAL_FAULT);
+                    return;
+                }
                 bool gauge_ok   = BQ27Z746_Init(I2C_0_INST);
                 BQ25628E_HardwareInit();
                 BQ25628E_ApplyProfile(&sm_context.sm_charger_config);
@@ -214,7 +208,7 @@ void SM_Run(void) {
                 uart_printf("[SM] Charging started\n");
                 sm_context.critical_msg_sent = false;
                 sm_context.entry_done = true;
-                sm_context.last_charging_tick = sm_context.minute_counter-1; 
+                sm_context.last_charging_tick = sm_context.minute_counter+1; 
                 SM_DisablePrescaler();
                 DL_GPIO_enableInterrupt(GPIOB, EXTERNAL_INTERRUPT_SETUP_INT_PIN);
             }
@@ -232,16 +226,14 @@ void SM_Run(void) {
                 SM_PowerContext_t pwr = SM_FetchPowerContext();
                 if (pwr.vbat_mv >= SM_VBAT_FULL_MV || pwr.charger_done) {
                     DL_GPIO_setPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_CHARGER_EN_PIN);
-                    uart_printf("[SM] Charging complete / terminated: VBAT %dmV >= %dmV\n", pwr.vbat_mv, SM_VBAT_FULL_MV);
+                    uart_printf("[SM] Charging complete (VBAT %dmV >= %dmV) / Charging terminated: \n", pwr.vbat_mv, SM_VBAT_FULL_MV);
                     SM_Transition(SM_STATE_IDLE);
                     break;
                 } else {
-                    BQ25628E_ADC_Control(true);
                     uart_printf("[SM] CHARGING | VBUS:%4dmV VBAT:%4dmV IBAT:%4dmA SOC:%3d%% TBAT:%3.1fC TDIE:%3dC CHG_STAT:%s\n",
                         BQ25628E_Get_VBUS_mV(), pwr.vbat_mv, BQ27Z746_Get_Current_mA(),
                         BQ27Z746_Get_SOC_pct(), BQ25628E_Get_TBAT_C(), BQ25628E_Get_TDIE_C(),
                         SM_GetChargeString(pwr.chg_stat));
-                    BQ25628E_ADC_Control(false);
                 }            
                 if (SM_NeedsPeriodicSTMWake(pwr)) {
                     SM_EnablePrescaler();
@@ -367,21 +359,42 @@ void SM_Run(void) {
                 }
                 uart_printf("[SM] CRITICAL FAULT, source: %s\n", fault_str);
                 sm_context.fault_retry_s = sm_context.second_counter;
-                
+
                 if (sm_context.fault_source == SM_FAULT_GAUGE) {
                     SM_DecodeBatterySafetyStatus(last_safety_status);
                 } else if (sm_context.fault_source == SM_FAULT_CHARGER) {
                     SM_DecodeChargingSafetyStatus(last_charger_status);
                 } else if (sm_context.fault_source == SM_FAULT_I2C_BUS) {
-                    uart_printf("[SM] Fatal I2C Failure. System locked. Power cycle required.\n");
+                    uart_printf("[SM] I2C bus fault. Retrying every %ds\n", SM_I2C_RETRY_S);
+                }else if (sm_context.fault_source == SM_FAULT_INIT_FAILED) {
+                    uart_printf("[SM] Initialization failed, power cycle board\n");
                 }
                 sm_context.entry_done = true;
             }
-            if (sm_context.fault_source != SM_FAULT_I2C_BUS && 
-                sm_context.fault_source != SM_FAULT_INIT_FAILED &&
-                (sm_context.second_counter - sm_context.fault_retry_s) >= 5UL) 
-            {
+
+            /* INIT_FAILED is unrecoverable, nothing to retry */
+            if (sm_context.fault_source == SM_FAULT_INIT_FAILED) break;
+
+            uint32_t elapsed = sm_context.second_counter - sm_context.fault_retry_s;
+            uint32_t interval = (sm_context.fault_source == SM_FAULT_I2C_BUS) ? SM_I2C_RETRY_S : 5UL;
+
+            if (elapsed >= interval) {
                 sm_context.fault_retry_s = sm_context.second_counter;
+
+                /* I2C bus fault: just probe the addresses, go back to INIT if found */
+                if (sm_context.fault_source == SM_FAULT_I2C_BUS) {
+                    uart_printf("[SM] Retrying I2C bus...\n");
+                    if (I2C_TryAddress(I2C_0_INST, GAUGE_I2C_ADDR) &&
+                        I2C_TryAddress(I2C_0_INST, BQ25628E_I2C_ADDR)) {
+                        uart_printf("[SM] I2C devices found, returning to INIT\n");
+                        SM_Transition(SM_STATE_INIT);
+                    } else {
+                        uart_printf("[SM] I2C still unavailable\n");
+                    }
+                    break;
+                }
+
+                /* Gauge / charger faults: read live status and clear if clean */
                 BQ27Z746_GetSafetyStatus(I2C_0_INST, &last_safety_status);
                 last_charger_status = BQ25628E_GetFaultFlags();
 
@@ -479,7 +492,6 @@ static void SM_PrepareTelemetryResponse(void)
 {
     SM_PowerContext_t pwr = SM_FetchPowerContext();
     BQ27Z746_GetSafetyStatus(I2C_0_INST, &last_safety_status);
-    BQ25628E_ADC_Control(true);
 
     uint8_t  chg_flags   = BQ25628E_ReadReg8(BQ25628E_REG_CHG_FLAG0);
     uint8_t  fault_flags = BQ25628E_ReadReg8(BQ25628E_REG_FAULT_FLAG0);
@@ -517,7 +529,6 @@ static void SM_PrepareTelemetryResponse(void)
         (sm_context.wake_reason == SM_WAKE_SETUP) ? "SETUP" : "NORMAL",
         (unsigned int)last_safety_status, batt_status, chg_flags, fault_flags,
         SM_GetChargeString(pwr.chg_stat), pwr.is_critical_low ? 1 : 0);
-    BQ25628E_ADC_Control(false);
     SM_SpiPacket_t *pkt = (SM_SpiPacket_t *)stm32Spi.txBuf;
     memset(stm32Spi.txBuf, 0, stm32Spi.size);
 
@@ -679,7 +690,7 @@ static bool SM_ProcessFault(uint32_t gauge_safety, uint8_t charger_fault)
         SM_DecodeBatterySafetyStatus(gauge_safety);
         if (gauge_safety & (BQ27Z746_SAFETY_HOCC  |
                             BQ27Z746_SAFETY_SCD   |
-                            BQ27Z746_SAFETY_OTF)) {
+                            BQ27Z746_SAFETY_HOCD)) {
             is_critical = true;
         }
         /* Recoverable faults : just disable charging, stay in current state */

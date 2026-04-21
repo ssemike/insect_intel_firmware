@@ -18,6 +18,7 @@ ORDERED_OBJS += \
 "./HAL/i2c.o" \
 "./HAL/spi_master.o" \
 "./HAL/uart.o" \
+"./emulation_type_b/eeprom_emulation_type_b.o" \
 "./ics/BQ25628/BQ25628_functions.o" \
 "./ics/BQ27Z7/BQ27Z7_functions.o" \
 "./ics/BQ27Z7/gauge.o" \
@@ -34,10 +35,12 @@ RMDIR := RMDIR /S/Q
 -include sources.mk
 -include subdir_vars.mk
 -include HAL/subdir_vars.mk
+-include emulation_type_b/subdir_vars.mk
 -include ics/BQ25628/subdir_vars.mk
 -include ics/BQ27Z7/subdir_vars.mk
 -include subdir_rules.mk
 -include HAL/subdir_rules.mk
+-include emulation_type_b/subdir_rules.mk
 -include ics/BQ25628/subdir_rules.mk
 -include ics/BQ27Z7/subdir_rules.mk
 -include objects.mk
@@ -150,8 +153,8 @@ HW_SW_interface_CCS.out: $(OBJS) $(GEN_CMDS)
 # Other Targets
 clean:
 	-$(RM) $(GEN_MISC_FILES__QUOTED)$(GEN_FILES__QUOTED)$(EXE_OUTPUTS__QUOTED)
-	-$(RM) "ti_msp_dl_config.o" "startup_mspm0g350x_ticlang.o" "functions.o" "main.o" "sm.o" "HAL\i2c.o" "HAL\spi_master.o" "HAL\uart.o" "ics\BQ25628\BQ25628_functions.o" "ics\BQ27Z7\BQ27Z7_functions.o" "ics\BQ27Z7\gauge.o" 
-	-$(RM) "ti_msp_dl_config.d" "startup_mspm0g350x_ticlang.d" "functions.d" "main.d" "sm.d" "HAL\i2c.d" "HAL\spi_master.d" "HAL\uart.d" "ics\BQ25628\BQ25628_functions.d" "ics\BQ27Z7\BQ27Z7_functions.d" "ics\BQ27Z7\gauge.d" 
+	-$(RM) "ti_msp_dl_config.o" "startup_mspm0g350x_ticlang.o" "functions.o" "main.o" "sm.o" "HAL\i2c.o" "HAL\spi_master.o" "HAL\uart.o" "emulation_type_b\eeprom_emulation_type_b.o" "ics\BQ25628\BQ25628_functions.o" "ics\BQ27Z7\BQ27Z7_functions.o" "ics\BQ27Z7\gauge.o" 
+	-$(RM) "ti_msp_dl_config.d" "startup_mspm0g350x_ticlang.d" "functions.d" "main.d" "sm.d" "HAL\i2c.d" "HAL\spi_master.d" "HAL\uart.d" "emulation_type_b\eeprom_emulation_type_b.d" "ics\BQ25628\BQ25628_functions.d" "ics\BQ27Z7\BQ27Z7_functions.d" "ics\BQ27Z7\gauge.d" 
 	-@echo ' '
 
 .PHONY: all clean dependents
