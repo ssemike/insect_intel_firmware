@@ -10,7 +10,7 @@
 
 /* ── Timing Constants ────────────────────────────────────── */
 #define SM_SLEEP_WAKEUP_MINUTES   15  
-#define SM_VBAT_LOW_MV            3000 
+#define SM_VBAT_LOW_MV            3000
 #define SM_VBAT_FULL_MV           3650
 #define SM_VBAT_CHARGE_START_MV   3400
 #define SM_SAFETY_POLL_S          5
@@ -151,6 +151,11 @@ void hall_init(void) {
     DL_GPIO_clearInterruptStatus(GPIOB, EXTERNAL_INTERRUPT_SETUP_INT_PIN);
 }
 
+void gauge_init(void) {
+    DL_GPIO_setPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_GAUGE_EN_PIN);
+    delay_cycles(320000);
+}
+
 void SM_EnablePrescaler(void) {
     DL_RTC_enableInterrupt(RTC, DL_RTC_INTERRUPT_PRESCALER1);
 }
@@ -181,8 +186,6 @@ void SM_Run(void) {
     switch (sm_context.current) {
         case SM_STATE_INIT: {
             if (!sm_context.entry_done) {
-                DL_GPIO_setPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_GAUGE_EN_PIN);
-                
                 if (!I2C_TryAddress(I2C_0_INST, GAUGE_I2C_ADDR) || !I2C_TryAddress(I2C_0_INST, BQ25628E_I2C_ADDR)) {
                     sm_context.fault_source = SM_FAULT_I2C_BUS;
                     SM_Transition(SM_STATE_CRITICAL_FAULT);
@@ -267,6 +270,7 @@ void SM_Run(void) {
 
                 DL_GPIO_disableInterrupt(EXTERNAL_INTERRUPT_CHARGER_INT_PORT, EXTERNAL_INTERRUPT_SETUP_INT_PIN);
                 DL_GPIO_enableInterrupt(EXTERNAL_INTERRUPT_STM_MCU_IO2_PORT, EXTERNAL_INTERRUPT_STM_MCU_IO2_PIN);
+                SM_PrepareTelemetryResponse();
             }
             if (stm_io2_flag) {
                 sm_context.stm_data_sent = true;
@@ -487,7 +491,6 @@ static void SM_SendOffer(void) { SM_SendSimpleMsg(MSG_OFFER);}
 static void SM_SendAck(void)   { SM_SendSimpleMsg(MSG_ACK); }
 
 static void SM_SendNack(void)  { SM_SendSimpleMsg(MSG_NACK);  }
-
 static void SM_PrepareTelemetryResponse(void)
 {
     SM_PowerContext_t pwr = SM_FetchPowerContext();
@@ -497,22 +500,14 @@ static void SM_PrepareTelemetryResponse(void)
     uint8_t  fault_flags = BQ25628E_ReadReg8(BQ25628E_REG_FAULT_FLAG0);
 
     uint16_t batt_status = BQ27Z746_Get_BatteryStatus();
-    uint16_t tte         = BQ27Z746_Get_TimeToEmpty_min();
-    uint16_t ttf         = BQ27Z746_Get_TimeToFull_min();
 
-    int tte_json = (tte == 0xFFFFu) ? -1 : (int)tte;
-    int ttf_json = (ttf == 0xFFFFu) ? -1 : (int)ttf;
-
-    /* * Convert float to an integer (decidegrees: 25.4C -> 254)
-     * This removes the need for %f in snprintf.
-     */
     int btmp_dC = (int)(BQ25628E_Get_TBAT_C() * 10.0f);
 
     snprintf(json_buf, sizeof(json_buf),
         "{\"soc\":%d,\"soh\":%d,"
         "\"vbat\":%d,\"ibat\":%d,\"vchg\":%d,\"vsys\":%d,\"ichg\":%d,\"avgi\":%d,\"avgpwr\":%d,"
-        "\"gtmp\":%d,\"ctmp\":%d,\"btmp\":%d,"  // <--- Changed %.1f to %d
-        "\"tte\":%d,\"ttf\":%d,\"cycles\":%d,"
+        "\"gtmp\":%d,\"ctmp\":%d,\"btmp\":%d,"
+        "\"cycles\":%d," 
         "\"adapter\":%d,"
         "\"state\":\"%s\",\"wake\":\"%s\","
         "\"safety\":\"0x%08X\",\"battstat\":\"0x%04X\","
@@ -523,12 +518,13 @@ static void SM_PrepareTelemetryResponse(void)
         pwr.vbat_mv, BQ27Z746_Get_Current_mA(), BQ25628E_Get_VBUS_mV(),
         BQ25628E_Get_VSYS_mV(), BQ25628E_Get_IBUS_mA(), BQ27Z746_Get_AvgCurrent_mA(),
         BQ27Z746_Get_AvgPower_mW(), (int)BQ27Z746_Get_InternalTemp_C(),
-        BQ25628E_Get_TDIE_C(), btmp_dC,        // <--- Pass the scaled integer here
-        tte_json, ttf_json, BQ27Z746_Get_CycleCount(),
+        BQ25628E_Get_TDIE_C(), btmp_dC,
+        BQ27Z746_Get_CycleCount(),
         pwr.adapter_present ? 1 : 0, SM_GetStateString(),
         (sm_context.wake_reason == SM_WAKE_SETUP) ? "SETUP" : "NORMAL",
         (unsigned int)last_safety_status, batt_status, chg_flags, fault_flags,
         SM_GetChargeString(pwr.chg_stat), pwr.is_critical_low ? 1 : 0);
+
     SM_SpiPacket_t *pkt = (SM_SpiPacket_t *)stm32Spi.txBuf;
     memset(stm32Spi.txBuf, 0, stm32Spi.size);
 
@@ -536,8 +532,9 @@ static void SM_PrepareTelemetryResponse(void)
     pkt->pkt.header.payload_id = PID_TELEMETRY;
     size_t len = strlen(json_buf);
     pkt->pkt.header.length     = (uint16_t)len;
-
+    uart_printf("[SM] Telemetry response: %s\n", json_buf);
     memcpy(pkt->pkt.payload.telemetry.json, json_buf, len);
+
     if(pwr.is_critical_low) {
         sm_context.critical_msg_sent = true;
         uart_printf("[SM] Critical low battery detected, sending last packet till charge\n");

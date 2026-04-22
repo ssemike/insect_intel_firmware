@@ -101,6 +101,7 @@ bool SM_SafetyCheck(void);
 bool SM_ChargingSafetyCheck(void);
 void SM_SendTelemetryToSTM32(void);
 void hall_init(void);
+void gauge_init(void);
 void SM_DisablePrescaler(void);
 void SM_EnablePrescaler(void);
 

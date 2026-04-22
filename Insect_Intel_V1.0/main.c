@@ -33,7 +33,8 @@ int main(void)
     uart_init();  
     setupCLI();  
     i2c_init();
-    hall_init();  
+    hall_init(); 
+    gauge_init(); 
     NVIC_EnableIRQ(SPI_1_INST_INT_IRQN);
     NVIC_EnableIRQ(EXTERNAL_INTERRUPT_GPIOB_INT_IRQN);
     NVIC_EnableIRQ(EXTERNAL_INTERRUPT_GPIOA_INT_IRQN);

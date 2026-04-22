@@ -184,7 +184,6 @@ SPI1.peripheral.cs1Pin.$assign             = "PB27";
 SPI1.cs1PinConfig.$name                    = "ti_driverlib_gpio_GPIOPinGeneric8";
 
 SYSCTL.VDD                   = 3;
-SYSCTL.powerPolicy           = "STANDBY0";
 SYSCTL.forceDefaultClkConfig = true;
 SYSCTL.clockTreeEn           = true;
 
