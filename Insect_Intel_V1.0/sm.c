@@ -9,7 +9,7 @@
 #include <string.h>
 
 /* ── Timing Constants ────────────────────────────────────── */
-#define SM_SLEEP_WAKEUP_MINUTES   15  
+#define SM_SLEEP_WAKEUP_MINUTES   5  
 #define SM_VBAT_LOW_MV            3000
 #define SM_VBAT_FULL_MV           3650
 #define SM_VBAT_CHARGE_START_MV   3400
@@ -507,13 +507,16 @@ static void SM_PrepareTelemetryResponse(void)
         "{\"soc\":%d,\"soh\":%d,"
         "\"vbat\":%d,\"ibat\":%d,\"vchg\":%d,\"vsys\":%d,\"ichg\":%d,\"avgi\":%d,\"avgpwr\":%d,"
         "\"gtmp\":%d,\"ctmp\":%d,\"btmp\":%d,"
-        "\"cycles\":%d," 
+        "\"cycles\":%d,"
         "\"adapter\":%d,"
         "\"state\":\"%s\",\"wake\":\"%s\","
         "\"safety\":\"0x%08X\",\"battstat\":\"0x%04X\","
         "\"chgflags\":\"0x%02X\",\"faultflags\":\"0x%02X\","
         "\"chgstat\":\"%s\","
-        "\"lowbattery\":%d}",
+        "\"lowbattery\":%d,"
+        "\"wake_interval\":%d,"
+        "\"vreg\":%d,\"cfg_ichg\":%d,\"iindpm\":%d,"
+        "\"vindpm\":%d,\"vsysmin\":%d,\"iprechg\":%d,\"iterm\":%d}",
         BQ27Z746_Get_SOC_pct(), BQ27Z746_Get_StateOfHealth_pct(),
         pwr.vbat_mv, BQ27Z746_Get_Current_mA(), BQ25628E_Get_VBUS_mV(),
         BQ25628E_Get_VSYS_mV(), BQ25628E_Get_IBUS_mA(), BQ27Z746_Get_AvgCurrent_mA(),
@@ -523,7 +526,15 @@ static void SM_PrepareTelemetryResponse(void)
         pwr.adapter_present ? 1 : 0, SM_GetStateString(),
         (sm_context.wake_reason == SM_WAKE_SETUP) ? "SETUP" : "NORMAL",
         (unsigned int)last_safety_status, batt_status, chg_flags, fault_flags,
-        SM_GetChargeString(pwr.chg_stat), pwr.is_critical_low ? 1 : 0);
+        SM_GetChargeString(pwr.chg_stat), pwr.is_critical_low ? 1 : 0,
+        sm_context.sm_rtc_config.wake_interval_minutes,
+        sm_context.sm_charger_config.vreg_mV,
+        sm_context.sm_charger_config.ichg_mA,
+        sm_context.sm_charger_config.iindpm_mA,
+        sm_context.sm_charger_config.vindpm_mV,
+        sm_context.sm_charger_config.vsysmin_mV,
+        sm_context.sm_charger_config.iprechg_mA,
+        sm_context.sm_charger_config.iterm_mA);
 
     SM_SpiPacket_t *pkt = (SM_SpiPacket_t *)stm32Spi.txBuf;
     memset(stm32Spi.txBuf, 0, stm32Spi.size);

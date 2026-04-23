@@ -91,8 +91,6 @@ void printToUART(char* string, char end_char){
     uint32_t i = 0;
     while(1){
         DL_UART_Main_transmitDataBlocking(UART_0_INST, string[i]);
-        // delay_cycles(320);
-        // __WFI();
         i++;
         if(string[i] == end_char){
             break;

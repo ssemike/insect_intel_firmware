@@ -225,7 +225,8 @@ static const DL_SYSCTL_LFCLKConfig gLFCLKConfig = {
 SYSCONFIG_WEAK void SYSCFG_DL_SYSCTL_init(void)
 {
 
-	//Low Power Mode is configured to be SLEEP0
+	//Low Power Mode is configured to be STANDBY0
+    DL_SYSCTL_setPowerPolicySTANDBY0();
     DL_SYSCTL_setBORThreshold(DL_SYSCTL_BOR_THRESHOLD_LEVEL_0);
 
     

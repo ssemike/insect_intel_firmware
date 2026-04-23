@@ -92,9 +92,7 @@ I2C_Status I2C_WriteDevice(I2C_Regs *i2c, uint8_t dev_addr, uint8_t reg_addr,
     DL_I2C_startControllerTransfer(i2c, dev_addr, DL_I2C_CONTROLLER_DIRECTION_TX, count + 1);
 
     while ((gI2cControllerStatus != I2C_STATUS_TX_COMPLETE) && 
-           (gI2cControllerStatus != I2C_STATUS_ERROR)) {
-        __WFE();
-    }
+           (gI2cControllerStatus != I2C_STATUS_ERROR));
 
     // Check result
     if (gI2cControllerStatus == I2C_STATUS_ERROR) {
@@ -127,9 +125,7 @@ I2C_Status I2C_ReadDevice(I2C_Regs *i2c, uint8_t dev_addr, uint8_t reg_addr, uin
     DL_I2C_startControllerTransfer(i2c, dev_addr, DL_I2C_CONTROLLER_DIRECTION_TX, 1);
 
     while ((gI2cControllerStatus != I2C_STATUS_TX_COMPLETE) &&
-           (gI2cControllerStatus != I2C_STATUS_ERROR)) {
-        __WFE();
-    }
+           (gI2cControllerStatus != I2C_STATUS_ERROR));
 
     if (gI2cControllerStatus == I2C_STATUS_ERROR) {
         DL_I2C_flushControllerTXFIFO(i2c);
@@ -145,9 +141,7 @@ I2C_Status I2C_ReadDevice(I2C_Regs *i2c, uint8_t dev_addr, uint8_t reg_addr, uin
     DL_I2C_startControllerTransfer(i2c, dev_addr, DL_I2C_CONTROLLER_DIRECTION_RX, count);
 
     while ((gI2cControllerStatus != I2C_STATUS_RX_COMPLETE) &&
-           (gI2cControllerStatus != I2C_STATUS_ERROR)) {
-        __WFE();
-    }
+           (gI2cControllerStatus != I2C_STATUS_ERROR));
 
     if (gI2cControllerStatus == I2C_STATUS_ERROR) {
         DL_I2C_flushControllerRXFIFO(i2c);
@@ -188,9 +182,7 @@ bool I2C_TryAddress(I2C_Regs *i2c, uint8_t dev_addr)
     
     // Wait for completion or error
     while ((gI2cControllerStatus != I2C_STATUS_TX_COMPLETE) && 
-           (gI2cControllerStatus != I2C_STATUS_ERROR)) {
-        __WFE();
-    }
+           (gI2cControllerStatus != I2C_STATUS_ERROR));
     
     // Wait until bus is no longer busy
     while (DL_I2C_getControllerStatus(i2c) & DL_I2C_CONTROLLER_STATUS_BUSY_BUS);

@@ -186,6 +186,7 @@ SPI1.cs1PinConfig.$name                    = "ti_driverlib_gpio_GPIOPinGeneric8"
 SYSCTL.VDD                   = 3;
 SYSCTL.forceDefaultClkConfig = true;
 SYSCTL.clockTreeEn           = true;
+SYSCTL.powerPolicy           = "STANDBY0";
 
 UART1.$name                    = "UART_0";
 UART1.enabledInterrupts        = ["RX","TX"];
