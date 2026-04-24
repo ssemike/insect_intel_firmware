@@ -5,6 +5,11 @@ SPI_Controller_Handle stm32Spi;
 
 uint8_t gSPI_TxPacket[SPI_PACKET_SIZE];
 uint8_t gSPI_RxPacket[SPI_PACKET_SIZE];
+void spi_init(void) {
+    NVIC_ClearPendingIRQ(SPI_1_INST_INT_IRQN);
+    NVIC_EnableIRQ(SPI_1_INST_INT_IRQN);
+    SPI_Controller_Init(&stm32Spi, SPI_1_INST,  DMA_CH0_CHAN_ID, DMA_CH1_CHAN_ID, gSPI_TxPacket, gSPI_RxPacket, SPI_PACKET_SIZE);
+}
 
 void SPI_Controller_Init(SPI_Controller_Handle *handle, SPI_Regs *spi, uint8_t txCh, uint8_t rxCh, uint8_t *txBuf, uint8_t *rxBuf, uint16_t len) 
 {

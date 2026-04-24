@@ -43,5 +43,7 @@ extern SPI_Controller_Handle stm32Spi;
 extern uint8_t gSPI_TxPacket[SPI_PACKET_SIZE];
 extern uint8_t gSPI_RxPacket[SPI_PACKET_SIZE];
 
+void spi_init();
+
 
 #endif /* SPI_CONTROLLER_H */

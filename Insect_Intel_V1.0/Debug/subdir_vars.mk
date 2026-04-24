@@ -12,6 +12,7 @@ C_SRCS += \
 ./ti_msp_dl_config.c \
 C:/ti/mspm0_sdk_2_09_00_01/source/ti/devices/msp/m0p/startup_system_files/ticlang/startup_mspm0g350x_ticlang.c \
 ../functions.c \
+../helper_functions.c \
 ../main.c \
 ../sm.c 
 
@@ -27,6 +28,7 @@ C_DEPS += \
 ./ti_msp_dl_config.d \
 ./startup_mspm0g350x_ticlang.d \
 ./functions.d \
+./helper_functions.d \
 ./main.d \
 ./sm.d 
 
@@ -37,6 +39,7 @@ OBJS += \
 ./ti_msp_dl_config.o \
 ./startup_mspm0g350x_ticlang.o \
 ./functions.o \
+./helper_functions.o \
 ./main.o \
 ./sm.o 
 
@@ -49,6 +52,7 @@ OBJS__QUOTED += \
 "ti_msp_dl_config.o" \
 "startup_mspm0g350x_ticlang.o" \
 "functions.o" \
+"helper_functions.o" \
 "main.o" \
 "sm.o" 
 
@@ -61,6 +65,7 @@ C_DEPS__QUOTED += \
 "ti_msp_dl_config.d" \
 "startup_mspm0g350x_ticlang.d" \
 "functions.d" \
+"helper_functions.d" \
 "main.d" \
 "sm.d" 
 
@@ -76,6 +81,7 @@ C_SRCS__QUOTED += \
 "./ti_msp_dl_config.c" \
 "C:/ti/mspm0_sdk_2_09_00_01/source/ti/devices/msp/m0p/startup_system_files/ticlang/startup_mspm0g350x_ticlang.c" \
 "../functions.c" \
+"../helper_functions.c" \
 "../main.c" \
 "../sm.c" 
 

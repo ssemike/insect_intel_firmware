@@ -90,7 +90,7 @@ sm.o: ../sm.c ../sm.h \
  C:/Users/Admin/Desktop/Software\ code/Final\ Software/Insect\ Intel/Insect_Intel_V1.0/sm.h \
  ../ics/BQ27Z7/BQ27Z7_functions.h \
  C:/Users/Admin/Desktop/Software\ code/Final\ Software/Insect\ Intel/Insect_Intel_V1.0/HAL/i2c.h \
- ../ics/BQ27Z7/gauge.h
+ ../ics/BQ27Z7/gauge.h ../helper_functions.h
 ../sm.h:
 ti_msp_dl_config.h:
 C:/ti/mspm0_sdk_2_09_00_01/source/ti/devices/msp/msp.h:
@@ -184,3 +184,4 @@ C:/Users/Admin/Desktop/Software\ code/Final\ Software/Insect\ Intel/Insect_Intel
 ../ics/BQ27Z7/BQ27Z7_functions.h:
 C:/Users/Admin/Desktop/Software\ code/Final\ Software/Insect\ Intel/Insect_Intel_V1.0/HAL/i2c.h:
 ../ics/BQ27Z7/gauge.h:
+../helper_functions.h:

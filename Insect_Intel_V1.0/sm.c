@@ -7,17 +7,18 @@
 #include "ics/BQ27Z7/BQ27Z7_functions.h"
 #include <stdio.h>
 #include <string.h>
+#include "helper_functions.h"
 
 /* ── Timing Constants ────────────────────────────────────── */
-#define SM_SLEEP_WAKEUP_MINUTES   5  
+#define SM_SLEEP_WAKEUP_MINUTES   15  
 #define SM_VBAT_LOW_MV            3000
 #define SM_VBAT_FULL_MV           3650
 #define SM_VBAT_CHARGE_START_MV   3400
 #define SM_SAFETY_POLL_S          5
 #define SM_ADAPTER_DEBOUNCE_S     10
-#define SM_SETUP_INACTIVITY_TIMEOUT_S   120
+#define SM_SETUP_INACTIVITY_TIMEOUT_S   60
 #define SM_NORMAL_INACTIVITY_TIMEOUT_S  60
-#define SM_I2C_RETRY_S   10
+#define SM_I2C_RETRY_S   5
 
 /* ── Global Context ──────────────────────────────────────── */
 SM_Context_t sm_context;
@@ -51,10 +52,12 @@ static void SM_PrepareTelemetryResponse(void);
 // Replaces repetitive GPIO calls for STM32 power
 static void SM_SetSTMPower(bool enable) {
     if (enable) {
+        // PWR_EnterActiveProfile();
         DL_GPIO_setPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_EN3V8_PIN | DIGITAL_OUTPUT_PORTB_STM_PON_PIN);
     } else {
         DL_GPIO_clearPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_EN3V8_PIN | DIGITAL_OUTPUT_PORTB_STM_PON_PIN);
         DL_GPIO_clearPins(DIGITAL_OUTPUT_PORTA_PORT, DIGITAL_OUTPUT_PORTA_STM_MCU_IO1_PIN);
+        // PWR_ExitActiveProfile();
     }
 }
 
@@ -141,27 +144,9 @@ static void SM_PostWake_Branch(void) {
     } else if (pwr.vbat_mv < SM_VBAT_CHARGE_START_MV && pwr.adapter_present) {
         SM_Transition(SM_STATE_CHARGING);
     } else {
-        SM_Transition(SM_STATE_POWER_STM);
+        sm_context.wake_reason = SM_WAKE_NORMAL;
+        SM_Transition(SM_STATE_POWER_STM);  
     }
-}
-
-void hall_init(void) {
-    DL_GPIO_setPins(DIGITAL_OUTPUT_PORTA_PORT, DIGITAL_OUTPUT_PORTA_HALL_3V_PIN);
-    delay_cycles(1000);
-    DL_GPIO_clearInterruptStatus(GPIOB, EXTERNAL_INTERRUPT_SETUP_INT_PIN);
-}
-
-void gauge_init(void) {
-    DL_GPIO_setPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_GAUGE_EN_PIN);
-    delay_cycles(320000);
-}
-
-void SM_EnablePrescaler(void) {
-    DL_RTC_enableInterrupt(RTC, DL_RTC_INTERRUPT_PRESCALER1);
-}
-
-void SM_DisablePrescaler(void) {
-    DL_RTC_disableInterrupt(RTC, DL_RTC_INTERRUPT_PRESCALER1);
 }
 
 static void SM_Handle_RTC_Tick(void) {
@@ -211,19 +196,24 @@ void SM_Run(void) {
                 uart_printf("[SM] Charging started\n");
                 sm_context.critical_msg_sent = false;
                 sm_context.entry_done = true;
-                sm_context.last_charging_tick = sm_context.minute_counter+1; 
-                SM_DisablePrescaler();
+                sm_context.last_charging_tick = sm_context.minute_counter; 
+                RTC_DisablePrescaler();
+                DL_GPIO_clearInterruptStatus(GPIOB, EXTERNAL_INTERRUPT_SETUP_INT_PIN);
                 DL_GPIO_enableInterrupt(GPIOB, EXTERNAL_INTERRUPT_SETUP_INT_PIN);
+                sm_context.wake_reason = SM_WAKE_NORMAL;
+                PWR_ExitMeasureProfile();
             }
             if (hall_wakeup_flag) {
                 hall_wakeup_flag = false;
                 sm_context.wake_reason = SM_WAKE_SETUP;
-                SM_EnablePrescaler();
+                RTC_EnablePrescaler();
+                PWR_EnterMeasureProfile();
                 SM_Transition(SM_STATE_POWER_STM);
                 break;
             }
             if (sm_context.minute_counter != sm_context.last_charging_tick) {
                 sm_context.last_charging_tick = sm_context.minute_counter; 
+                PWR_EnterMeasureProfile();
                 if (SM_SafetyCheck()) return;
                 if (SM_ChargingSafetyCheck()) return;
                 SM_PowerContext_t pwr = SM_FetchPowerContext();
@@ -239,12 +229,13 @@ void SM_Run(void) {
                         SM_GetChargeString(pwr.chg_stat));
                 }            
                 if (SM_NeedsPeriodicSTMWake(pwr)) {
-                    SM_EnablePrescaler();
+                    RTC_EnablePrescaler();
                     sm_context.last_stm_periodic_minute = sm_context.minute_counter;
                     SM_Transition(SM_STATE_POWER_STM);
                     break;
                 }
             }
+            PWR_ExitMeasureProfile();
             __WFI();
              break;
         }
@@ -255,9 +246,7 @@ void SM_Run(void) {
                 } else {
                     DL_GPIO_clearPins(DIGITAL_OUTPUT_PORTA_PORT, DIGITAL_OUTPUT_PORTA_STM_MCU_IO1_PIN);
                 }
-
-                SM_EnablePrescaler();
-
+                RTC_EnablePrescaler();
                 SM_SetSTMPower(true);
                 sm_context.stm_power_on_s = sm_context.second_counter;
                 sm_context.last_io2_activity_s = sm_context.second_counter;
@@ -270,14 +259,12 @@ void SM_Run(void) {
 
                 DL_GPIO_disableInterrupt(EXTERNAL_INTERRUPT_CHARGER_INT_PORT, EXTERNAL_INTERRUPT_SETUP_INT_PIN);
                 DL_GPIO_enableInterrupt(EXTERNAL_INTERRUPT_STM_MCU_IO2_PORT, EXTERNAL_INTERRUPT_STM_MCU_IO2_PIN);
-                SM_PrepareTelemetryResponse();
             }
             if (stm_io2_flag) {
                 sm_context.stm_data_sent = true;
                 stm_io2_flag = false;
                 SM_SendOffer();
             }
-      
             /* Process STM32 reply and send next packet immediately */
             if (sm_context.stm_data_sent && stm32Spi.rxDone) {
                 stm32Spi.rxDone = false;
@@ -310,7 +297,7 @@ void SM_Run(void) {
                 DL_GPIO_clearInterruptStatus(GPIOB, EXTERNAL_INTERRUPT_SETUP_INT_PIN);
                 DL_GPIO_enableInterrupt(GPIOB, EXTERNAL_INTERRUPT_SETUP_INT_PIN);
                 hall_wakeup_flag = false;
-                SM_DisablePrescaler();
+                RTC_DisablePrescaler();
                 SM_PowerContext_t pwr = SM_FetchPowerContext();
                 if (pwr.vbat_mv < SM_VBAT_CHARGE_START_MV) {
                     DL_GPIO_clearPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_CHARGER_EN_PIN);
@@ -321,9 +308,11 @@ void SM_Run(void) {
                 }      
                 uart_printf("[SM] Entering IDLE\n");
                 sm_context.entry_done = true;
+                PWR_ExitMeasureProfile();
             }
             if (sm_context.sleep_entry_minute != sm_context.minute_counter) {
                 sm_context.sleep_entry_minute = sm_context.minute_counter;
+                PWR_EnterMeasureProfile();
                 if (SM_SafetyCheck()) return;
                 SM_PowerContext_t pwr = SM_FetchPowerContext();
                 if (pwr.is_charging) {
@@ -331,7 +320,7 @@ void SM_Run(void) {
                     break;
                 }
                 if (SM_NeedsPeriodicSTMWake(pwr)) {
-                    SM_EnablePrescaler();
+                    RTC_EnablePrescaler();
                     sm_context.last_stm_periodic_minute = sm_context.minute_counter;
                     SM_Transition(SM_STATE_POWER_STM);
                     break;
@@ -340,10 +329,12 @@ void SM_Run(void) {
             if (hall_wakeup_flag) {
                 hall_wakeup_flag = false;
                 sm_context.wake_reason = SM_WAKE_SETUP;
-                SM_EnablePrescaler();
+                RTC_EnablePrescaler();
+                PWR_EnterMeasureProfile();
                 SM_Transition(SM_STATE_POWER_STM);
                 break;
             }
+            PWR_ExitMeasureProfile();
             __WFI();
             break;
         }
@@ -352,7 +343,7 @@ void SM_Run(void) {
                 SM_SetSTMPower(false);
                 DL_GPIO_disableInterrupt(GPIOB, EXTERNAL_INTERRUPT_SETUP_INT_PIN);
                 DL_GPIO_setPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_CHARGER_EN_PIN);
-                SM_EnablePrescaler();
+                RTC_EnablePrescaler();
                 const char* fault_str = "UNKNOWN";
                 switch (sm_context.fault_source) {
                     case SM_FAULT_I2C_BUS:      fault_str = "I2C_BUS"; break;
@@ -388,6 +379,7 @@ void SM_Run(void) {
                 /* I2C bus fault: just probe the addresses, go back to INIT if found */
                 if (sm_context.fault_source == SM_FAULT_I2C_BUS) {
                     uart_printf("[SM] Retrying I2C bus...\n");
+                    gauge_init();
                     if (I2C_TryAddress(I2C_0_INST, GAUGE_I2C_ADDR) &&
                         I2C_TryAddress(I2C_0_INST, BQ25628E_I2C_ADDR)) {
                         uart_printf("[SM] I2C devices found, returning to INIT\n");
@@ -464,8 +456,6 @@ static void SM_ResumeSystemContext(void) {
     if (pwr.is_charging) {
         uart_printf("[SM] Continuing to charge\n");
         SM_Transition(SM_STATE_CHARGING);
-        sm_context.entry_done = true;
-        SM_DisablePrescaler();
     } else if (pwr.is_critical_low) {
         uart_printf("[SM] Critical low battery detected, entering IDLE to conserve power\n");
         SM_Transition(SM_STATE_IDLE);

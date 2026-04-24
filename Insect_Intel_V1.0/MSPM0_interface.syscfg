@@ -30,9 +30,6 @@ const UART1  = UART.addInstance();
 const mux5       = system.clockTree["EXLFMUX"];
 mux5.inputSelect = "EXLFMUX_XTAL";
 
-const mux9       = system.clockTree["LFXTMUX"];
-mux9.inputSelect = "LFXTMUX_TRUE";
-
 const pinFunction6     = system.clockTree["LFXT"];
 pinFunction6.enable    = true;
 pinFunction6.inputFreq = 32.768;

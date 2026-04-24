@@ -6,6 +6,7 @@
 #include "ics/BQ27Z7/BQ27Z7_functions.h"
 #include "HAL/spi_master.h"
 #include "sm.h"
+#include "helper_functions.h"
 
 volatile bool bq_monitor_active    = false;
 volatile bool hall_monitor_active  = false;
@@ -30,19 +31,13 @@ void setupCLI(void) {
 int main(void)
 {
     SYSCFG_DL_init(); 
-    uart_init();  
-    setupCLI();  
-    i2c_init();
-    hall_init(); 
-    gauge_init(); 
-    NVIC_EnableIRQ(SPI_1_INST_INT_IRQN);
-    NVIC_EnableIRQ(EXTERNAL_INTERRUPT_GPIOB_INT_IRQN);
-    NVIC_EnableIRQ(EXTERNAL_INTERRUPT_GPIOA_INT_IRQN);
-    SPI_Controller_Init(&stm32Spi, SPI_1_INST,  DMA_CH0_CHAN_ID, DMA_CH1_CHAN_ID, gSPI_TxPacket, gSPI_RxPacket, SPI_PACKET_SIZE); 
-    SM_Init();
-    NVIC_EnableIRQ(RTC_INT_IRQn);
-    DL_RTC_enableClockControl(RTC); 
+    setupCLI();
+    hall_init();
+    gauge_init();
+    PWR_EnableCoreInterrupts();
     char processingBuffer[MAX_INPUT_LEN];
+    SM_Init();
+    PWR_EnterMinimumProfile();
     while (1) {
         if (data_received) {
             get_UART_buffer(processingBuffer);

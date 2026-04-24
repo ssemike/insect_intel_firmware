@@ -35,9 +35,9 @@ uint32_t gRxLen, gRxCount;
 //initialize uart
 void i2c_init(void){
     NVIC_ClearPendingIRQ(I2C_0_INST_INT_IRQN);
-    NVIC_ClearPendingIRQ(I2C_1_INST_INT_IRQN);
+    // NVIC_ClearPendingIRQ(I2C_1_INST_INT_IRQN);
     NVIC_EnableIRQ(I2C_0_INST_INT_IRQN);
-    NVIC_EnableIRQ(I2C_1_INST_INT_IRQN);
+    // NVIC_EnableIRQ(I2C_1_INST_INT_IRQN);
 }
 
 // Shared Logic for I2C0 and I2C1 Interrupts
