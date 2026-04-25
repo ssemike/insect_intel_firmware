@@ -15,7 +15,6 @@
 #define SM_VBAT_FULL_MV           3650
 #define SM_VBAT_CHARGE_START_MV   3400
 #define SM_SAFETY_POLL_S          5
-#define SM_ADAPTER_DEBOUNCE_S     10
 #define SM_SETUP_INACTIVITY_TIMEOUT_S   60
 #define SM_NORMAL_INACTIVITY_TIMEOUT_S  60
 #define SM_I2C_RETRY_S   5
@@ -52,12 +51,12 @@ static void SM_PrepareTelemetryResponse(void);
 // Replaces repetitive GPIO calls for STM32 power
 static void SM_SetSTMPower(bool enable) {
     if (enable) {
-        // PWR_EnterActiveProfile();
+        PWR_EnterActiveProfile();
         DL_GPIO_setPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_EN3V8_PIN | DIGITAL_OUTPUT_PORTB_STM_PON_PIN);
     } else {
         DL_GPIO_clearPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_EN3V8_PIN | DIGITAL_OUTPUT_PORTB_STM_PON_PIN);
         DL_GPIO_clearPins(DIGITAL_OUTPUT_PORTA_PORT, DIGITAL_OUTPUT_PORTA_STM_MCU_IO1_PIN);
-        // PWR_ExitActiveProfile();
+        PWR_ExitActiveProfile();
     }
 }
 
@@ -256,7 +255,7 @@ void SM_Run(void) {
 
                 sm_context.entry_done = true;
                 sm_context.stm_data_sent = false;
-
+                SM_PrepareTelemetryResponse();
                 DL_GPIO_disableInterrupt(EXTERNAL_INTERRUPT_CHARGER_INT_PORT, EXTERNAL_INTERRUPT_SETUP_INT_PIN);
                 DL_GPIO_enableInterrupt(EXTERNAL_INTERRUPT_STM_MCU_IO2_PORT, EXTERNAL_INTERRUPT_STM_MCU_IO2_PIN);
             }

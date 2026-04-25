@@ -108,6 +108,7 @@ void PWR_EnterMinimumProfile(void)
 
 void PWR_EnterMeasureProfile(void)
 {
+    PWR_EnableI2C0();
     PWR_UnblockFastClocks();
     PWR_EnableUART0();
     delay_cycles(3200);
@@ -115,7 +116,7 @@ void PWR_EnterMeasureProfile(void)
 
 void PWR_ExitMeasureProfile(void)
 {
-    
+    PWR_EnableI2C0();
     PWR_DisableUART0();
     PWR_BlockFastClocks();
     delay_cycles(3200);
@@ -129,8 +130,6 @@ void PWR_EnterActiveProfile(void)
 
 void PWR_ExitActiveProfile(void)
 {
-    PWR_DisableUART0();
-    PWR_BlockFastClocks();
     PWR_DisableSPI1();
     delay_cycles(3200);
 }
