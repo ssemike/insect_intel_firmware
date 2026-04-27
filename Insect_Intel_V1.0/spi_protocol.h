@@ -20,7 +20,9 @@ typedef enum {
     PID_TELEMETRY   = 0x01,
     PID_RTC_GET     = 0x02,
     PID_RTC_SET     = 0x03,
-    PID_CHARGER_CFG = 0x04
+    PID_CHARGER_CFG = 0x04,
+    PID_STM_CFG     = 0x05,
+    PID_STM_CREDENTIALS = 0x06
 } SM_PayloadId_t;
 
 /* ── Packet Header (4 bytes) ───────────────────────────────────────────── */
@@ -56,6 +58,8 @@ typedef union {
             SM_TelemetryPayload_t     telemetry;
             SM_RtcDataPayload_t       rtc_data;
             SM_AckPayload_t           ack;
+            SM_STMConfig_t      stm_config;
+            SM_STMCredentials_t stm_credentials;    
             uint8_t                   raw_payload[508];
         } payload;
     } pkt;

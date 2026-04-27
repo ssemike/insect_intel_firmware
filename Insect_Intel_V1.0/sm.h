@@ -4,6 +4,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+
+#define STM_CREDENTIAL_SSID_SIZE     32
+#define STM_CREDENTIAL_PASSWORD_SIZE 63
+
 /* ── States ─────────────────────────────────────────────── */
 typedef enum {
     SM_STATE_INIT,
@@ -38,6 +42,7 @@ typedef struct {
     bool is_critical_low;
     bool is_charging;
 } SM_PowerContext_t;
+
 typedef struct {
     uint16_t year;                    // full year (e.g. 2026)
     uint8_t  month;                   // 1-12
@@ -57,6 +62,41 @@ typedef struct {
     uint16_t iprechg_mA;    // Pre-charge current            
     uint16_t iterm_mA;      // Termination current       
 } SM_ChargerConfig_t;
+
+typedef struct {
+    uint8_t mode;  // 0=LTE, 1=WiFi
+} SM_STMConnectivity_t;
+
+typedef struct {
+    uint8_t communication;    // 0=USART, 1=USB
+    uint8_t baudrate_index;   
+    uint8_t network_provider; // 0=Roaming, 1=Local
+} SM_STMLte_t;
+
+typedef struct {
+    uint8_t resolution;
+    uint8_t framerate;
+    uint8_t compression;
+} SM_STMCamera_t;
+
+typedef struct {
+    uint8_t log_to_card;
+    uint8_t log_to_usart;
+} SM_STMLogging_t;
+
+typedef struct {
+    SM_STMConnectivity_t connectivity;
+    SM_STMLte_t          lte;
+    SM_STMCamera_t       camera;
+    SM_STMLogging_t      logging;
+} SM_STMConfig_t;
+
+typedef struct {
+    char ap_ssid        [STM_CREDENTIAL_SSID_SIZE];
+    char ap_password    [STM_CREDENTIAL_PASSWORD_SIZE];
+    char device_name    [STM_CREDENTIAL_SSID_SIZE];
+    char device_password[STM_CREDENTIAL_PASSWORD_SIZE];
+} SM_STMCredentials_t;
 
 /* ── Context ─────────────────────────────────────────────── */
 typedef struct {
@@ -80,16 +120,14 @@ typedef struct {
     SM_ChargerConfig_t   sm_charger_config;
     SM_RTCConfig_t       sm_rtc_config;
     bool                 charger_configured;
+    SM_STMConfig_t      stm_config;
+    SM_STMCredentials_t stm_credentials;
+    bool                stm_config_received;
+    bool                stm_credentials_received;
 } SM_Context_t;
 
 extern SM_Context_t sm_context;
 
-
-
-/* ── SPI Command Protocol ──────────────────────────────── */
-#define STM32_CMD_CONTINUE  0xAA  // Continue operation, may request data again
-#define STM32_CMD_SHUTDOWN  0x55  // Done, request shutdown
-#define STM32_CMD_NONE      0x00  // Default/no command
 
 /* ── Public API ──────────────────────────────────────────── */
 void        SM_Init(void);
@@ -106,4 +144,5 @@ void SM_EnablePrescaler(void);
 
 void RTC_GetTime(SM_RTCConfig_t *out);
 void RTC_SetTime(const SM_RTCConfig_t *in);
+
 #endif

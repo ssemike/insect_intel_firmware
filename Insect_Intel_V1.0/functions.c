@@ -182,6 +182,26 @@ if (strcmp(sub, "status") == 0) {
         sm_context.sm_rtc_config.month,
         sm_context.sm_rtc_config.year);
     uart_printf("  Wake Interval : %d min\n", sm_context.sm_rtc_config.wake_interval_minutes);
+    uart_printf("\n=== STM32 Session ===\n");
+    uart_printf("  Last Periodic Wake : %lu min\n", sm_context.last_stm_periodic_minute);
+    uart_printf("  Critical Msg Sent  : %s\n", sm_context.critical_msg_sent ? "YES" : "NO");
+
+    uart_printf("\n=== STM Config ===\n");
+    uart_printf("  Source        : %s\n", sm_context.stm_config_received ? "STM32 (live)" : "defaults");
+    uart_printf("  Connectivity  : %s\n", sm_context.stm_config.connectivity.mode == 0 ? "LTE" : "WiFi");
+    uart_printf("  LTE Comms     : %s\n", sm_context.stm_config.lte.communication == 0 ? "USART" : "USB");
+    uart_printf("  LTE Baud Idx  : %d\n", sm_context.stm_config.lte.baudrate_index);
+    uart_printf("  LTE Provider  : %s\n", sm_context.stm_config.lte.network_provider == 0 ? "Roaming" : "Local");
+    uart_printf("  Cam Res       : %d\n", sm_context.stm_config.camera.resolution);
+    uart_printf("  Cam FPS       : %d\n", sm_context.stm_config.camera.framerate);
+    uart_printf("  Cam Compress  : %d\n", sm_context.stm_config.camera.compression);
+    uart_printf("  Log to Card   : %s\n", sm_context.stm_config.logging.log_to_card  ? "YES" : "NO");
+    uart_printf("  Log to USART  : %s\n", sm_context.stm_config.logging.log_to_usart ? "YES" : "NO");
+
+    uart_printf("\n=== STM Credentials ===\n");
+    uart_printf("  Source        : %s\n", sm_context.stm_credentials_received ? "STM32 (live)" : "defaults");
+    uart_printf("  AP SSID       : %s\n", sm_context.stm_credentials.ap_ssid);
+    uart_printf("  Device Name   : %s\n", sm_context.stm_credentials.device_name);
 }
     else if (strcmp(sub, "start") == 0) {
         sm_context.sm_paused = false;

@@ -10,13 +10,13 @@
 #include "helper_functions.h"
 
 /* ── Timing Constants ────────────────────────────────────── */
-#define SM_SLEEP_WAKEUP_MINUTES   15  
+#define SM_SLEEP_WAKEUP_MINUTES   3  
 #define SM_VBAT_LOW_MV            3000
 #define SM_VBAT_FULL_MV           3650
 #define SM_VBAT_CHARGE_START_MV   3400
 #define SM_SAFETY_POLL_S          5
 #define SM_SETUP_INACTIVITY_TIMEOUT_S   60
-#define SM_NORMAL_INACTIVITY_TIMEOUT_S  60
+#define SM_NORMAL_INACTIVITY_TIMEOUT_S  20
 #define SM_I2C_RETRY_S   5
 
 /* ── Global Context ──────────────────────────────────────── */
@@ -44,6 +44,9 @@ static void SM_SendOffer(void);
 static void SM_DispatchIncomingPacket(void);
 static bool SM_ProcessFault(uint32_t gauge_safety, uint8_t charger_fault);
 static void SM_PrepareTelemetryResponse(void);
+static void SM_PrepareSTMConfigResponse(void);
+static void SM_PrepareSTMCredentialsResponse(void);
+static void SM_LoadDefaultSTMConfig(void);
 
 
 /* ── Hardware Abstraction Helpers ────────────────────────── */
@@ -101,7 +104,40 @@ void SM_Init(void)
     RTC_GetTime(&sm_context.sm_rtc_config);  
     sm_context.sm_rtc_config.wake_interval_minutes = SM_SLEEP_WAKEUP_MINUTES;
     sm_context.charger_configured = false;
+    SM_LoadDefaultSTMConfig();
 }
+
+static void SM_LoadDefaultSTMConfig(void)
+{
+    sm_context.stm_config = (SM_STMConfig_t){
+        .connectivity = { .mode = 0 },
+        .lte = {
+            .communication    = 0,
+            .baudrate_index   = 3,
+            .network_provider = 0
+        },
+        .camera = {
+            .resolution  = 2,
+            .framerate   = 4,
+            .compression = 1
+        },
+        .logging = {
+            .log_to_card  = 0,
+            .log_to_usart = 1
+        }
+    };
+
+    sm_context.stm_credentials = (SM_STMCredentials_t){
+        .ap_ssid         = "KAMITECK",
+        .ap_password     = "12345678",
+        .device_name     = "AnfaEng",
+        .device_password = "12345678"
+    };
+
+    sm_context.stm_config_received      = false;
+    sm_context.stm_credentials_received = false;
+}
+
 void SM_Transition(SM_State_t new_state) {
     const char* old_name = SM_GetStateString();
     sm_context.previous = sm_context.current;
@@ -255,7 +291,6 @@ void SM_Run(void) {
 
                 sm_context.entry_done = true;
                 sm_context.stm_data_sent = false;
-                SM_PrepareTelemetryResponse();
                 DL_GPIO_disableInterrupt(EXTERNAL_INTERRUPT_CHARGER_INT_PORT, EXTERNAL_INTERRUPT_SETUP_INT_PIN);
                 DL_GPIO_enableInterrupt(EXTERNAL_INTERRUPT_STM_MCU_IO2_PORT, EXTERNAL_INTERRUPT_STM_MCU_IO2_PIN);
             }
@@ -268,8 +303,12 @@ void SM_Run(void) {
             if (sm_context.stm_data_sent && stm32Spi.rxDone) {
                 stm32Spi.rxDone = false;
                 sm_context.stm_data_sent = false;
+                uart_printf("Received from STM32:\n");
+                for (int i = 0; i < 20; i++) {
+                    uart_printf("%02X ", stm32Spi.rxBuf[i]);
+                }
                 SM_DispatchIncomingPacket();
-            }
+             }
 
             /* Inactivity timeout (works for multi-packet sessions) */
             if (sm_context.wake_reason == SM_WAKE_NORMAL) {
@@ -561,6 +600,10 @@ static void SM_HandleRequest(uint8_t pid)
         SM_PrepareTelemetryResponse();
     } else if (pid == PID_RTC_GET) {
         SM_PrepareRTCResponse();
+    } else if (pid == PID_STM_CFG) {
+        SM_PrepareSTMConfigResponse();
+    } else if (pid == PID_STM_CREDENTIALS) {
+        SM_PrepareSTMCredentialsResponse();
     } else {
         SM_SendNack();
     }
@@ -579,9 +622,58 @@ static void SM_HandleConfig(uint8_t pid, const void *payload)
         RTC_SetTime(cfg);
         sm_context.sm_rtc_config = *cfg;
         SM_SendAck();
+    } else if (pid == PID_STM_CFG) {
+        const SM_STMConfig_t *cfg = (const SM_STMConfig_t *)payload;
+        sm_context.stm_config = *cfg;
+        sm_context.stm_config_received = true;
+        uart_printf("[SM] STM config updated: conn=%d lte_baud=%d cam_res=%d\n",
+            cfg->connectivity.mode,
+            cfg->lte.baudrate_index,
+            cfg->camera.resolution);
+        SM_SendAck();
+    } else if (pid == PID_STM_CREDENTIALS) {
+        const SM_STMCredentials_t *creds = (const SM_STMCredentials_t *)payload;
+        memcpy(&sm_context.stm_credentials, creds, sizeof(SM_STMCredentials_t));
+        sm_context.stm_credentials_received = true;
+        uart_printf("[SM] Credentials updated: ssid=%s device=%s\n",
+            sm_context.stm_credentials.ap_ssid,
+            sm_context.stm_credentials.device_name);
+        SM_SendAck();
     } else {
         SM_SendNack();
     }
+}
+
+static void SM_PrepareSTMConfigResponse(void)
+{
+    SM_SpiPacket_t *pkt = (SM_SpiPacket_t *)stm32Spi.txBuf;
+    memset(stm32Spi.txBuf, 0, stm32Spi.size);
+
+    pkt->pkt.header.msg_type   = MSG_DATA;
+    pkt->pkt.header.payload_id = PID_STM_CFG;
+    pkt->pkt.header.length     = sizeof(SM_STMConfig_t);
+    pkt->pkt.payload.stm_config = sm_context.stm_config;
+
+    uart_printf("[SM] STM config response sent (defaults: %s)\n",
+        sm_context.stm_config_received ? "no" : "yes");
+
+    SPI_Controller_Arm(&stm32Spi);
+}
+
+static void SM_PrepareSTMCredentialsResponse(void)
+{
+    SM_SpiPacket_t *pkt = (SM_SpiPacket_t *)stm32Spi.txBuf;
+    memset(stm32Spi.txBuf, 0, stm32Spi.size);
+
+    pkt->pkt.header.msg_type   = MSG_DATA;
+    pkt->pkt.header.payload_id = PID_STM_CREDENTIALS;
+    pkt->pkt.header.length     = sizeof(SM_STMCredentials_t);
+    pkt->pkt.payload.stm_credentials = sm_context.stm_credentials;
+
+    uart_printf("[SM] Credentials response sent (defaults: %s)\n",
+        sm_context.stm_credentials_received ? "no" : "yes");
+
+    SPI_Controller_Arm(&stm32Spi);
 }
 
 static void SM_DispatchIncomingPacket(void)

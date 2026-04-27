@@ -189,7 +189,7 @@ SYSCONFIG_WEAK void SYSCFG_DL_GPIO_init(void)
 		DIGITAL_OUTPUT_PORTA_STM_MCU_IO1_PIN);
     DL_GPIO_enableOutput(GPIOA, DIGITAL_OUTPUT_PORTA_HALL_3V_PIN |
 		DIGITAL_OUTPUT_PORTA_STM_MCU_IO1_PIN);
-    DL_GPIO_setUpperPinsPolarity(GPIOA, DL_GPIO_PIN_26_EDGE_RISE);
+    DL_GPIO_setUpperPinsPolarity(GPIOA, DL_GPIO_PIN_26_EDGE_RISE_FALL);
     DL_GPIO_clearInterruptStatus(GPIOA, EXTERNAL_INTERRUPT_STM_MCU_IO2_PIN);
     DL_GPIO_enableInterrupt(GPIOA, EXTERNAL_INTERRUPT_STM_MCU_IO2_PIN);
     DL_GPIO_clearPins(GPIOB, DIGITAL_OUTPUT_PORTB_EN3V8_PIN |
@@ -371,9 +371,9 @@ SYSCONFIG_WEAK void SYSCFG_DL_SPI_1_init(void) {
     /*
      * Set the bit rate clock divider to generate the serial output clock
      *     outputBitRate = (spiInputClock) / ((1 + SCR) * 2)
-     *     500000 = (32000000)/((1 + 31) * 2)
+     *     50000 = (32000000)/((1 + 319) * 2)
      */
-    DL_SPI_setBitRateSerialClockDivider(SPI_1_INST, 31);
+    DL_SPI_setBitRateSerialClockDivider(SPI_1_INST, 319);
 
     /* Enable SPI TX interrupt as a trigger for DMA */
     DL_SPI_enableDMATransmitEvent(SPI_1_INST);
