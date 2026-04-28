@@ -10,14 +10,13 @@
 #include "helper_functions.h"
 
 /* ── Timing Constants ────────────────────────────────────── */
-#define SM_SLEEP_WAKEUP_MINUTES   3  
 #define SM_VBAT_LOW_MV            3000
 #define SM_VBAT_FULL_MV           3650
 #define SM_VBAT_CHARGE_START_MV   3400
 #define SM_SAFETY_POLL_S          5
-#define SM_SETUP_INACTIVITY_TIMEOUT_S   60
-#define SM_NORMAL_INACTIVITY_TIMEOUT_S  20
+#define SM_INACTIVITY_TIMEOUT_S          60
 #define SM_I2C_RETRY_S   5
+#define SM_FAULT_RETRY_S 5
 
 /* ── Global Context ──────────────────────────────────────── */
 SM_Context_t sm_context;
@@ -46,7 +45,6 @@ static bool SM_ProcessFault(uint32_t gauge_safety, uint8_t charger_fault);
 static void SM_PrepareTelemetryResponse(void);
 static void SM_PrepareSTMConfigResponse(void);
 static void SM_PrepareSTMCredentialsResponse(void);
-static void SM_LoadDefaultSTMConfig(void);
 
 
 /* ── Hardware Abstraction Helpers ────────────────────────── */
@@ -65,10 +63,10 @@ static void SM_SetSTMPower(bool enable) {
 
 // Single source of truth for current power state
 static SM_PowerContext_t SM_FetchPowerContext(void) {
-    BQ25628E_UpdateTelemetry();
-    BQ25628E_ADC_Control(true);
     SM_PowerContext_t ctx;
+    BQ25628E_ADC_Control(true);
     BQ27Z746_UpdateTelemetry(I2C_0_INST);
+    BQ25628E_UpdateTelemetry();   
     uint16_t batt_status = BQ27Z746_Get_BatteryStatus();
     ctx.vbus_mv = BQ25628E_Get_VBUS_mV();
     ctx.vbat_mv = BQ27Z746_Get_Voltage_mV();
@@ -90,52 +88,10 @@ void SM_Init(void)
 {
     memset(&sm_context, 0, sizeof(SM_Context_t));
     sm_context.current = SM_STATE_INIT;
-
-    /* Charger defaults */
-    sm_context.sm_charger_config = (SM_ChargerConfig_t){
-        .vreg_mV     = BQ_INIT_VREG_MV,
-        .ichg_mA     = BQ_INIT_ICHG_MA,
-        .iindpm_mA   = BQ_INIT_IINDPM_MA,
-        .vindpm_mV   = BQ_INIT_VINDPM_MV,
-        .vsysmin_mV  = BQ_INIT_VSYSMIN_MV,
-        .iprechg_mA  = BQ_INIT_IPRECHG_MA,
-        .iterm_mA    = BQ_INIT_ITERM_MA
-    };
-    RTC_GetTime(&sm_context.sm_rtc_config);  
-    sm_context.sm_rtc_config.wake_interval_minutes = SM_SLEEP_WAKEUP_MINUTES;
-    sm_context.charger_configured = false;
-    SM_LoadDefaultSTMConfig();
-}
-
-static void SM_LoadDefaultSTMConfig(void)
-{
-    sm_context.stm_config = (SM_STMConfig_t){
-        .connectivity = { .mode = 0 },
-        .lte = {
-            .communication    = 0,
-            .baudrate_index   = 3,
-            .network_provider = 0
-        },
-        .camera = {
-            .resolution  = 2,
-            .framerate   = 4,
-            .compression = 1
-        },
-        .logging = {
-            .log_to_card  = 0,
-            .log_to_usart = 1
-        }
-    };
-
-    sm_context.stm_credentials = (SM_STMCredentials_t){
-        .ap_ssid         = "KAMITECK",
-        .ap_password     = "12345678",
-        .device_name     = "AnfaEng",
-        .device_password = "12345678"
-    };
-
-    sm_context.stm_config_received      = false;
-    sm_context.stm_credentials_received = false;
+    SM_LoadCharger();
+    SM_LoadPeriod();
+    SM_LoadCredentials();
+    SM_LoadSTMConfig();
 }
 
 void SM_Transition(SM_State_t new_state) {
@@ -285,44 +241,36 @@ void SM_Run(void) {
                 SM_SetSTMPower(true);
                 sm_context.stm_power_on_s = sm_context.second_counter;
                 sm_context.last_io2_activity_s = sm_context.second_counter;
-
                 uart_printf("[SM] STM32 powered : reason: %s\n",
                     (sm_context.wake_reason == SM_WAKE_SETUP) ? "SETUP" : "NORMAL");
-
                 sm_context.entry_done = true;
                 sm_context.stm_data_sent = false;
                 DL_GPIO_disableInterrupt(EXTERNAL_INTERRUPT_CHARGER_INT_PORT, EXTERNAL_INTERRUPT_SETUP_INT_PIN);
                 DL_GPIO_enableInterrupt(EXTERNAL_INTERRUPT_STM_MCU_IO2_PORT, EXTERNAL_INTERRUPT_STM_MCU_IO2_PIN);
             }
             if (stm_io2_flag) {
-                sm_context.stm_data_sent = true;
+                sm_context.last_io2_activity_s = sm_context.second_counter;
                 stm_io2_flag = false;
+                stm32Spi.rxDone = false;
+                sm_context.stm_data_sent = true;
                 SM_SendOffer();
             }
             /* Process STM32 reply and send next packet immediately */
             if (sm_context.stm_data_sent && stm32Spi.rxDone) {
                 stm32Spi.rxDone = false;
                 sm_context.stm_data_sent = false;
-                uart_printf("Received from STM32:\n");
+                uart_printf("\n Received from STM32:\n");
                 for (int i = 0; i < 20; i++) {
                     uart_printf("%02X ", stm32Spi.rxBuf[i]);
                 }
                 SM_DispatchIncomingPacket();
              }
 
-            /* Inactivity timeout (works for multi-packet sessions) */
-            if (sm_context.wake_reason == SM_WAKE_NORMAL) {
-                if ((sm_context.second_counter - sm_context.stm_power_on_s) >= SM_NORMAL_INACTIVITY_TIMEOUT_S) {
-                    uart_printf("[SM] STM32 timeout (NORMAL mode)\n");
-                    SM_SetSTMPower(false);
-                    SM_ResumeSystemContext();
-                }
-            } else {
-                if ((sm_context.second_counter - sm_context.last_io2_activity_s) >= SM_SETUP_INACTIVITY_TIMEOUT_S) {
-                    uart_printf("[SM] STM32 inactivity timeout (SETUP mode)\n");
-                    SM_SetSTMPower(false);
-                    SM_ResumeSystemContext();
-                }
+            /* Inactivity timeout — resets each time IO2 fires */
+            if ((sm_context.second_counter - sm_context.last_io2_activity_s) >= SM_INACTIVITY_TIMEOUT_S) {
+                uart_printf("[SM] STM32 inactivity timeout\n");
+                SM_SetSTMPower(false);
+                SM_ResumeSystemContext();
             }
             break;
         }
@@ -409,7 +357,7 @@ void SM_Run(void) {
             if (sm_context.fault_source == SM_FAULT_INIT_FAILED) break;
 
             uint32_t elapsed = sm_context.second_counter - sm_context.fault_retry_s;
-            uint32_t interval = (sm_context.fault_source == SM_FAULT_I2C_BUS) ? SM_I2C_RETRY_S : 5UL;
+            uint32_t interval = (sm_context.fault_source == SM_FAULT_I2C_BUS) ? SM_I2C_RETRY_S : SM_FAULT_RETRY_S;
 
             if (elapsed >= interval) {
                 sm_context.fault_retry_s = sm_context.second_counter;
@@ -487,7 +435,7 @@ static bool SM_NeedsPeriodicSTMWake(SM_PowerContext_t pwr)
 {
     if (pwr.is_critical_low && sm_context.critical_msg_sent) return false;
     return (sm_context.minute_counter - sm_context.last_stm_periodic_minute) >= 
-           sm_context.sm_rtc_config.wake_interval_minutes;
+           sm_context.stm_wake_period.wake_interval_minutes;
 }
 static void SM_ResumeSystemContext(void) {
     SM_PowerContext_t pwr = SM_FetchPowerContext();
@@ -531,13 +479,24 @@ static void SM_PrepareTelemetryResponse(void)
 
     int btmp_dC = (int)(BQ25628E_Get_TBAT_C() * 10.0f);
 
+    /* Report the state we came from, not POWER_STM which is always current here */
+    const char* prev_state_str;
+    switch (sm_context.previous) {
+        case SM_STATE_INIT:           prev_state_str = "INIT";           break;
+        case SM_STATE_CHARGING:       prev_state_str = "CHARGING";       break;
+        case SM_STATE_POWER_STM:      prev_state_str = "POWER_STM";      break;
+        case SM_STATE_IDLE:           prev_state_str = "IDLE";           break;
+        case SM_STATE_CRITICAL_FAULT: prev_state_str = "CRITICAL_FAULT"; break;
+        default:                      prev_state_str = "UNKNOWN";        break;
+    }
+
     snprintf(json_buf, sizeof(json_buf),
         "{\"soc\":%d,\"soh\":%d,"
         "\"vbat\":%d,\"ibat\":%d,\"vchg\":%d,\"vsys\":%d,\"ichg\":%d,\"avgi\":%d,\"avgpwr\":%d,"
         "\"gtmp\":%d,\"ctmp\":%d,\"btmp\":%d,"
         "\"cycles\":%d,"
         "\"adapter\":%d,"
-        "\"state\":\"%s\",\"wake\":\"%s\","
+        "\"state\":\"%s\","
         "\"safety\":\"0x%08X\",\"battstat\":\"0x%04X\","
         "\"chgflags\":\"0x%02X\",\"faultflags\":\"0x%02X\","
         "\"chgstat\":\"%s\","
@@ -551,11 +510,10 @@ static void SM_PrepareTelemetryResponse(void)
         BQ27Z746_Get_AvgPower_mW(), (int)BQ27Z746_Get_InternalTemp_C(),
         BQ25628E_Get_TDIE_C(), btmp_dC,
         BQ27Z746_Get_CycleCount(),
-        pwr.adapter_present ? 1 : 0, SM_GetStateString(),
-        (sm_context.wake_reason == SM_WAKE_SETUP) ? "SETUP" : "NORMAL",
+        pwr.adapter_present ? 1 : 0, prev_state_str,
         (unsigned int)last_safety_status, batt_status, chg_flags, fault_flags,
         SM_GetChargeString(pwr.chg_stat), pwr.is_critical_low ? 1 : 0,
-        sm_context.sm_rtc_config.wake_interval_minutes,
+        sm_context.stm_wake_period.wake_interval_minutes,
         sm_context.sm_charger_config.vreg_mV,
         sm_context.sm_charger_config.ichg_mA,
         sm_context.sm_charger_config.iindpm_mA,
@@ -570,6 +528,8 @@ static void SM_PrepareTelemetryResponse(void)
     pkt->pkt.header.msg_type   = MSG_DATA;
     pkt->pkt.header.payload_id = PID_TELEMETRY;
     size_t len = strlen(json_buf);
+    if (len > sizeof(pkt->pkt.payload.telemetry.json))
+        len = sizeof(pkt->pkt.payload.telemetry.json);
     pkt->pkt.header.length     = (uint16_t)len;
     uart_printf("[SM] Telemetry response: %s\n", json_buf);
     memcpy(pkt->pkt.payload.telemetry.json, json_buf, len);
@@ -619,10 +579,19 @@ static void SM_HandleConfig(uint8_t pid, const void *payload)
         SM_SendAck();
     } else if (pid == PID_RTC_SET) {
         const SM_RTCConfig_t *cfg = (const SM_RTCConfig_t *)payload;
-        RTC_SetTime(cfg);
-        sm_context.sm_rtc_config = *cfg;
+        if (RTC_SetTime(cfg)) {
+            sm_context.sm_rtc_config = *cfg;
+            SM_SendAck();
+        } else {
+            SM_SendNack();
+        }
+    } else if (pid == PID_PERIOD_SET){
+        const SM_PeriodConfig_t *cfg = (const SM_PeriodConfig_t *)payload;
+        sm_context.stm_wake_period = *cfg;
+        sm_context.wake_interval_configured = true;
         SM_SendAck();
-    } else if (pid == PID_STM_CFG) {
+    }
+    else if (pid == PID_STM_CFG) {
         const SM_STMConfig_t *cfg = (const SM_STMConfig_t *)payload;
         sm_context.stm_config = *cfg;
         sm_context.stm_config_received = true;
@@ -680,8 +649,6 @@ static void SM_DispatchIncomingPacket(void)
 {
     SM_MsgHeader_t *hdr = (SM_MsgHeader_t *)stm32Spi.rxBuf;
 
-    sm_context.last_io2_activity_s = sm_context.second_counter;
-
     switch (hdr->msg_type) {
         case MSG_REQUEST:
             SM_HandleRequest(hdr->payload_id);
@@ -735,8 +702,6 @@ void RTC_GetTime(SM_RTCConfig_t *out)
 {
     DL_RTC_Calendar calendar;
 
-    // while (!DL_RTC_isSafeToRead(RTC));
-
     calendar = DL_RTC_getCalendarTime(RTC);
 
     out->second = calendar.seconds;
@@ -748,16 +713,17 @@ void RTC_GetTime(SM_RTCConfig_t *out)
 
 }
 
-void RTC_SetTime(const SM_RTCConfig_t *in)
+bool RTC_SetTime(const SM_RTCConfig_t *in)
 {
     DL_RTC_Calendar calendar;
     while (!DL_RTC_isSafeToRead(RTC));
 
     if (in->second > 59 || in->minute > 59 || in->hour > 23 ||
         in->month < 1 || in->month > 12 ||
-        in->day < 1 || in->day > 31)
+        in->day < 1 || in->day > 31 ||
+        in->year < 2000 || in->year > 2099)
     {
-        return;
+        return false;
     }
 
     calendar.seconds    = in->second;
@@ -765,10 +731,11 @@ void RTC_SetTime(const SM_RTCConfig_t *in)
     calendar.hours      = in->hour;
     calendar.dayOfMonth = in->day;
     calendar.month      = in->month;
-    calendar.year = in->year;
+    calendar.year       = in->year;
     calendar.dayOfWeek  = 1;
 
     DL_RTC_initCalendar(RTC, calendar, DL_RTC_FORMAT_BINARY);
+    return true;
 }
 
 static bool SM_ProcessFault(uint32_t gauge_safety, uint8_t charger_fault)
@@ -823,5 +790,5 @@ static bool SM_ProcessFault(uint32_t gauge_safety, uint8_t charger_fault)
         uart_printf("[SM] Recoverable fault : charging disabled (system continues running)\n");
     }
 
-    return is_critical;   // true = go to CRITICAL_FAULT, false = stay in current state
+    return is_critical;
 }

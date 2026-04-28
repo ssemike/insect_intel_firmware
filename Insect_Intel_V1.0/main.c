@@ -8,6 +8,7 @@
 #include "sm.h"
 #include "helper_functions.h"
 
+
 volatile bool bq_monitor_active    = false;
 volatile bool hall_monitor_active  = false;
 volatile bool gauge_monitor_active = false;
@@ -16,6 +17,7 @@ volatile bool rtc_second_tick  = false;
 volatile bool hall_wakeup_flag = false;
 volatile bool stm_io2_flag     = false;
 volatile uint32_t monitor_rate = 200; 
+volatile uint32_t EEPROMEmulationState;  
 
 void setupCLI(void) {
     CLI_RegisterCommand("help", cmd_help, "Show available commands");
@@ -37,7 +39,6 @@ int main(void)
     PWR_EnableCoreInterrupts();
     char processingBuffer[MAX_INPUT_LEN];
     SM_Init();
-    PWR_EnterMinimumProfile();
     while (1) {
         if (data_received) {
             get_UART_buffer(processingBuffer);

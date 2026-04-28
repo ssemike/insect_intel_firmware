@@ -21,8 +21,9 @@ typedef enum {
     PID_RTC_GET     = 0x02,
     PID_RTC_SET     = 0x03,
     PID_CHARGER_CFG = 0x04,
-    PID_STM_CFG     = 0x05,
-    PID_STM_CREDENTIALS = 0x06
+    PID_PERIOD_SET  = 0x05,
+    PID_STM_CFG     = 0x06,
+    PID_STM_CREDENTIALS = 0x07
 } SM_PayloadId_t;
 
 /* ── Packet Header (4 bytes) ───────────────────────────────────────────── */
@@ -35,6 +36,9 @@ typedef struct __attribute__((packed)) {
 /* ── Payload types ─────────────────────────────────────────────────────── */
 typedef SM_RTCConfig_t     SM_RtcConfigPayload_t;
 typedef SM_ChargerConfig_t SM_ChargerConfigPayload_t;
+typedef SM_STMConfig_t  SM_STMConfigPayload_t ;
+typedef SM_STMCredentials_t SM_STMCredentialsPayload_t;
+typedef SM_PeriodConfig_t SM_PeriodConfigPayload_t;
 
 typedef struct {
     char json[508];        // null-terminated JSON (header takes 4 bytes → 508 left)
@@ -58,8 +62,9 @@ typedef union {
             SM_TelemetryPayload_t     telemetry;
             SM_RtcDataPayload_t       rtc_data;
             SM_AckPayload_t           ack;
-            SM_STMConfig_t      stm_config;
-            SM_STMCredentials_t stm_credentials;    
+            SM_STMConfigPayload_t     stm_config;
+            SM_STMCredentialsPayload_t  stm_credentials;  
+            SM_PeriodConfigPayload_t    stm_wake_period;  
             uint8_t                   raw_payload[508];
         } payload;
     } pkt;

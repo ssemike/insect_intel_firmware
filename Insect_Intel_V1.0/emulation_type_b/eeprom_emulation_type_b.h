@@ -69,16 +69,16 @@
  * @brief The sector address to use
  */
 #ifndef EEPROM_EMULATION_ADDRESS
-#define EEPROM_EMULATION_ADDRESS                                    (0x00002000)
+#define EEPROM_EMULATION_ADDRESS                                    (0x00010000)
 #endif
 /*!
  * @brief The number of groups to use
  */
-#define EEPROM_EMULATION_GROUP_ACCOUNT                                       (3)
+#define EEPROM_EMULATION_GROUP_ACCOUNT                                       (2)
 /*!
  * @brief The number of sectors in groups to use
  */
-#define EEPROM_EMULATION_SECTOR_INGROUP_ACCOUNT                              (2)
+#define EEPROM_EMULATION_SECTOR_INGROUP_ACCOUNT                              (1)
 /*!
  * @brief Enable or disable repair
  */

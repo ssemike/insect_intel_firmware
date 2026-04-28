@@ -181,7 +181,7 @@ if (strcmp(sub, "status") == 0) {
         sm_context.sm_rtc_config.day,
         sm_context.sm_rtc_config.month,
         sm_context.sm_rtc_config.year);
-    uart_printf("  Wake Interval : %d min\n", sm_context.sm_rtc_config.wake_interval_minutes);
+    uart_printf("  Wake Interval : %d min\n", sm_context.stm_wake_period.wake_interval_minutes);
     uart_printf("\n=== STM32 Session ===\n");
     uart_printf("  Last Periodic Wake : %lu min\n", sm_context.last_stm_periodic_minute);
     uart_printf("  Critical Msg Sent  : %s\n", sm_context.critical_msg_sent ? "YES" : "NO");

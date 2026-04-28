@@ -50,8 +50,12 @@ typedef struct {
     uint8_t  hour;                    // 0-23
     uint8_t  minute;                  // 0-59
     uint8_t  second;                  // 0-59
-    uint8_t  wake_interval_minutes;   // replaces SM_SLEEP_WAKEUP_MINUTES
+ 
 } SM_RTCConfig_t;
+
+typedef struct {
+       uint8_t  wake_interval_minutes;   // wake period ;
+} SM_PeriodConfig_t;
 
 typedef struct {
     uint16_t vreg_mV;       // Charge regulation voltage
@@ -119,11 +123,13 @@ typedef struct {
     uint32_t         last_charging_tick;
     SM_ChargerConfig_t   sm_charger_config;
     SM_RTCConfig_t       sm_rtc_config;
-    bool                 charger_configured;
     SM_STMConfig_t      stm_config;
     SM_STMCredentials_t stm_credentials;
+    SM_PeriodConfig_t   stm_wake_period;
     bool                stm_config_received;
     bool                stm_credentials_received;
+    bool                wake_interval_configured;
+    bool                charger_configured;
 } SM_Context_t;
 
 extern SM_Context_t sm_context;
@@ -137,12 +143,11 @@ const char* SM_GetStateString(void);
 void        SM_Transition(SM_State_t new_state);
 bool SM_SafetyCheck(void);
 bool SM_ChargingSafetyCheck(void);
-void SM_SendTelemetryToSTM32(void);
 void RTC_DisablePrescaler(void);
 void SM_EnablePrescaler(void);
 
 
 void RTC_GetTime(SM_RTCConfig_t *out);
-void RTC_SetTime(const SM_RTCConfig_t *in);
+bool RTC_SetTime(const SM_RTCConfig_t *in);
 
 #endif

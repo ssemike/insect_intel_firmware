@@ -91,7 +91,7 @@ main.o: ../main.c \
  ../ics/BQ27Z7/BQ27Z7_functions.h \
  C:/Users/Admin/Desktop/Software\ code/Final\ Software/Insect\ Intel/Insect_Intel_V1.0/HAL/i2c.h \
  ../ics/BQ27Z7/gauge.h ../HAL/spi_master.h ../sm.h \
- ../helper_functions.h
+ ../helper_functions.h ../emulation_type_b/eeprom_emulation_type_b.h
 ti_msp_dl_config.h:
 C:/ti/mspm0_sdk_2_09_00_01/source/ti/devices/msp/msp.h:
 C:/ti/mspm0_sdk_2_09_00_01/source/ti/devices/DeviceFamily.h:
@@ -187,3 +187,4 @@ C:/Users/Admin/Desktop/Software\ code/Final\ Software/Insect\ Intel/Insect_Intel
 ../HAL/spi_master.h:
 ../sm.h:
 ../helper_functions.h:
+../emulation_type_b/eeprom_emulation_type_b.h:
