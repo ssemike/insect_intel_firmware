@@ -14,7 +14,7 @@
 #define SM_VBAT_FULL_MV           3650
 #define SM_VBAT_CHARGE_START_MV   3400
 #define SM_SAFETY_POLL_S          5
-#define SM_INACTIVITY_TIMEOUT_S          60
+#define SM_INACTIVITY_TIMEOUT_S          240
 #define SM_I2C_RETRY_S   5
 #define SM_FAULT_RETRY_S 5
 
@@ -247,13 +247,19 @@ void SM_Run(void) {
                 sm_context.stm_data_sent = false;
                 DL_GPIO_disableInterrupt(EXTERNAL_INTERRUPT_CHARGER_INT_PORT, EXTERNAL_INTERRUPT_SETUP_INT_PIN);
                 DL_GPIO_enableInterrupt(EXTERNAL_INTERRUPT_STM_MCU_IO2_PORT, EXTERNAL_INTERRUPT_STM_MCU_IO2_PIN);
+                stm_io2_flag = false;
             }
             if (stm_io2_flag) {
                 sm_context.last_io2_activity_s = sm_context.second_counter;
                 stm_io2_flag = false;
                 stm32Spi.rxDone = false;
                 sm_context.stm_data_sent = true;
-                SM_SendOffer();
+                if (sm_context.has_pending_response) {
+                    SPI_Controller_Arm(&stm32Spi);
+                    sm_context.has_pending_response = false;
+                } else {
+                    SM_SendOffer();
+                }
             }
             /* Process STM32 reply and send next packet immediately */
             if (sm_context.stm_data_sent && stm32Spi.rxDone) {
@@ -263,6 +269,7 @@ void SM_Run(void) {
                 for (int i = 0; i < 20; i++) {
                     uart_printf("%02X ", stm32Spi.rxBuf[i]);
                 }
+                // delay_cycles(320000);
                 SM_DispatchIncomingPacket();
              }
 
@@ -450,7 +457,7 @@ static void SM_ResumeSystemContext(void) {
     }
 }
 /* ── Protocol helpers ───────────────────────────────────────────────────── */
-static void SM_SendSimpleMsg(SM_MsgType_t type)
+static void SM_PrepareSimpleMsg(SM_MsgType_t type)
 {
     SM_SpiPacket_t *pkt = (SM_SpiPacket_t *)stm32Spi.txBuf;
     memset(stm32Spi.txBuf, 0, stm32Spi.size);
@@ -458,15 +465,22 @@ static void SM_SendSimpleMsg(SM_MsgType_t type)
     pkt->pkt.header.msg_type   = type;
     pkt->pkt.header.payload_id = 0;
     pkt->pkt.header.length     = 0;
+}
 
+static void SM_SendOffer(void) { 
+    SM_PrepareSimpleMsg(MSG_OFFER);
     SPI_Controller_Arm(&stm32Spi);
 }
 
-static void SM_SendOffer(void) { SM_SendSimpleMsg(MSG_OFFER);}
+static void SM_PrepareAck(void) { 
+    SM_PrepareSimpleMsg(MSG_ACK); 
+    sm_context.has_pending_response = true;
+}
 
-static void SM_SendAck(void)   { SM_SendSimpleMsg(MSG_ACK); }
-
-static void SM_SendNack(void)  { SM_SendSimpleMsg(MSG_NACK);  }
+static void SM_PrepareNack(void) { 
+    SM_PrepareSimpleMsg(MSG_NACK);  
+    sm_context.has_pending_response = true;
+}
 static void SM_PrepareTelemetryResponse(void)
 {
     SM_PowerContext_t pwr = SM_FetchPowerContext();
@@ -531,14 +545,14 @@ static void SM_PrepareTelemetryResponse(void)
     if (len > sizeof(pkt->pkt.payload.telemetry.json))
         len = sizeof(pkt->pkt.payload.telemetry.json);
     pkt->pkt.header.length     = (uint16_t)len;
-    uart_printf("[SM] Telemetry response: %s\n", json_buf);
+    // uart_printf("[SM] Telemetry response: %s\n", json_buf);
     memcpy(pkt->pkt.payload.telemetry.json, json_buf, len);
 
     if(pwr.is_critical_low) {
         sm_context.critical_msg_sent = true;
         uart_printf("[SM] Critical low battery detected, sending last packet till charge\n");
     }
-    SPI_Controller_Arm(&stm32Spi);
+    sm_context.has_pending_response = true;
 }
 
 static void SM_PrepareRTCResponse(void)
@@ -551,7 +565,7 @@ static void SM_PrepareRTCResponse(void)
     pkt->pkt.header.length     = sizeof(SM_RTCConfig_t);
     pkt->pkt.payload.rtc_data = sm_context.sm_rtc_config;
 
-    SPI_Controller_Arm(&stm32Spi);
+    sm_context.has_pending_response = true;
 }
 
 static void SM_HandleRequest(uint8_t pid)
@@ -565,7 +579,7 @@ static void SM_HandleRequest(uint8_t pid)
     } else if (pid == PID_STM_CREDENTIALS) {
         SM_PrepareSTMCredentialsResponse();
     } else {
-        SM_SendNack();
+        SM_PrepareNack();
     }
 }
 
@@ -576,20 +590,20 @@ static void SM_HandleConfig(uint8_t pid, const void *payload)
         BQ25628E_ApplyProfile(cfg);
         sm_context.sm_charger_config = *cfg;
         sm_context.charger_configured = true;
-        SM_SendAck();
+        SM_PrepareAck();
     } else if (pid == PID_RTC_SET) {
         const SM_RTCConfig_t *cfg = (const SM_RTCConfig_t *)payload;
         if (RTC_SetTime(cfg)) {
             sm_context.sm_rtc_config = *cfg;
-            SM_SendAck();
+            SM_PrepareAck();
         } else {
-            SM_SendNack();
+            SM_PrepareNack();
         }
     } else if (pid == PID_PERIOD_SET){
         const SM_PeriodConfig_t *cfg = (const SM_PeriodConfig_t *)payload;
         sm_context.stm_wake_period = *cfg;
         sm_context.wake_interval_configured = true;
-        SM_SendAck();
+        SM_PrepareAck();
     }
     else if (pid == PID_STM_CFG) {
         const SM_STMConfig_t *cfg = (const SM_STMConfig_t *)payload;
@@ -599,7 +613,7 @@ static void SM_HandleConfig(uint8_t pid, const void *payload)
             cfg->connectivity.mode,
             cfg->lte.baudrate_index,
             cfg->camera.resolution);
-        SM_SendAck();
+        SM_PrepareAck();
     } else if (pid == PID_STM_CREDENTIALS) {
         const SM_STMCredentials_t *creds = (const SM_STMCredentials_t *)payload;
         memcpy(&sm_context.stm_credentials, creds, sizeof(SM_STMCredentials_t));
@@ -607,9 +621,9 @@ static void SM_HandleConfig(uint8_t pid, const void *payload)
         uart_printf("[SM] Credentials updated: ssid=%s device=%s\n",
             sm_context.stm_credentials.ap_ssid,
             sm_context.stm_credentials.device_name);
-        SM_SendAck();
+        SM_PrepareAck();
     } else {
-        SM_SendNack();
+        SM_PrepareNack();
     }
 }
 
@@ -626,7 +640,7 @@ static void SM_PrepareSTMConfigResponse(void)
     uart_printf("[SM] STM config response sent (defaults: %s)\n",
         sm_context.stm_config_received ? "no" : "yes");
 
-    SPI_Controller_Arm(&stm32Spi);
+    sm_context.has_pending_response = true;
 }
 
 static void SM_PrepareSTMCredentialsResponse(void)
@@ -642,7 +656,7 @@ static void SM_PrepareSTMCredentialsResponse(void)
     uart_printf("[SM] Credentials response sent (defaults: %s)\n",
         sm_context.stm_credentials_received ? "no" : "yes");
 
-    SPI_Controller_Arm(&stm32Spi);
+    sm_context.has_pending_response = true;
 }
 
 static void SM_DispatchIncomingPacket(void)
@@ -665,7 +679,7 @@ static void SM_DispatchIncomingPacket(void)
             return;   
 
         default:
-            SM_SendNack();
+            SM_PrepareNack();
             break;
     }
 }
@@ -716,7 +730,6 @@ void RTC_GetTime(SM_RTCConfig_t *out)
 bool RTC_SetTime(const SM_RTCConfig_t *in)
 {
     DL_RTC_Calendar calendar;
-    while (!DL_RTC_isSafeToRead(RTC));
 
     if (in->second > 59 || in->minute > 59 || in->hour > 23 ||
         in->month < 1 || in->month > 12 ||

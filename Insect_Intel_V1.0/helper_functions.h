@@ -8,7 +8,7 @@
 #include "sm.h"
 
 
-#define SM_SLEEP_WAKEUP_MINUTES   3  
+#define SM_SLEEP_WAKEUP_MINUTES   4
 
 /* ─────────────────────────────────────────────────────────────────────────────
  * Power Profiles

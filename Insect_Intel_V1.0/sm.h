@@ -130,6 +130,7 @@ typedef struct {
     bool                stm_credentials_received;
     bool                wake_interval_configured;
     bool                charger_configured;
+    bool                has_pending_response;
 } SM_Context_t;
 
 extern SM_Context_t sm_context;
