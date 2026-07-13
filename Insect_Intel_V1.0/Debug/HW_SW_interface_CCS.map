@@ -1,10 +1,10 @@
 ******************************************************************************
             TI ARM Clang Linker PC v4.0.4                      
 ******************************************************************************
->> Linked Tue May  5 01:11:48 2026
+>> Linked Sun Jul 12 22:42:20 2026
 
 OUTPUT FILE NAME:   <HW_SW_interface_CCS.out>
-ENTRY POINT SYMBOL: "_c_int00_noargs"  address: 000071bd
+ENTRY POINT SYMBOL: "_c_int00_noargs"  address: 000071c5
 
 
 MEMORY CONFIGURATION
@@ -43,398 +43,404 @@ section   page    origin      length       input sections
 
 .text      0    000000c0    000080e0     
                   000000c0    000009d0     libc.a : _printfi.c.obj (.text:__TI_printfi)
-                  00000a90    00000728     sm.o (.text.SM_Run)
-                  000011b8    00000524     functions.o (.text.cmd_gauge)
-                  000016dc    0000048c     functions.o (.text.cmd_sm)
-                  00001b68    000003b4     functions.o (.text.Run_Legacy_Monitors)
-                  00001f1c    00000278     sm.o (.text.SM_PrepareTelemetryResponse)
-                  00002194    0000026c     functions.o (.text.cmd_bq)
-                  00002400    00000220     libc.a : _printfi.c.obj (.text._pconv_a)
-                  00002620    000001fc     BQ25628_functions.o (.text.BQ25628E_UpdateTelemetry)
-                  0000281c    000001dc     libc.a : _printfi.c.obj (.text._pconv_g)
-                  000029f8    000001a8     ti_msp_dl_config.o (.text.SYSCFG_DL_GPIO_init)
-                  00002ba0    00000192     libclang_rt.builtins.a : adddf3.S.obj (.text.adddf3_subdf3)
-                  00002d32    00000002                            : aeabi_div0.c.obj (.text.__aeabi_idiv0)
-                  00002d34    0000018c     sm.o (.text.SM_DecodeBatterySafetyStatus)
-                  00002ec0    00000184     i2c.o (.text.I2C_ReadDevice)
-                  00003044    0000014c     functions.o (.text.cmd_pwr)
-                  00003190    00000144     BQ25628_functions.o (.text._calculateTempFromRt)
-                  000032d4    0000013c     libc.a : _printfi.c.obj (.text.fcvt)
-                  00003410    00000134     sm.o (.text.SM_HandleConfig)
-                  00003544    00000120     libc.a : _printfi.c.obj (.text._pconv_e)
-                  00003664    00000118     BQ27Z7_functions.o (.text.BQ27Z746_MAC_Read)
-                  0000377c    0000010c     sm.o (.text.SM_ProcessFault)
-                  00003888    0000010c     i2c.o (.text.Shared_I2C_IRQHandler)
-                  00003994    0000010c     libclang_rt.builtins.a : divdf3.S.obj (.text.__divdf3)
-                  00003aa0    00000108     i2c.o (.text.I2C_WriteDevice)
-                  00003ba8    00000108     functions.o (.text.cmd_hall)
-                  00003cb0    000000f8     sm.o (.text.SM_FetchPowerContext)
-                  00003da8    000000e4     libclang_rt.builtins.a : muldf3.S.obj (.text.__muldf3)
-                  00003e8c    000000e4     functions.o (.text.cmd_i2cscan)
-                  00003f70    000000e0     functions.o (.text.print_battery_status)
-                  00004050    000000d8     uart.o (.text.CLI_ProcessInput)
-                  00004128    000000d8     libc.a : s_scalbn.c.obj (.text.scalbn)
-                  00004200    000000d8     libclang_rt.builtins.a : addsf3.S.obj (.text)
-                  000042d8    000000d4     i2c.o (.text.I2C_TryAddress)
-                  000043ac    000000cc     sm.o (.text.RTC_SetTime)
-                  00004478    000000b4     uart.o (.text.UARTReceive)
-                  0000452c    000000a4     driverlib.a : dl_rtc_common.o (.text.DL_RTC_Common_initCalendar)
-                  000045d0    000000a2     libclang_rt.builtins.a : udivmoddi4.S.obj (.text)
-                  00004672    00000002                            : aeabi_div0.c.obj (.text.__aeabi_ldiv0)
-                  00004674    000000a0     main.o (.text.setupCLI)
-                  00004714    0000009c     BQ27Z7_functions.o (.text.BQ27Z746_UpdateTelemetry)
-                  000047b0    0000008c     spi_master.o (.text.SPI_Controller_Arm)
-                  0000483c    0000008c     ti_msp_dl_config.o (.text.SYSCFG_DL_initPower)
-                  000048c8    0000008c     libclang_rt.builtins.a : mulsf3.S.obj (.text.__mulsf3)
-                  00004954    0000008c     libc.a : s_floorf.c.obj (.text.floorf)
-                  000049e0    00000088            : strcmp-armv6m.S.obj (.text:strcmp)
-                  00004a68    00000084     sm.o (.text.SM_DecodeChargingSafetyStatus)
-                  00004aec    00000084     sm.o (.text.SM_Handle_RTC_Tick)
-                  00004b70    00000082     libclang_rt.builtins.a : divsf3.S.obj (.text.__divsf3)
-                  00004bf2    00000002     --HOLE-- [fill = 0]
-                  00004bf4    00000080     sm.o (.text.SM_SafetyCheck)
-                  00004c74    0000007c     driverlib.a : dl_rtc_common.o (.text.DL_RTC_Common_getCalendarTime)
-                  00004cf0    0000007c     sm.o (.text.SM_PrepareSTMConfigResponse)
-                  00004d6c    0000007c     sm.o (.text.SM_PrepareSTMCredentialsResponse)
-                  00004de8    0000007c     libc.a : copy_decompress_lzss.c.obj (.text:decompress:lzss)
-                  00004e64    00000074     BQ27Z7_functions.o (.text.BQ27Z746_GetTempConfig)
-                  00004ed8    00000074     sm.o (.text.SM_GetStateString)
-                  00004f4c    00000074     libclang_rt.builtins.a : comparedf2.c.obj (.text.__gedf2)
-                  00004fc0    00000070     uart.o (.text.CLI_Tokenize)
-                  00005030    00000070     gauge.o (.text.gauge_read)
-                  000050a0    00000070     gauge.o (.text.gauge_write)
-                  00005110    00000068     helper_functions.o (.text.SM_LoadCredentials)
-                  00005178    00000068     sm.o (.text.SM_NeedsPeriodicSTMWake)
-                  000051e0    00000068     sm.o (.text.SM_PostWake_Branch)
-                  00005248    00000068     libclang_rt.builtins.a : comparedf2.c.obj (.text.__ledf2)
-                  000052b0    00000068     libc.a : s_roundf.c.obj (.text.roundf)
-                  00005318    00000066            : _printfi.c.obj (.text._mcpy)
-                  0000537e    00000002     --HOLE-- [fill = 0]
-                  00005380    00000064     BQ25628_functions.o (.text.BQ25628E_Set_VINDPM_mV)
-                  000053e4    00000064     sm.o (.text.SM_DispatchIncomingPacket)
-                  00005448    00000064     sm.o (.text.SM_GetChargeString)
-                  000054ac    00000064     ti_msp_dl_config.o (.text.SYSCFG_DL_I2C_0_init)
-                  00005510    00000064     ti_msp_dl_config.o (.text.SYSCFG_DL_I2C_1_init)
-                  00005574    00000064     main.o (.text.main)
-                  000055d8    00000064     uart.o (.text.uart_printf)
-                  0000563c    00000062     BQ27Z7_functions.o (.text.BQ27Z746_GetOperationStatus)
-                  0000569e    00000062     BQ27Z7_functions.o (.text.BQ27Z746_GetSafetyStatus)
-                  00005700    00000062     libclang_rt.builtins.a : aeabi_dcmp.S.obj (.text.__aeabi_dcmp)
-                  00005762    00000002     --HOLE-- [fill = 0]
-                  00005764    00000062                            : aeabi_fcmp.S.obj (.text.__aeabi_fcmp)
-                  000057c6    00000002     --HOLE-- [fill = 0]
-                  000057c8    00000060     BQ25628_functions.o (.text.BQ25628E_Set_VREG_mV)
-                  00005828    00000060     BQ25628_functions.o (.text.BQ25628E_Set_VSYSMIN_mV)
-                  00005888    00000060     sm.o (.text.SM_ChargingSafetyCheck)
-                  000058e8    0000005e     BQ27Z7_functions.o (.text.BQ27Z746_GetChargingStatus)
-                  00005946    0000005e     driverlib.a : dl_i2c.o (.text.DL_I2C_fillControllerTXFIFO)
-                  000059a4    0000005c     uart.o (.text.CLI_RegisterCommand)
-                  00005a00    0000005c     spi_master.o (.text.SPI_Controller_Init)
-                  00005a5c    0000005c     ti_msp_dl_config.o (.text.SYSCFG_DL_SPI_1_init)
-                  00005ab8    0000005c     libc.a : s_frexp.c.obj (.text.frexp)
-                  00005b14    00000058     BQ25628_functions.o (.text.BQ25628E_Set_ICHG_mA)
-                  00005b6c    00000058     BQ25628_functions.o (.text.BQ25628E_Set_IINDPM_mA)
-                  00005bc4    00000058     main.o (.text.GROUP1_IRQHandler)
-                  00005c1c    00000058     sm.o (.text.SM_HandleRequest)
-                  00005c74    00000058     sm.o (.text.SM_ResumeSystemContext)
-                  00005ccc    00000058     libc.a : _ltoa.c.obj (.text.__TI_ltoa)
-                  00005d24    00000058            : _printfi.c.obj (.text._pconv_f)
-                  00005d7c    00000056     BQ27Z7_functions.o (.text.BQ27Z746_GetChemID)
-                  00005dd2    00000056     BQ27Z7_functions.o (.text.BQ27Z746_GetDeviceType)
-                  00005e28    00000056     BQ27Z7_functions.o (.text.BQ27Z746_GetFirmwareVersion)
-                  00005e7e    00000002     --HOLE-- [fill = 0]
-                  00005e80    00000056     libclang_rt.builtins.a : aeabi_idivmod.S.obj (.text.__aeabi_idivmod)
-                  00005ed6    00000002     --HOLE-- [fill = 0]
-                  00005ed8    00000054     BQ25628_functions.o (.text.BQ25628E_Init_Default)
-                  00005f2c    00000054     BQ25628_functions.o (.text.BQ25628E_Set_Precharge_mA)
-                  00005f80    00000054     BQ25628_functions.o (.text.BQ25628E_Set_Termination_mA)
-                  00005fd4    00000054     sm.o (.text.RTC_GetTime)
-                  00006028    00000054     sm.o (.text.SM_PrepareRTCResponse)
-                  0000607c    00000054     uart.o (.text.invokeBSLAsm)
-                  000060d0    00000052     libc.a : _printfi.c.obj (.text._ecpy)
-                  00006122    00000050     BQ25628_functions.o (.text.BQ25628E_UpdateBits8)
-                  00006172    00000002     --HOLE-- [fill = 0]
-                  00006174    00000050     ti_msp_dl_config.o (.text.DL_GPIO_initPeripheralInputFunctionFeatures)
-                  000061c4    00000050     i2c.o (.text.DL_I2C_startControllerTransfer)
-                  00006214    00000050     ti_msp_dl_config.o (.text.SYSCFG_DL_RTC_init)
-                  00006264    00000050     uart.o (.text.cmd_help)
-                  000062b4    0000004c     driverlib.a : dl_dma.o (.text.DL_DMA_initChannel)
-                  00006300    0000004c     ti_msp_dl_config.o (.text.DL_GPIO_initDigitalInputFeatures)
-                  0000634c    0000004c     ti_msp_dl_config.o (.text.DL_UART_setBaudRateDivisor)
-                  00006398    0000004c     sm.o (.text.SM_SetSTMPower)
-                  000063e4    0000004c     spi_master.o (.text.SPI1_IRQHandler)
-                  00006430    0000004c     ti_msp_dl_config.o (.text.SYSCFG_DL_UART_0_init)
-                  0000647c    0000004c     libc.a : snprintf.c.obj (.text.snprintf)
-                  000064c8    0000004a     libclang_rt.builtins.a : fixdfsi.S.obj (.text.__fixdfsi)
-                  00006512    00000002     --HOLE-- [fill = 0]
-                  00006514    00000048     driverlib.a : dl_uart.o (.text.DL_UART_init)
-                  0000655c    00000048     helper_functions.o (.text.SM_LoadCharger)
-                  000065a4    00000048     libc.a : strtok.c.obj (.text.strtok)
-                  000065ec    00000044     driverlib.a : dl_spi.o (.text.DL_SPI_init)
-                  00006630    00000044     helper_functions.o (.text.SM_LoadSTMConfig)
-                  00006674    00000042     BQ25628_functions.o (.text.BQ25628E_ApplyProfile)
-                  000066b6    00000002     --HOLE-- [fill = 0]
-                  000066b8    00000040     main.o (.text.RTC_IRQHandler)
-                  000066f8    00000040     libclang_rt.builtins.a : aeabi_uidivmod.S.obj (.text.__aeabi_uidivmod)
-                  00006738    00000040                            : extendsfdf2.S.obj (.text.__extendsfdf2)
-                  00006778    00000040     libc.a : atoi.c.obj (.text.atoi)
-                  000067b8    00000040     uart.o (.text.printToUART)
-                  000067f8    00000040     spi_master.o (.text.spi_init)
-                  00006838    00000040     libc.a : vsnprintf.c.obj (.text.vsnprintf)
-                  00006878    0000003c     driverlib.a : dl_i2c.o (.text.DL_I2C_flushControllerTXFIFO)
-                  000068b4    0000003c     sm.o (.text.SM_Transition)
-                  000068f0    0000003c     libclang_rt.builtins.a : floatsisf.S.obj (.text.__floatsisf)
-                  0000692c    0000003c                            : comparesf2.S.obj (.text.__gtsf2)
-                  00006968    0000003c     libc.a : autoinit.c.obj (.text:__TI_auto_init_nobinit_nopinit)
-                  000069a4    0000003a     libclang_rt.builtins.a : comparesf2.S.obj (.text.__eqsf2)
-                  000069de    00000002     --HOLE-- [fill = 0]
-                  000069e0    0000003a                            : muldsi3.S.obj (.text.__muldsi3)
-                  00006a1a    00000002     --HOLE-- [fill = 0]
-                  00006a1c    00000038     BQ25628_functions.o (.text.BQ25628E_ADC_Control)
-                  00006a54    00000038     BQ27Z7_functions.o (.text.BQ27Z746_Init)
-                  00006a8c    00000038     libclang_rt.builtins.a : fixsfsi.S.obj (.text.__fixsfsi)
-                  00006ac4    00000038     functions.o (.text.print_time)
-                  00006afc    00000034     BQ25628_functions.o (.text.BQ25628E_ReadReg16)
-                  00006b30    00000034     ti_msp_dl_config.o (.text.SYSCFG_DL_init)
-                  00006b64    00000030     BQ25628_functions.o (.text.BQ25628E_WriteReg16)
-                  00006b94    00000030     spi_master.o (.text.DL_DMA_setTransferSize)
-                  00006bc4    00000030     ti_msp_dl_config.o (.text.DL_GPIO_initDigitalOutputFeatures)
-                  00006bf4    00000030     driverlib.a : dl_i2c.o (.text.DL_I2C_flushControllerRXFIFO)
-                  00006c24    00000030     ti_msp_dl_config.o (.text.DL_SPI_setFIFOThreshold)
-                  00006c54    00000030     driverlib.a : dl_uart.o (.text.DL_UART_transmitDataBlocking)
-                  00006c84    00000030     sm.o (.text.SM_Init)
-                  00006cb4    00000030     sm.o (.text.SM_PrepareSimpleMsg)
-                  00006ce4    00000030     libc.a : _printfi.c.obj (.text._fcpy)
-                  00006d14    00000030            : snprintf.c.obj (.text._outs)
-                  00006d44    00000030            : vsnprintf.c.obj (.text._outs)
-                  00006d74    0000002c     BQ25628_functions.o (.text.BQ25628E_ReadReg8)
-                  00006da0    0000002c     helper_functions.o (.text.PWR_EnableSPI1)
-                  00006dcc    0000002c     i2c.o (.text.__NVIC_ClearPendingIRQ)
-                  00006df8    0000002c     spi_master.o (.text.__NVIC_ClearPendingIRQ)
-                  00006e24    0000002c     uart.o (.text.__NVIC_ClearPendingIRQ)
-                  00006e50    0000002c     helper_functions.o (.text.__NVIC_EnableIRQ)
-                  00006e7c    0000002c     i2c.o (.text.__NVIC_EnableIRQ)
-                  00006ea8    0000002c     spi_master.o (.text.__NVIC_EnableIRQ)
-                  00006ed4    0000002c     uart.o (.text.__NVIC_EnableIRQ)
-                  00006f00    0000002c     libclang_rt.builtins.a : floatsidf.S.obj (.text.__floatsidf)
-                  00006f2c    0000002c     gauge.o (.text.gauge_cmd_read)
-                  00006f58    0000002c     helper_functions.o (.text.gauge_init)
-                  00006f84    0000002c     uart.o (.text.get_UART_buffer)
-                  00006fb0    0000002c     libc.a : strncpy.c.obj (.text.strncpy)
-                  00006fdc    00000028     i2c.o (.text.DL_Common_updateReg)
-                  00007004    00000028     ti_msp_dl_config.o (.text.DL_Common_updateReg)
-                  0000702c    00000028     spi_master.o (.text.DL_DMA_setDestAddr)
-                  00007054    00000028     spi_master.o (.text.DL_DMA_setSrcAddr)
-                  0000707c    00000028     ti_msp_dl_config.o (.text.DL_I2C_setControllerRXFIFOThreshold)
-                  000070a4    00000028     ti_msp_dl_config.o (.text.DL_I2C_setControllerTXFIFOThreshold)
-                  000070cc    00000028     ti_msp_dl_config.o (.text.DL_RTC_Common_setIntervalAlarm)
-                  000070f4    00000028     ti_msp_dl_config.o (.text.DL_SYSCTL_setPowerPolicySTANDBY0)
-                  0000711c    00000028     helper_functions.o (.text.PWR_EnableCoreInterrupts)
-                  00007144    00000028     helper_functions.o (.text.PWR_EnableI2C0)
-                  0000716c    00000028     helper_functions.o (.text.PWR_EnableUART0)
-                  00007194    00000028     helper_functions.o (.text.hall_init)
-                  000071bc    00000028     libc.a : boot_cortex_m.c.obj (.text:_c_int00_noargs)
-                  000071e4    00000026     spi_master.o (.text.DL_DMA_enableChannel)
-                  0000720a    00000026     ti_msp_dl_config.o (.text.DL_I2C_setAnalogGlitchFilterPulseWidth)
-                  00007230    00000026     driverlib.a : dl_i2c.o (.text.DL_I2C_setClockConfig)
-                  00007256    00000026     libc.a : strspn.c.obj (.text.strspn)
-                  0000727c    00000024     BQ25628_functions.o (.text.BQ25628E_WriteReg8)
-                  000072a0    00000024     ti_msp_dl_config.o (.text.DL_SPI_setBitRateSerialClockDivider)
-                  000072c4    00000024     libclang_rt.builtins.a : muldi3.S.obj (.text.__muldi3)
-                  000072e8    00000024     libc.a : strcspn.c.obj (.text.strcspn)
-                  0000730c    00000022     ti_msp_dl_config.o (.text.SYSCFG_DL_SYSCTL_init)
-                  0000732e    00000022     libc.a : memccpy.c.obj (.text.memccpy)
-                  00007350    00000020     ti_msp_dl_config.o (.text.DL_GPIO_initPeripheralInputFunction)
-                  00007370    00000020     ti_msp_dl_config.o (.text.DL_RTC_Common_setPeriodicAlarm1)
-                  00007390    00000020     gauge.o (.text.gauge_address)
-                  000073b0    00000020     BQ27Z7_functions.o (.text.kelvin_to_celsius)
-                  000073d0    00000020     uart.o (.text.uart_init)
-                  000073f0    0000001e     ti_msp_dl_config.o (.text.DL_UART_setOversampling)
-                  0000740e    00000002     --HOLE-- [fill = 0]
-                  00007410    0000001e     libclang_rt.builtins.a : ashldi3.S.obj (.text.__ashldi3)
-                  0000742e    0000001e     BQ27Z7_functions.o (.text.read_reg16)
-                  0000744c    0000001c     helper_functions.o (.text.DL_GPIO_clearInterruptStatus)
-                  00007468    0000001c     main.o (.text.DL_GPIO_clearInterruptStatus)
-                  00007484    0000001c     sm.o (.text.DL_GPIO_clearInterruptStatus)
-                  000074a0    0000001c     ti_msp_dl_config.o (.text.DL_GPIO_clearInterruptStatus)
-                  000074bc    0000001c     sm.o (.text.DL_GPIO_disableInterrupt)
-                  000074d8    0000001c     ti_msp_dl_config.o (.text.DL_GPIO_enableHiZ)
-                  000074f4    0000001c     sm.o (.text.DL_GPIO_enableInterrupt)
-                  00007510    0000001c     ti_msp_dl_config.o (.text.DL_GPIO_enableInterrupt)
-                  0000752c    0000001c     ti_msp_dl_config.o (.text.DL_GPIO_initPeripheralOutputFunction)
-                  00007548    0000001c     ti_msp_dl_config.o (.text.DL_GPIO_setLowerPinsPolarity)
-                  00007564    0000001c     i2c.o (.text.DL_I2C_disableInterrupt)
-                  00007580    0000001c     i2c.o (.text.DL_I2C_enableInterrupt)
-                  0000759c    0000001c     ti_msp_dl_config.o (.text.DL_I2C_enableInterrupt)
-                  000075b8    0000001c     i2c.o (.text.DL_I2C_isControllerRXFIFOEmpty)
-                  000075d4    0000001c     main.o (.text.DL_Interrupt_getPendingGroup)
-                  000075f0    0000001c     helper_functions.o (.text.DL_RTC_Common_disableInterrupt)
-                  0000760c    0000001c     helper_functions.o (.text.DL_RTC_Common_enableInterrupt)
-                  00007628    0000001c     ti_msp_dl_config.o (.text.DL_RTC_Common_enableInterrupt)
-                  00007644    0000001c     ti_msp_dl_config.o (.text.DL_SPI_enableInterrupt)
-                  00007660    0000001c     ti_msp_dl_config.o (.text.DL_SYSCTL_setSYSOSCFreq)
-                  0000767c    0000001c     ti_msp_dl_config.o (.text.DL_UART_enableInterrupt)
-                  00007698    0000001c     helper_functions.o (.text.PWR_DisableI2C0)
-                  000076b4    0000001c     helper_functions.o (.text.PWR_DisableSPI1)
-                  000076d0    0000001c     helper_functions.o (.text.PWR_DisableUART0)
-                  000076ec    0000001c     main.o (.text.UART0_IRQHandler)
-                  00007708    00000018     ti_msp_dl_config.o (.text.DL_GPIO_enableOutput)
-                  00007720    00000018     ti_msp_dl_config.o (.text.DL_GPIO_enablePower)
-                  00007738    00000018     ti_msp_dl_config.o (.text.DL_GPIO_initDigitalOutput)
-                  00007750    00000018     ti_msp_dl_config.o (.text.DL_GPIO_initPeripheralAnalogFunction)
-                  00007768    00000018     ti_msp_dl_config.o (.text.DL_GPIO_reset)
-                  00007780    00000018     functions.o (.text.DL_GPIO_setPins)
-                  00007798    00000018     helper_functions.o (.text.DL_GPIO_setPins)
-                  000077b0    00000018     sm.o (.text.DL_GPIO_setPins)
-                  000077c8    00000018     ti_msp_dl_config.o (.text.DL_GPIO_setPins)
-                  000077e0    00000018     ti_msp_dl_config.o (.text.DL_GPIO_setUpperPinsPolarity)
-                  000077f8    00000018     i2c.o (.text.DL_I2C_clearInterruptStatus)
-                  00007810    00000018     helper_functions.o (.text.DL_I2C_disableController)
-                  00007828    00000018     ti_msp_dl_config.o (.text.DL_I2C_enableAnalogGlitchFilter)
-                  00007840    00000018     ti_msp_dl_config.o (.text.DL_I2C_enableController)
-                  00007858    00000018     ti_msp_dl_config.o (.text.DL_I2C_enableControllerClockStretching)
-                  00007870    00000018     helper_functions.o (.text.DL_I2C_enablePower)
-                  00007888    00000018     ti_msp_dl_config.o (.text.DL_I2C_enablePower)
-                  000078a0    00000018     helper_functions.o (.text.DL_I2C_reset)
-                  000078b8    00000018     ti_msp_dl_config.o (.text.DL_I2C_reset)
-                  000078d0    00000018     ti_msp_dl_config.o (.text.DL_I2C_setTimerPeriod)
-                  000078e8    00000018     ti_msp_dl_config.o (.text.DL_RTC_Common_enablePower)
-                  00007900    00000018     ti_msp_dl_config.o (.text.DL_RTC_Common_reset)
-                  00007918    00000018     helper_functions.o (.text.DL_SPI_disable)
-                  00007930    00000018     ti_msp_dl_config.o (.text.DL_SPI_enable)
-                  00007948    00000018     ti_msp_dl_config.o (.text.DL_SPI_enableDMAReceiveEvent)
-                  00007960    00000018     helper_functions.o (.text.DL_SPI_enablePower)
-                  00007978    00000018     ti_msp_dl_config.o (.text.DL_SPI_enablePower)
-                  00007990    00000018     helper_functions.o (.text.DL_SPI_reset)
-                  000079a8    00000018     ti_msp_dl_config.o (.text.DL_SPI_reset)
-                  000079c0    00000018     ti_msp_dl_config.o (.text.DL_SYSCTL_setBORThreshold)
-                  000079d8    00000018     helper_functions.o (.text.DL_UART_enablePower)
-                  000079f0    00000018     ti_msp_dl_config.o (.text.DL_UART_enablePower)
-                  00007a08    00000018     helper_functions.o (.text.DL_UART_reset)
-                  00007a20    00000018     ti_msp_dl_config.o (.text.DL_UART_reset)
-                  00007a38    00000018     helper_functions.o (.text.PWR_EnterMeasureProfile)
-                  00007a50    00000018     helper_functions.o (.text.PWR_ExitMeasureProfile)
-                  00007a68    00000018     helper_functions.o (.text.SM_LoadPeriod)
-                  00007a80    00000018     sm.o (.text.SM_PrepareAck)
-                  00007a98    00000018     sm.o (.text.SM_PrepareNack)
-                  00007ab0    00000018     ti_msp_dl_config.o (.text.SYSCFG_DL_DMA_CH0_init)
-                  00007ac8    00000018     ti_msp_dl_config.o (.text.SYSCFG_DL_DMA_CH1_init)
-                  00007ae0    00000018     libc.a : snprintf.c.obj (.text._outc)
-                  00007af8    00000018            : vsnprintf.c.obj (.text._outc)
-                  00007b10    00000016     BQ27Z7_functions.o (.text.BQ27Z746_ReadInternalTemp_C)
-                  00007b26    00000016     BQ27Z7_functions.o (.text.BQ27Z746_ReadTemperature_C)
-                  00007b3c    00000016     functions.o (.text.DL_GPIO_readPins)
-                  00007b52    00000016     helper_functions.o (.text.DL_UART_disable)
-                  00007b68    00000016     ti_msp_dl_config.o (.text.DL_UART_enable)
-                  00007b7e    00000016     i2c.o (.text.i2c_init)
-                  00007b94    00000014     BQ27Z7_functions.o (.text.BQ27Z746_ReadAvgCurrent_mA)
-                  00007ba8    00000014     BQ27Z7_functions.o (.text.BQ27Z746_ReadAvgPower_mW)
-                  00007bbc    00000014     BQ27Z7_functions.o (.text.BQ27Z746_ReadCurrent_mA)
-                  00007bd0    00000014     BQ27Z7_functions.o (.text.BQ27Z746_ReadSOC_pct)
-                  00007be4    00000014     BQ27Z7_functions.o (.text.BQ27Z746_ReadStateOfHealth_pct)
-                  00007bf8    00000014     functions.o (.text.DL_GPIO_clearPins)
-                  00007c0c    00000014     helper_functions.o (.text.DL_GPIO_clearPins)
-                  00007c20    00000014     sm.o (.text.DL_GPIO_clearPins)
-                  00007c34    00000014     ti_msp_dl_config.o (.text.DL_GPIO_clearPins)
-                  00007c48    00000014     helper_functions.o (.text.DL_I2C_disablePower)
-                  00007c5c    00000014     i2c.o (.text.DL_I2C_getControllerStatus)
-                  00007c70    00000014     i2c.o (.text.DL_I2C_receiveControllerData)
-                  00007c84    00000014     ti_msp_dl_config.o (.text.DL_I2C_resetControllerTransfer)
-                  00007c98    00000014     ti_msp_dl_config.o (.text.DL_RTC_Common_enableClockControl)
-                  00007cac    00000014     helper_functions.o (.text.DL_SPI_disablePower)
-                  00007cc0    00000014     ti_msp_dl_config.o (.text.DL_SPI_enableDMATransmitEvent)
-                  00007cd4    00000014     helper_functions.o (.text.DL_SYSCTL_allowAllAsyncFastClockRequests)
-                  00007ce8    00000014     helper_functions.o (.text.DL_SYSCTL_blockAllAsyncFastClockRequests)
-                  00007cfc    00000014     helper_functions.o (.text.DL_SYSCTL_disableSYSPLL)
-                  00007d10    00000014     ti_msp_dl_config.o (.text.DL_SYSCTL_disableSYSPLL)
-                  00007d24    00000014     helper_functions.o (.text.DL_UART_disablePower)
-                  00007d38    00000014     uart.o (.text.DL_UART_receiveData)
-                  00007d4c    00000014     sm.o (.text.SM_SendOffer)
-                  00007d60    00000014     libclang_rt.builtins.a : aeabi_uldivmod.S.obj (.text.__aeabi_uldivmod)
-                  00007d74    00000014     libc.a : _printfi.c.obj (.text.strchr)
-                  00007d88    00000014            : strchr.c.obj (.text.strchr)
-                  00007d9c    00000012     BQ27Z7_functions.o (.text.BQ27Z746_ReadBatteryStatus)
-                  00007dae    00000012     BQ27Z7_functions.o (.text.BQ27Z746_ReadCycleCount)
-                  00007dc0    00000012     BQ27Z7_functions.o (.text.BQ27Z746_ReadFullChargeCap_mAh)
-                  00007dd2    00000012     BQ27Z7_functions.o (.text.BQ27Z746_ReadRemainingCap_mAh)
-                  00007de4    00000012     BQ27Z7_functions.o (.text.BQ27Z746_ReadTimeToEmpty_min)
-                  00007df6    00000012     BQ27Z7_functions.o (.text.BQ27Z746_ReadTimeToFull_min)
-                  00007e08    00000012     BQ27Z7_functions.o (.text.BQ27Z746_ReadVoltage_mV)
-                  00007e1a    00000012     i2c.o (.text.DL_I2C_getPendingInterrupt)
-                  00007e2c    00000012     main.o (.text.DL_RTC_Common_getPendingInterrupt)
-                  00007e3e    00000012     spi_master.o (.text.DL_SPI_getPendingInterrupt)
-                  00007e50    00000012     driverlib.a : dl_spi.o (.text.DL_SPI_setClockConfig)
-                  00007e62    00000012     main.o (.text.DL_UART_getPendingInterrupt)
-                  00007e74    00000012     driverlib.a : dl_uart.o (.text.DL_UART_setClockConfig)
-                  00007e86    00000012     libc.a : memcpy16.S.obj (.text:TI_memcpy_small)
-                  00007e98    00000012            : copy_decompress_none.c.obj (.text:decompress:none)
-                  00007eaa    00000002     --HOLE-- [fill = 0]
-                  00007eac    00000010     BQ27Z7_functions.o (.text.BQ27Z746_IsDischarging)
-                  00007ebc    00000010     BQ27Z7_functions.o (.text.BQ27Z746_IsFullyCharged)
-                  00007ecc    00000010     BQ27Z7_functions.o (.text.BQ27Z746_IsFullyDischarged)
-                  00007edc    00000010     ti_msp_dl_config.o (.text.DL_SYSCTL_disableHFXT)
-                  00007eec    00000010     i2c.o (.text.I2C0_IRQHandler)
-                  00007efc    00000010     i2c.o (.text.I2C1_IRQHandler)
-                  00007f0c    00000010     helper_functions.o (.text.PWR_EnterActiveProfile)
-                  00007f1c    00000010     helper_functions.o (.text.PWR_ExitActiveProfile)
-                  00007f2c    00000010     helper_functions.o (.text.RTC_DisablePrescaler)
-                  00007f3c    00000010     helper_functions.o (.text.RTC_EnablePrescaler)
-                  00007f4c    00000010     libc.a : wcslen.c.obj (.text.wcslen)
-                  00007f5c    00000010            : copy_zero_init.c.obj (.text:decompress:ZI)
-                  00007f6c    0000000e     BQ25628_functions.o (.text.BQ25628E_Disable_Watchdog)
-                  00007f7a    0000000e     BQ25628_functions.o (.text.BQ25628E_Set_PeakDischarge_6A)
-                  00007f88    0000000e     libclang_rt.builtins.a : aeabi_memset.S.obj (.text.__aeabi_memset)
-                  00007f96    0000000e     libc.a : strcpy.c.obj (.text.strcpy)
-                  00007fa4    0000000e            : _printfi.c.obj (.text.strlen)
-                  00007fb2    0000000e            : strlen.c.obj (.text.strlen)
-                  00007fc0    0000000e            : memset16.S.obj (.text:TI_memset_small)
-                  00007fce    00000002     --HOLE-- [fill = 0]
-                  00007fd0    0000000c     BQ25628_functions.o (.text.BQ25628E_Get_IBAT_mA)
-                  00007fdc    0000000c     BQ25628_functions.o (.text.BQ25628E_Get_IBUS_mA)
-                  00007fe8    0000000c     BQ25628_functions.o (.text.BQ25628E_Get_TBAT_C)
-                  00007ff4    0000000c     BQ25628_functions.o (.text.BQ25628E_Get_TDIE_C)
-                  00008000    0000000c     BQ25628_functions.o (.text.BQ25628E_Get_VBAT_mV)
-                  0000800c    0000000c     BQ25628_functions.o (.text.BQ25628E_Get_VBUS_mV)
-                  00008018    0000000c     BQ25628_functions.o (.text.BQ25628E_Get_VSYS_mV)
-                  00008024    0000000c     BQ25628_functions.o (.text.BQ25628E_HardwareInit)
-                  00008030    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_Get_AvgCurrent_mA)
-                  0000803c    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_Get_AvgPower_mW)
-                  00008048    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_Get_BatteryStatus)
-                  00008054    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_Get_Current_mA)
-                  00008060    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_Get_CycleCount)
-                  0000806c    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_Get_FullChargeCap_mAh)
-                  00008078    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_Get_InternalTemp_C)
-                  00008084    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_Get_RemainingCap_mAh)
-                  00008090    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_Get_SOC_pct)
-                  0000809c    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_Get_StateOfHealth_pct)
-                  000080a8    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_Get_Temperature_C)
-                  000080b4    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_Get_TimeToEmpty_min)
-                  000080c0    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_Get_TimeToFull_min)
-                  000080cc    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_Get_Voltage_mV)
-                  000080d8    0000000c     helper_functions.o (.text.PWR_BlockFastClocks)
-                  000080e4    0000000c     ti_msp_dl_config.o (.text.SYSCFG_DL_DMA_init)
-                  000080f0    0000000c     libclang_rt.builtins.a : aeabi_memset.S.obj (.text.__aeabi_memclr)
-                  000080fc    0000000a     BQ25628_functions.o (.text.BQ25628E_GetFaultFlags)
-                  00008106    0000000a     driverlib.a : dl_common.o (.text.DL_Common_delayCycles)
-                  00008110    0000000a     libc.a : _printfi.c.obj (.text.OUTLINED_FUNCTION_0)
-                  0000811a    00000002     --HOLE-- [fill = 0]
-                  0000811c    00000010     libclang_rt.builtins.a : adddf3.S.obj (.tramp.__aeabi_dsub.1)
-                  0000812c    0000000a     libc.a : s_roundf.c.obj (.text.OUTLINED_FUNCTION_0)
-                  00008136    00000002     --HOLE-- [fill = 0]
-                  00008138    00000010     libclang_rt.builtins.a : addsf3.S.obj (.tramp.__aeabi_fadd.1)
-                  00008148    0000000a     libc.a : _printfi.c.obj (.text.OUTLINED_FUNCTION_1)
-                  00008152    00000008     helper_functions.o (.text.PWR_UnblockFastClocks)
-                  0000815a    00000002     --HOLE-- [fill = 0]
-                  0000815c    00000008     libc.a : aeabi_portable.c.obj (.text.__aeabi_errno_addr)
-                  00008164    00000008     libclang_rt.builtins.a : aeabi_memcpy.S.obj (.text.__aeabi_memcpy)
-                  0000816c    00000006     libc.a : exit.c.obj (.text:abort)
-                  00008172    00000004     startup_mspm0g350x_ticlang.o (.text.Default_Handler)
-                  00008176    00000004     libsysbm.a : hostexit.c.obj (.text.HOSTexit)
-                  0000817a    00000004     startup_mspm0g350x_ticlang.o (.text.Reset_Handler)
-                  0000817e    00000002     --HOLE-- [fill = 0]
-                  00008180    00000010     libc.a : boot_cortex_m.c.obj (.tramp._c_int00_noargs.1)
-                  00008190    00000004            : pre_init.c.obj (.text._system_pre_init)
-                  00008194    0000000c     --HOLE-- [fill = 0]
+                  00000a90    00000524     functions.o (.text.cmd_gauge)
+                  00000fb4    0000048c     functions.o (.text.cmd_sm)
+                  00001440    000003b4     functions.o (.text.Run_Legacy_Monitors)
+                  000017f4    0000026c     functions.o (.text.cmd_bq)
+                  00001a60    0000025c     sm.o (.text.SM_PrepareTelemetryResponse)
+                  00001cbc    00000220     libc.a : _printfi.c.obj (.text._pconv_a)
+                  00001edc    00000218     sm.o (.text.SM_HandleState_CRITICAL_FAULT)
+                  000020f4    000001fc     BQ25628_functions.o (.text.BQ25628E_UpdateTelemetry)
+                  000022f0    000001dc     libc.a : _printfi.c.obj (.text._pconv_g)
+                  000024cc    000001a8     ti_msp_dl_config.o (.text.SYSCFG_DL_GPIO_init)
+                  00002674    0000019c     sm.o (.text.SM_HandleState_CHARGING)
+                  00002810    00000192     libclang_rt.builtins.a : adddf3.S.obj (.text.adddf3_subdf3)
+                  000029a2    00000002                            : aeabi_div0.c.obj (.text.__aeabi_idiv0)
+                  000029a4    0000018c     sm.o (.text.SM_DecodeBatterySafetyStatus)
+                  00002b30    00000184     i2c.o (.text.I2C_ReadDevice)
+                  00002cb4    00000184     sm.o (.text.SM_HandleState_POWER_STM)
+                  00002e38    0000015c     sm.o (.text.SM_HandleState_IDLE)
+                  00002f94    0000014c     functions.o (.text.cmd_pwr)
+                  000030e0    00000144     BQ25628_functions.o (.text._calculateTempFromRt)
+                  00003224    0000013c     libc.a : _printfi.c.obj (.text.fcvt)
+                  00003360    00000134     sm.o (.text.SM_HandleConfig)
+                  00003494    00000120     libc.a : _printfi.c.obj (.text._pconv_e)
+                  000035b4    00000118     BQ27Z7_functions.o (.text.BQ27Z746_MAC_Read)
+                  000036cc    0000010c     sm.o (.text.SM_ProcessFault)
+                  000037d8    0000010c     i2c.o (.text.Shared_I2C_IRQHandler)
+                  000038e4    0000010c     libclang_rt.builtins.a : divdf3.S.obj (.text.__divdf3)
+                  000039f0    00000108     i2c.o (.text.I2C_WriteDevice)
+                  00003af8    00000108     functions.o (.text.cmd_hall)
+                  00003c00    000000f8     sm.o (.text.SM_FetchPowerContext)
+                  00003cf8    000000e4     libclang_rt.builtins.a : muldf3.S.obj (.text.__muldf3)
+                  00003ddc    000000e4     functions.o (.text.cmd_i2cscan)
+                  00003ec0    000000e0     functions.o (.text.print_battery_status)
+                  00003fa0    000000d8     uart.o (.text.CLI_ProcessInput)
+                  00004078    000000d8     libc.a : s_scalbn.c.obj (.text.scalbn)
+                  00004150    000000d8     libclang_rt.builtins.a : addsf3.S.obj (.text)
+                  00004228    000000d4     i2c.o (.text.I2C_TryAddress)
+                  000042fc    000000cc     sm.o (.text.RTC_SetTime)
+                  000043c8    000000b4     uart.o (.text.UARTReceive)
+                  0000447c    000000a4     driverlib.a : dl_rtc_common.o (.text.DL_RTC_Common_initCalendar)
+                  00004520    000000a2     libclang_rt.builtins.a : udivmoddi4.S.obj (.text)
+                  000045c2    00000002                            : aeabi_div0.c.obj (.text.__aeabi_ldiv0)
+                  000045c4    000000a0     main.o (.text.setupCLI)
+                  00004664    0000009c     BQ27Z7_functions.o (.text.BQ27Z746_UpdateTelemetry)
+                  00004700    00000090     sm.o (.text.SM_HandleState_INIT)
+                  00004790    0000008c     spi_master.o (.text.SPI_Controller_Arm)
+                  0000481c    0000008c     ti_msp_dl_config.o (.text.SYSCFG_DL_initPower)
+                  000048a8    0000008c     libclang_rt.builtins.a : mulsf3.S.obj (.text.__mulsf3)
+                  00004934    0000008c     libc.a : s_floorf.c.obj (.text.floorf)
+                  000049c0    00000088            : strcmp-armv6m.S.obj (.text:strcmp)
+                  00004a48    00000084     sm.o (.text.SM_DecodeChargingSafetyStatus)
+                  00004acc    00000084     sm.o (.text.SM_Handle_RTC_Tick)
+                  00004b50    00000082     libclang_rt.builtins.a : divsf3.S.obj (.text.__divsf3)
+                  00004bd2    00000002     --HOLE-- [fill = 0]
+                  00004bd4    00000080     sm.o (.text.SM_SafetyCheck)
+                  00004c54    0000007c     driverlib.a : dl_rtc_common.o (.text.DL_RTC_Common_getCalendarTime)
+                  00004cd0    0000007c     libc.a : copy_decompress_lzss.c.obj (.text:decompress:lzss)
+                  00004d4c    00000074     BQ27Z7_functions.o (.text.BQ27Z746_GetTempConfig)
+                  00004dc0    00000074     sm.o (.text.SM_GetStateString)
+                  00004e34    00000074     libclang_rt.builtins.a : comparedf2.c.obj (.text.__gedf2)
+                  00004ea8    00000070     uart.o (.text.CLI_Tokenize)
+                  00004f18    00000070     gauge.o (.text.gauge_read)
+                  00004f88    00000070     gauge.o (.text.gauge_write)
+                  00004ff8    00000068     helper_functions.o (.text.SM_LoadCredentials)
+                  00005060    00000068     sm.o (.text.SM_NeedsPeriodicSTMWake)
+                  000050c8    00000068     sm.o (.text.SM_PostWake_Branch)
+                  00005130    00000068     libclang_rt.builtins.a : comparedf2.c.obj (.text.__ledf2)
+                  00005198    00000068     libc.a : s_roundf.c.obj (.text.roundf)
+                  00005200    00000066            : _printfi.c.obj (.text._mcpy)
+                  00005266    00000002     --HOLE-- [fill = 0]
+                  00005268    00000064     BQ25628_functions.o (.text.BQ25628E_Set_VINDPM_mV)
+                  000052cc    00000064     sm.o (.text.SM_DispatchIncomingPacket)
+                  00005330    00000064     sm.o (.text.SM_GetChargeString)
+                  00005394    00000064     ti_msp_dl_config.o (.text.SYSCFG_DL_I2C_0_init)
+                  000053f8    00000064     ti_msp_dl_config.o (.text.SYSCFG_DL_I2C_1_init)
+                  0000545c    00000064     main.o (.text.main)
+                  000054c0    00000064     uart.o (.text.uart_printf)
+                  00005524    00000062     BQ27Z7_functions.o (.text.BQ27Z746_GetOperationStatus)
+                  00005586    00000062     BQ27Z7_functions.o (.text.BQ27Z746_GetSafetyStatus)
+                  000055e8    00000062     libclang_rt.builtins.a : aeabi_dcmp.S.obj (.text.__aeabi_dcmp)
+                  0000564a    00000002     --HOLE-- [fill = 0]
+                  0000564c    00000062                            : aeabi_fcmp.S.obj (.text.__aeabi_fcmp)
+                  000056ae    00000002     --HOLE-- [fill = 0]
+                  000056b0    00000060     BQ25628_functions.o (.text.BQ25628E_Set_VREG_mV)
+                  00005710    00000060     BQ25628_functions.o (.text.BQ25628E_Set_VSYSMIN_mV)
+                  00005770    00000060     sm.o (.text.SM_ChargingSafetyCheck)
+                  000057d0    0000005e     BQ27Z7_functions.o (.text.BQ27Z746_GetChargingStatus)
+                  0000582e    0000005e     driverlib.a : dl_i2c.o (.text.DL_I2C_fillControllerTXFIFO)
+                  0000588c    0000005c     uart.o (.text.CLI_RegisterCommand)
+                  000058e8    0000005c     sm.o (.text.SM_PrepareSTMConfigResponse)
+                  00005944    0000005c     sm.o (.text.SM_PrepareSTMCredentialsResponse)
+                  000059a0    0000005c     spi_master.o (.text.SPI_Controller_Init)
+                  000059fc    0000005c     libc.a : s_frexp.c.obj (.text.frexp)
+                  00005a58    00000058     BQ25628_functions.o (.text.BQ25628E_Set_ICHG_mA)
+                  00005ab0    00000058     BQ25628_functions.o (.text.BQ25628E_Set_IINDPM_mA)
+                  00005b08    00000058     main.o (.text.GROUP1_IRQHandler)
+                  00005b60    00000058     sm.o (.text.SM_HandleRequest)
+                  00005bb8    00000058     sm.o (.text.SM_ResumeSystemContext)
+                  00005c10    00000058     sm.o (.text.SM_Run)
+                  00005c68    00000058     ti_msp_dl_config.o (.text.SYSCFG_DL_SPI_1_init)
+                  00005cc0    00000058     libc.a : _ltoa.c.obj (.text.__TI_ltoa)
+                  00005d18    00000058            : _printfi.c.obj (.text._pconv_f)
+                  00005d70    00000056     BQ27Z7_functions.o (.text.BQ27Z746_GetChemID)
+                  00005dc6    00000056     BQ27Z7_functions.o (.text.BQ27Z746_GetDeviceType)
+                  00005e1c    00000056     BQ27Z7_functions.o (.text.BQ27Z746_GetFirmwareVersion)
+                  00005e72    00000002     --HOLE-- [fill = 0]
+                  00005e74    00000056     libclang_rt.builtins.a : aeabi_idivmod.S.obj (.text.__aeabi_idivmod)
+                  00005eca    00000054     BQ25628_functions.o (.text.BQ25628E_Set_Precharge_mA)
+                  00005f1e    00000054     BQ25628_functions.o (.text.BQ25628E_Set_Termination_mA)
+                  00005f72    00000002     --HOLE-- [fill = 0]
+                  00005f74    00000054     sm.o (.text.RTC_GetTime)
+                  00005fc8    00000054     uart.o (.text.invokeBSLAsm)
+                  0000601c    00000052     libc.a : _printfi.c.obj (.text._ecpy)
+                  0000606e    00000002     --HOLE-- [fill = 0]
+                  00006070    00000050     BQ25628_functions.o (.text.BQ25628E_Init_Default)
+                  000060c0    00000050     BQ25628_functions.o (.text.BQ25628E_UpdateBits8)
+                  00006110    00000050     ti_msp_dl_config.o (.text.DL_GPIO_initPeripheralInputFunctionFeatures)
+                  00006160    00000050     i2c.o (.text.DL_I2C_startControllerTransfer)
+                  000061b0    00000050     ti_msp_dl_config.o (.text.SYSCFG_DL_RTC_init)
+                  00006200    00000050     uart.o (.text.cmd_help)
+                  00006250    0000004c     driverlib.a : dl_dma.o (.text.DL_DMA_initChannel)
+                  0000629c    0000004c     ti_msp_dl_config.o (.text.DL_GPIO_initDigitalInputFeatures)
+                  000062e8    0000004c     ti_msp_dl_config.o (.text.DL_UART_setBaudRateDivisor)
+                  00006334    0000004c     sm.o (.text.SM_SetSTMPower)
+                  00006380    0000004c     spi_master.o (.text.SPI1_IRQHandler)
+                  000063cc    0000004c     ti_msp_dl_config.o (.text.SYSCFG_DL_UART_0_init)
+                  00006418    0000004c     libc.a : snprintf.c.obj (.text.snprintf)
+                  00006464    0000004a     libclang_rt.builtins.a : fixdfsi.S.obj (.text.__fixdfsi)
+                  000064ae    00000002     --HOLE-- [fill = 0]
+                  000064b0    00000048     driverlib.a : dl_uart.o (.text.DL_UART_init)
+                  000064f8    00000048     libc.a : strtok.c.obj (.text.strtok)
+                  00006540    00000044     driverlib.a : dl_spi.o (.text.DL_SPI_init)
+                  00006584    00000044     helper_functions.o (.text.SM_LoadCharger)
+                  000065c8    00000044     helper_functions.o (.text.SM_LoadSTMConfig)
+                  0000660c    00000042     BQ25628_functions.o (.text.BQ25628E_ApplyProfile)
+                  0000664e    00000002     --HOLE-- [fill = 0]
+                  00006650    00000040     main.o (.text.RTC_IRQHandler)
+                  00006690    00000040     libclang_rt.builtins.a : aeabi_uidivmod.S.obj (.text.__aeabi_uidivmod)
+                  000066d0    00000040                            : extendsfdf2.S.obj (.text.__extendsfdf2)
+                  00006710    00000040     libc.a : atoi.c.obj (.text.atoi)
+                  00006750    00000040     uart.o (.text.printToUART)
+                  00006790    00000040     spi_master.o (.text.spi_init)
+                  000067d0    00000040     libc.a : vsnprintf.c.obj (.text.vsnprintf)
+                  00006810    0000003c     driverlib.a : dl_i2c.o (.text.DL_I2C_flushControllerTXFIFO)
+                  0000684c    0000003c     sm.o (.text.SM_InitDataPacket)
+                  00006888    0000003c     sm.o (.text.SM_Transition)
+                  000068c4    0000003c     libclang_rt.builtins.a : floatsisf.S.obj (.text.__floatsisf)
+                  00006900    0000003c                            : comparesf2.S.obj (.text.__gtsf2)
+                  0000693c    0000003c     libc.a : autoinit.c.obj (.text:__TI_auto_init_nobinit_nopinit)
+                  00006978    0000003a     libclang_rt.builtins.a : comparesf2.S.obj (.text.__eqsf2)
+                  000069b2    00000002     --HOLE-- [fill = 0]
+                  000069b4    0000003a                            : muldsi3.S.obj (.text.__muldsi3)
+                  000069ee    00000002     --HOLE-- [fill = 0]
+                  000069f0    00000038     BQ25628_functions.o (.text.BQ25628E_ADC_Control)
+                  00006a28    00000038     BQ27Z7_functions.o (.text.BQ27Z746_Init)
+                  00006a60    00000038     libclang_rt.builtins.a : fixsfsi.S.obj (.text.__fixsfsi)
+                  00006a98    00000038     functions.o (.text.print_time)
+                  00006ad0    00000034     BQ25628_functions.o (.text.BQ25628E_ReadReg16)
+                  00006b04    00000034     sm.o (.text.SM_PrepareRTCResponse)
+                  00006b38    00000034     ti_msp_dl_config.o (.text.SYSCFG_DL_init)
+                  00006b6c    00000030     BQ25628_functions.o (.text.BQ25628E_WriteReg16)
+                  00006b9c    00000030     spi_master.o (.text.DL_DMA_setTransferSize)
+                  00006bcc    00000030     ti_msp_dl_config.o (.text.DL_GPIO_initDigitalOutputFeatures)
+                  00006bfc    00000030     driverlib.a : dl_i2c.o (.text.DL_I2C_flushControllerRXFIFO)
+                  00006c2c    00000030     ti_msp_dl_config.o (.text.DL_SPI_setFIFOThreshold)
+                  00006c5c    00000030     driverlib.a : dl_uart.o (.text.DL_UART_transmitDataBlocking)
+                  00006c8c    00000030     sm.o (.text.SM_Init)
+                  00006cbc    00000030     sm.o (.text.SM_PrepareSimpleMsg)
+                  00006cec    00000030     libc.a : _printfi.c.obj (.text._fcpy)
+                  00006d1c    00000030            : snprintf.c.obj (.text._outs)
+                  00006d4c    00000030            : vsnprintf.c.obj (.text._outs)
+                  00006d7c    0000002c     BQ25628_functions.o (.text.BQ25628E_ReadReg8)
+                  00006da8    0000002c     helper_functions.o (.text.PWR_EnableSPI1)
+                  00006dd4    0000002c     i2c.o (.text.__NVIC_ClearPendingIRQ)
+                  00006e00    0000002c     spi_master.o (.text.__NVIC_ClearPendingIRQ)
+                  00006e2c    0000002c     uart.o (.text.__NVIC_ClearPendingIRQ)
+                  00006e58    0000002c     helper_functions.o (.text.__NVIC_EnableIRQ)
+                  00006e84    0000002c     i2c.o (.text.__NVIC_EnableIRQ)
+                  00006eb0    0000002c     spi_master.o (.text.__NVIC_EnableIRQ)
+                  00006edc    0000002c     uart.o (.text.__NVIC_EnableIRQ)
+                  00006f08    0000002c     libclang_rt.builtins.a : floatsidf.S.obj (.text.__floatsidf)
+                  00006f34    0000002c     gauge.o (.text.gauge_cmd_read)
+                  00006f60    0000002c     helper_functions.o (.text.gauge_init)
+                  00006f8c    0000002c     uart.o (.text.get_UART_buffer)
+                  00006fb8    0000002c     libc.a : strncpy.c.obj (.text.strncpy)
+                  00006fe4    00000028     i2c.o (.text.DL_Common_updateReg)
+                  0000700c    00000028     ti_msp_dl_config.o (.text.DL_Common_updateReg)
+                  00007034    00000028     spi_master.o (.text.DL_DMA_setDestAddr)
+                  0000705c    00000028     spi_master.o (.text.DL_DMA_setSrcAddr)
+                  00007084    00000028     ti_msp_dl_config.o (.text.DL_I2C_setControllerRXFIFOThreshold)
+                  000070ac    00000028     ti_msp_dl_config.o (.text.DL_I2C_setControllerTXFIFOThreshold)
+                  000070d4    00000028     ti_msp_dl_config.o (.text.DL_RTC_Common_setIntervalAlarm)
+                  000070fc    00000028     ti_msp_dl_config.o (.text.DL_SYSCTL_setPowerPolicySTANDBY0)
+                  00007124    00000028     helper_functions.o (.text.PWR_EnableCoreInterrupts)
+                  0000714c    00000028     helper_functions.o (.text.PWR_EnableI2C0)
+                  00007174    00000028     helper_functions.o (.text.PWR_EnableUART0)
+                  0000719c    00000028     helper_functions.o (.text.hall_init)
+                  000071c4    00000028     libc.a : boot_cortex_m.c.obj (.text:_c_int00_noargs)
+                  000071ec    00000026     spi_master.o (.text.DL_DMA_enableChannel)
+                  00007212    00000026     ti_msp_dl_config.o (.text.DL_I2C_setAnalogGlitchFilterPulseWidth)
+                  00007238    00000026     driverlib.a : dl_i2c.o (.text.DL_I2C_setClockConfig)
+                  0000725e    00000026     libc.a : strspn.c.obj (.text.strspn)
+                  00007284    00000024     BQ25628_functions.o (.text.BQ25628E_WriteReg8)
+                  000072a8    00000024     ti_msp_dl_config.o (.text.DL_SPI_setBitRateSerialClockDivider)
+                  000072cc    00000024     libclang_rt.builtins.a : muldi3.S.obj (.text.__muldi3)
+                  000072f0    00000024     libc.a : strcspn.c.obj (.text.strcspn)
+                  00007314    00000022     ti_msp_dl_config.o (.text.SYSCFG_DL_SYSCTL_init)
+                  00007336    00000022     libc.a : memccpy.c.obj (.text.memccpy)
+                  00007358    00000020     ti_msp_dl_config.o (.text.DL_GPIO_initPeripheralInputFunction)
+                  00007378    00000020     ti_msp_dl_config.o (.text.DL_RTC_Common_setPeriodicAlarm1)
+                  00007398    00000020     gauge.o (.text.gauge_address)
+                  000073b8    00000020     BQ27Z7_functions.o (.text.kelvin_to_celsius)
+                  000073d8    00000020     uart.o (.text.uart_init)
+                  000073f8    0000001e     ti_msp_dl_config.o (.text.DL_UART_setOversampling)
+                  00007416    00000002     --HOLE-- [fill = 0]
+                  00007418    0000001e     libclang_rt.builtins.a : ashldi3.S.obj (.text.__ashldi3)
+                  00007436    0000001e     BQ27Z7_functions.o (.text.read_reg16)
+                  00007454    0000001c     helper_functions.o (.text.DL_GPIO_clearInterruptStatus)
+                  00007470    0000001c     main.o (.text.DL_GPIO_clearInterruptStatus)
+                  0000748c    0000001c     sm.o (.text.DL_GPIO_clearInterruptStatus)
+                  000074a8    0000001c     ti_msp_dl_config.o (.text.DL_GPIO_clearInterruptStatus)
+                  000074c4    0000001c     sm.o (.text.DL_GPIO_disableInterrupt)
+                  000074e0    0000001c     ti_msp_dl_config.o (.text.DL_GPIO_enableHiZ)
+                  000074fc    0000001c     sm.o (.text.DL_GPIO_enableInterrupt)
+                  00007518    0000001c     ti_msp_dl_config.o (.text.DL_GPIO_enableInterrupt)
+                  00007534    0000001c     ti_msp_dl_config.o (.text.DL_GPIO_initPeripheralOutputFunction)
+                  00007550    0000001c     ti_msp_dl_config.o (.text.DL_GPIO_setLowerPinsPolarity)
+                  0000756c    0000001c     i2c.o (.text.DL_I2C_disableInterrupt)
+                  00007588    0000001c     i2c.o (.text.DL_I2C_enableInterrupt)
+                  000075a4    0000001c     ti_msp_dl_config.o (.text.DL_I2C_enableInterrupt)
+                  000075c0    0000001c     i2c.o (.text.DL_I2C_isControllerRXFIFOEmpty)
+                  000075dc    0000001c     main.o (.text.DL_Interrupt_getPendingGroup)
+                  000075f8    0000001c     helper_functions.o (.text.DL_RTC_Common_disableInterrupt)
+                  00007614    0000001c     helper_functions.o (.text.DL_RTC_Common_enableInterrupt)
+                  00007630    0000001c     ti_msp_dl_config.o (.text.DL_RTC_Common_enableInterrupt)
+                  0000764c    0000001c     ti_msp_dl_config.o (.text.DL_SPI_enableInterrupt)
+                  00007668    0000001c     ti_msp_dl_config.o (.text.DL_SYSCTL_setSYSOSCFreq)
+                  00007684    0000001c     ti_msp_dl_config.o (.text.DL_UART_enableInterrupt)
+                  000076a0    0000001c     helper_functions.o (.text.PWR_DisableI2C0)
+                  000076bc    0000001c     helper_functions.o (.text.PWR_DisableSPI1)
+                  000076d8    0000001c     helper_functions.o (.text.PWR_DisableUART0)
+                  000076f4    0000001c     main.o (.text.UART0_IRQHandler)
+                  00007710    00000018     ti_msp_dl_config.o (.text.DL_GPIO_enableOutput)
+                  00007728    00000018     ti_msp_dl_config.o (.text.DL_GPIO_enablePower)
+                  00007740    00000018     ti_msp_dl_config.o (.text.DL_GPIO_initDigitalOutput)
+                  00007758    00000018     ti_msp_dl_config.o (.text.DL_GPIO_initPeripheralAnalogFunction)
+                  00007770    00000018     ti_msp_dl_config.o (.text.DL_GPIO_reset)
+                  00007788    00000018     functions.o (.text.DL_GPIO_setPins)
+                  000077a0    00000018     helper_functions.o (.text.DL_GPIO_setPins)
+                  000077b8    00000018     sm.o (.text.DL_GPIO_setPins)
+                  000077d0    00000018     ti_msp_dl_config.o (.text.DL_GPIO_setPins)
+                  000077e8    00000018     ti_msp_dl_config.o (.text.DL_GPIO_setUpperPinsPolarity)
+                  00007800    00000018     i2c.o (.text.DL_I2C_clearInterruptStatus)
+                  00007818    00000018     helper_functions.o (.text.DL_I2C_disableController)
+                  00007830    00000018     ti_msp_dl_config.o (.text.DL_I2C_enableAnalogGlitchFilter)
+                  00007848    00000018     ti_msp_dl_config.o (.text.DL_I2C_enableController)
+                  00007860    00000018     ti_msp_dl_config.o (.text.DL_I2C_enableControllerClockStretching)
+                  00007878    00000018     helper_functions.o (.text.DL_I2C_enablePower)
+                  00007890    00000018     ti_msp_dl_config.o (.text.DL_I2C_enablePower)
+                  000078a8    00000018     helper_functions.o (.text.DL_I2C_reset)
+                  000078c0    00000018     ti_msp_dl_config.o (.text.DL_I2C_reset)
+                  000078d8    00000018     ti_msp_dl_config.o (.text.DL_I2C_setTimerPeriod)
+                  000078f0    00000018     ti_msp_dl_config.o (.text.DL_RTC_Common_enablePower)
+                  00007908    00000018     ti_msp_dl_config.o (.text.DL_RTC_Common_reset)
+                  00007920    00000018     helper_functions.o (.text.DL_SPI_disable)
+                  00007938    00000018     ti_msp_dl_config.o (.text.DL_SPI_enable)
+                  00007950    00000018     ti_msp_dl_config.o (.text.DL_SPI_enableDMAReceiveEvent)
+                  00007968    00000018     helper_functions.o (.text.DL_SPI_enablePower)
+                  00007980    00000018     ti_msp_dl_config.o (.text.DL_SPI_enablePower)
+                  00007998    00000018     helper_functions.o (.text.DL_SPI_reset)
+                  000079b0    00000018     ti_msp_dl_config.o (.text.DL_SPI_reset)
+                  000079c8    00000018     ti_msp_dl_config.o (.text.DL_SYSCTL_setBORThreshold)
+                  000079e0    00000018     helper_functions.o (.text.DL_UART_enablePower)
+                  000079f8    00000018     ti_msp_dl_config.o (.text.DL_UART_enablePower)
+                  00007a10    00000018     helper_functions.o (.text.DL_UART_reset)
+                  00007a28    00000018     ti_msp_dl_config.o (.text.DL_UART_reset)
+                  00007a40    00000018     helper_functions.o (.text.PWR_EnterMeasureProfile)
+                  00007a58    00000018     helper_functions.o (.text.PWR_ExitMeasureProfile)
+                  00007a70    00000018     helper_functions.o (.text.SM_LoadPeriod)
+                  00007a88    00000018     sm.o (.text.SM_PrepareAck)
+                  00007aa0    00000018     sm.o (.text.SM_PrepareNack)
+                  00007ab8    00000018     ti_msp_dl_config.o (.text.SYSCFG_DL_DMA_CH0_init)
+                  00007ad0    00000018     ti_msp_dl_config.o (.text.SYSCFG_DL_DMA_CH1_init)
+                  00007ae8    00000018     libc.a : snprintf.c.obj (.text._outc)
+                  00007b00    00000018            : vsnprintf.c.obj (.text._outc)
+                  00007b18    00000016     BQ27Z7_functions.o (.text.BQ27Z746_ReadInternalTemp_C)
+                  00007b2e    00000016     BQ27Z7_functions.o (.text.BQ27Z746_ReadTemperature_C)
+                  00007b44    00000016     functions.o (.text.DL_GPIO_readPins)
+                  00007b5a    00000016     helper_functions.o (.text.DL_UART_disable)
+                  00007b70    00000016     ti_msp_dl_config.o (.text.DL_UART_enable)
+                  00007b86    00000016     i2c.o (.text.i2c_init)
+                  00007b9c    00000014     BQ27Z7_functions.o (.text.BQ27Z746_ReadAvgCurrent_mA)
+                  00007bb0    00000014     BQ27Z7_functions.o (.text.BQ27Z746_ReadAvgPower_mW)
+                  00007bc4    00000014     BQ27Z7_functions.o (.text.BQ27Z746_ReadCurrent_mA)
+                  00007bd8    00000014     BQ27Z7_functions.o (.text.BQ27Z746_ReadSOC_pct)
+                  00007bec    00000014     BQ27Z7_functions.o (.text.BQ27Z746_ReadStateOfHealth_pct)
+                  00007c00    00000014     functions.o (.text.DL_GPIO_clearPins)
+                  00007c14    00000014     helper_functions.o (.text.DL_GPIO_clearPins)
+                  00007c28    00000014     sm.o (.text.DL_GPIO_clearPins)
+                  00007c3c    00000014     ti_msp_dl_config.o (.text.DL_GPIO_clearPins)
+                  00007c50    00000014     helper_functions.o (.text.DL_I2C_disablePower)
+                  00007c64    00000014     i2c.o (.text.DL_I2C_getControllerStatus)
+                  00007c78    00000014     i2c.o (.text.DL_I2C_receiveControllerData)
+                  00007c8c    00000014     ti_msp_dl_config.o (.text.DL_I2C_resetControllerTransfer)
+                  00007ca0    00000014     ti_msp_dl_config.o (.text.DL_RTC_Common_enableClockControl)
+                  00007cb4    00000014     helper_functions.o (.text.DL_SPI_disablePower)
+                  00007cc8    00000014     ti_msp_dl_config.o (.text.DL_SPI_enableDMATransmitEvent)
+                  00007cdc    00000014     helper_functions.o (.text.DL_SYSCTL_allowAllAsyncFastClockRequests)
+                  00007cf0    00000014     helper_functions.o (.text.DL_SYSCTL_blockAllAsyncFastClockRequests)
+                  00007d04    00000014     helper_functions.o (.text.DL_SYSCTL_disableSYSPLL)
+                  00007d18    00000014     ti_msp_dl_config.o (.text.DL_SYSCTL_disableSYSPLL)
+                  00007d2c    00000014     helper_functions.o (.text.DL_UART_disablePower)
+                  00007d40    00000014     uart.o (.text.DL_UART_receiveData)
+                  00007d54    00000014     sm.o (.text.SM_SendOffer)
+                  00007d68    00000014     libclang_rt.builtins.a : aeabi_uldivmod.S.obj (.text.__aeabi_uldivmod)
+                  00007d7c    00000014     libc.a : _printfi.c.obj (.text.strchr)
+                  00007d90    00000014            : strchr.c.obj (.text.strchr)
+                  00007da4    00000012     BQ27Z7_functions.o (.text.BQ27Z746_ReadBatteryStatus)
+                  00007db6    00000012     BQ27Z7_functions.o (.text.BQ27Z746_ReadCycleCount)
+                  00007dc8    00000012     BQ27Z7_functions.o (.text.BQ27Z746_ReadFullChargeCap_mAh)
+                  00007dda    00000012     BQ27Z7_functions.o (.text.BQ27Z746_ReadRemainingCap_mAh)
+                  00007dec    00000012     BQ27Z7_functions.o (.text.BQ27Z746_ReadTimeToEmpty_min)
+                  00007dfe    00000012     BQ27Z7_functions.o (.text.BQ27Z746_ReadTimeToFull_min)
+                  00007e10    00000012     BQ27Z7_functions.o (.text.BQ27Z746_ReadVoltage_mV)
+                  00007e22    00000012     i2c.o (.text.DL_I2C_getPendingInterrupt)
+                  00007e34    00000012     main.o (.text.DL_RTC_Common_getPendingInterrupt)
+                  00007e46    00000012     spi_master.o (.text.DL_SPI_getPendingInterrupt)
+                  00007e58    00000012     driverlib.a : dl_spi.o (.text.DL_SPI_setClockConfig)
+                  00007e6a    00000012     main.o (.text.DL_UART_getPendingInterrupt)
+                  00007e7c    00000012     driverlib.a : dl_uart.o (.text.DL_UART_setClockConfig)
+                  00007e8e    00000012     libc.a : memcpy16.S.obj (.text:TI_memcpy_small)
+                  00007ea0    00000012            : copy_decompress_none.c.obj (.text:decompress:none)
+                  00007eb2    00000002     --HOLE-- [fill = 0]
+                  00007eb4    00000010     BQ27Z7_functions.o (.text.BQ27Z746_IsDischarging)
+                  00007ec4    00000010     BQ27Z7_functions.o (.text.BQ27Z746_IsFullyCharged)
+                  00007ed4    00000010     BQ27Z7_functions.o (.text.BQ27Z746_IsFullyDischarged)
+                  00007ee4    00000010     ti_msp_dl_config.o (.text.DL_SYSCTL_disableHFXT)
+                  00007ef4    00000010     i2c.o (.text.I2C0_IRQHandler)
+                  00007f04    00000010     i2c.o (.text.I2C1_IRQHandler)
+                  00007f14    00000010     helper_functions.o (.text.PWR_EnterActiveProfile)
+                  00007f24    00000010     helper_functions.o (.text.PWR_ExitActiveProfile)
+                  00007f34    00000010     helper_functions.o (.text.RTC_DisablePrescaler)
+                  00007f44    00000010     helper_functions.o (.text.RTC_EnablePrescaler)
+                  00007f54    00000010     libc.a : wcslen.c.obj (.text.wcslen)
+                  00007f64    00000010            : copy_zero_init.c.obj (.text:decompress:ZI)
+                  00007f74    0000000e     BQ25628_functions.o (.text.BQ25628E_Disable_Watchdog)
+                  00007f82    0000000e     BQ25628_functions.o (.text.BQ25628E_Set_PeakDischarge_6A)
+                  00007f90    0000000e     libclang_rt.builtins.a : aeabi_memset.S.obj (.text.__aeabi_memset)
+                  00007f9e    0000000e     libc.a : strcpy.c.obj (.text.strcpy)
+                  00007fac    0000000e            : _printfi.c.obj (.text.strlen)
+                  00007fba    0000000e            : strlen.c.obj (.text.strlen)
+                  00007fc8    0000000e            : memset16.S.obj (.text:TI_memset_small)
+                  00007fd6    00000002     --HOLE-- [fill = 0]
+                  00007fd8    0000000c     BQ25628_functions.o (.text.BQ25628E_Get_IBAT_mA)
+                  00007fe4    0000000c     BQ25628_functions.o (.text.BQ25628E_Get_IBUS_mA)
+                  00007ff0    0000000c     BQ25628_functions.o (.text.BQ25628E_Get_TBAT_C)
+                  00007ffc    0000000c     BQ25628_functions.o (.text.BQ25628E_Get_TDIE_C)
+                  00008008    0000000c     BQ25628_functions.o (.text.BQ25628E_Get_VBAT_mV)
+                  00008014    0000000c     BQ25628_functions.o (.text.BQ25628E_Get_VBUS_mV)
+                  00008020    0000000c     BQ25628_functions.o (.text.BQ25628E_Get_VSYS_mV)
+                  0000802c    0000000c     BQ25628_functions.o (.text.BQ25628E_HardwareInit)
+                  00008038    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_Get_AvgCurrent_mA)
+                  00008044    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_Get_AvgPower_mW)
+                  00008050    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_Get_BatteryStatus)
+                  0000805c    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_Get_Current_mA)
+                  00008068    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_Get_CycleCount)
+                  00008074    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_Get_FullChargeCap_mAh)
+                  00008080    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_Get_InternalTemp_C)
+                  0000808c    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_Get_RemainingCap_mAh)
+                  00008098    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_Get_SOC_pct)
+                  000080a4    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_Get_StateOfHealth_pct)
+                  000080b0    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_Get_Temperature_C)
+                  000080bc    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_Get_TimeToEmpty_min)
+                  000080c8    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_Get_TimeToFull_min)
+                  000080d4    0000000c     BQ27Z7_functions.o (.text.BQ27Z746_Get_Voltage_mV)
+                  000080e0    0000000c     helper_functions.o (.text.PWR_BlockFastClocks)
+                  000080ec    0000000c     ti_msp_dl_config.o (.text.SYSCFG_DL_DMA_init)
+                  000080f8    0000000c     libclang_rt.builtins.a : aeabi_memset.S.obj (.text.__aeabi_memclr)
+                  00008104    0000000a     BQ25628_functions.o (.text.BQ25628E_GetFaultFlags)
+                  0000810e    0000000a     driverlib.a : dl_common.o (.text.DL_Common_delayCycles)
+                  00008118    0000000a     libc.a : _printfi.c.obj (.text.OUTLINED_FUNCTION_0)
+                  00008122    00000002     --HOLE-- [fill = 0]
+                  00008124    00000010     libclang_rt.builtins.a : adddf3.S.obj (.tramp.__aeabi_dsub.1)
+                  00008134    0000000a     libc.a : s_roundf.c.obj (.text.OUTLINED_FUNCTION_0)
+                  0000813e    00000002     --HOLE-- [fill = 0]
+                  00008140    00000010     libclang_rt.builtins.a : addsf3.S.obj (.tramp.__aeabi_fadd.1)
+                  00008150    0000000a     libc.a : _printfi.c.obj (.text.OUTLINED_FUNCTION_1)
+                  0000815a    00000008     helper_functions.o (.text.PWR_UnblockFastClocks)
+                  00008162    00000002     --HOLE-- [fill = 0]
+                  00008164    00000008     libc.a : aeabi_portable.c.obj (.text.__aeabi_errno_addr)
+                  0000816c    00000008     libclang_rt.builtins.a : aeabi_memcpy.S.obj (.text.__aeabi_memcpy)
+                  00008174    00000006     libc.a : exit.c.obj (.text:abort)
+                  0000817a    00000004     startup_mspm0g350x_ticlang.o (.text.Default_Handler)
+                  0000817e    00000004     libsysbm.a : hostexit.c.obj (.text.HOSTexit)
+                  00008182    00000004     startup_mspm0g350x_ticlang.o (.text.Reset_Handler)
+                  00008186    00000002     --HOLE-- [fill = 0]
+                  00008188    00000010     libc.a : boot_cortex_m.c.obj (.tramp._c_int00_noargs.1)
+                  00008198    00000004            : pre_init.c.obj (.text._system_pre_init)
+                  0000819c    00000004     --HOLE-- [fill = 0]
 
 .cinit     0    0000ac10    00000038     
                   0000ac10    0000000f     (.cinit..data.load) [load image, compression = lzss]
@@ -446,26 +452,26 @@ section   page    origin      length       input sections
 
 .rodata    0    000081a0    00002a70     
                   000081a0    000004e0     BQ25628_functions.o (.rodata.thermistor_table_ntcc_10k)
-                  00008680    00000177     sm.o (.rodata.str1.1063156588815008888.1)
+                  00008680    00000177     sm.o (.rodata.str1.5312347836719562665.1)
                   000087f7    00000175     functions.o (.rodata.str1.16985884696085998545.1)
                   0000896c    0000013d     functions.o (.rodata.str1.8841248051089024616.1)
-                  00008aa9    00000003     sm.o (.rodata.str1.10482923654445235652.1)
+                  00008aa9    00000003     uart.o (.rodata.str1.12819099410943012003.1)
                   00008aac    00000138     BQ25628_functions.o (.rodata.thermistor_table_E3103JT2A)
                   00008be4    0000000c     functions.o (.rodata.str1.11510568493784519380.1)
                   00008bf0    00000101     libc.a : aeabi_ctype.S.obj (.rodata:__aeabi_ctype_table_)
                   00008cf1    0000007a     functions.o (.rodata.str1.6405428687533244608.1)
-                  00008d6b    0000005e     sm.o (.rodata.str1.13146796147637671417.1)
+                  00008d6b    0000005e     sm.o (.rodata.str1.18120461028340026678.1)
                   00008dc9    0000004e     functions.o (.rodata.str1.17622889657162422067.1)
                   00008e17    00000047     sm.o (.rodata.str1.936536258536287558.1)
                   00008e5e    00000046     functions.o (.rodata.str1.6886749528440134913.1)
-                  00008ea4    00000045     sm.o (.rodata.str1.6474326562643168034.1)
-                  00008ee9    00000045     sm.o (.rodata.str1.7174287618723474338.1)
-                  00008f2e    00000044     sm.o (.rodata.str1.13806940085091765864.1)
+                  00008ea4    00000045     sm.o (.rodata.str1.14489403169315687886.1)
+                  00008ee9    00000045     sm.o (.rodata.str1.1754728263209323642.1)
+                  00008f2e    00000044     sm.o (.rodata.str1.13146796147637671417.1)
                   00008f72    00000040     helper_functions.o (.rodata.cst32)
                   00008fb2    0000003f     helper_functions.o (.rodata..L.str.1)
                   00008ff1    0000003c     functions.o (.rodata.str1.4144252613811081812.1)
                   0000902d    0000003b     sm.o (.rodata.str1.14974854966295381235.1)
-                  00009068    00000039     sm.o (.rodata.str1.15372665486712371875.1)
+                  00009068    00000039     sm.o (.rodata.str1.14503845784781406648.1)
                   000090a1    00000034     functions.o (.rodata.str1.2372479248998020874.1)
                   000090d5    00000033     functions.o (.rodata.str1.12247701732483370762.1)
                   00009108    00000033     sm.o (.rodata.str1.15263261969876506099.1)
@@ -475,24 +481,24 @@ section   page    origin      length       input sections
                   000091cf    00000031     sm.o (.rodata.str1.8864717694825480951.1)
                   00009200    00000030     functions.o (.rodata.str1.10394495994740858438.1)
                   00009230    00000030     sm.o (.rodata.str1.10642223667573325030.1)
-                  00009260    0000002f     sm.o (.rodata.str1.18168530628163698856.1)
+                  00009260    0000002f     sm.o (.rodata.str1.13948261255381090312.1)
                   0000928f    0000002f     main.o (.rodata.str1.18227636981041470289.1)
-                  000092be    0000002f     sm.o (.rodata.str1.5346473246348048464.1)
+                  000092be    0000002f     sm.o (.rodata.str1.7174287618723474338.1)
                   000092ed    0000002f     functions.o (.rodata.str1.771275161403278999.1)
                   0000931c    0000002f     sm.o (.rodata.str1.8584159046200810494.1)
                   0000934b    0000002e     sm.o (.rodata.str1.17406869698819462110.1)
-                  00009379    0000002e     sm.o (.rodata.str1.7778359008883983518.1)
-                  000093a7    0000002d     sm.o (.rodata.str1.10074234193553229488.1)
-                  000093d4    0000002d     functions.o (.rodata.str1.10302267126528799586.1)
-                  00009401    0000002d     sm.o (.rodata.str1.12211910208138588024.1)
-                  0000942e    0000002d     sm.o (.rodata.str1.17423919968933139206.1)
-                  0000945b    0000002d     functions.o (.rodata.str1.3107984650851015417.1)
+                  00009379    0000002e     sm.o (.rodata.str1.5132831376632134849.1)
+                  000093a7    0000002d     functions.o (.rodata.str1.10302267126528799586.1)
+                  000093d4    0000002d     sm.o (.rodata.str1.12211910208138588024.1)
+                  00009401    0000002d     sm.o (.rodata.str1.17423919968933139206.1)
+                  0000942e    0000002d     functions.o (.rodata.str1.3107984650851015417.1)
+                  0000945b    0000002d     sm.o (.rodata.str1.5346473246348048464.1)
                   00009488    0000002d     functions.o (.rodata.str1.8683587540435544184.1)
                   000094b5    0000002d     functions.o (.rodata.str1.9586352787182320994.1)
                   000094e2    0000002c     sm.o (.rodata.str1.11215331670978367741.1)
                   0000950e    0000002c     functions.o (.rodata.str1.15647711897633472048.1)
                   0000953a    0000002c     sm.o (.rodata.str1.739421897647983371.1)
-                  00009566    0000002b     sm.o (.rodata.str1.14409242992350981092.1)
+                  00009566    0000002b     sm.o (.rodata.str1.10482923654445235652.1)
                   00009591    0000002b     sm.o (.rodata.str1.14549782969676864611.1)
                   000095bc    0000002b     main.o (.rodata.str1.9059077390166914652.1)
                   000095e7    0000002a     sm.o (.rodata.str1.13484114370921697230.1)
@@ -500,7 +506,7 @@ section   page    origin      length       input sections
                   0000963b    0000002a     sm.o (.rodata.str1.7407045868909886887.1)
                   00009665    0000002a     sm.o (.rodata.str1.9632891986468774824.1)
                   0000968f    00000029     functions.o (.rodata.str1.11158820112163685190.1)
-                  000096b8    00000028     sm.o (.rodata.str1.14503845784781406648.1)
+                  000096b8    00000028     sm.o (.rodata.str1.1063156588815008888.1)
                   000096e0    00000028     sm.o (.rodata.str1.6349085798831502584.1)
                   00009708    00000028     functions.o (.rodata.str1.7667325258934765219.1)
                   00009730    00000027     functions.o (.rodata.str1.10387253022637546114.1)
@@ -514,9 +520,9 @@ section   page    origin      length       input sections
                   0000985e    00000024     functions.o (.rodata.str1.2298903785866919411.1)
                   00009882    00000024     functions.o (.rodata.str1.5556253844797924259.1)
                   000098a6    00000024     functions.o (.rodata.str1.9866892624350641238.1)
-                  000098ca    00000023     sm.o (.rodata.str1.11648297443984318551.1)
+                  000098ca    00000023     sm.o (.rodata.str1.10074234193553229488.1)
                   000098ed    00000023     uart.o (.rodata.str1.14464947116831474962.1)
-                  00009910    00000023     sm.o (.rodata.str1.4246753389219725692.1)
+                  00009910    00000023     sm.o (.rodata.str1.15372665486712371875.1)
                   00009933    00000023     functions.o (.rodata.str1.8276779995786722914.1)
                   00009956    00000022     functions.o (.rodata.str1.10105263805998509149.1)
                   00009978    00000022     sm.o (.rodata.str1.11068927846319053752.1)
@@ -535,18 +541,18 @@ section   page    origin      length       input sections
                   00009b31    00000021     functions.o (.rodata.str1.11489194655681450928.1)
                   00009b52    00000021     functions.o (.rodata.str1.13213250456124221025.1)
                   00009b73    00000021     functions.o (.rodata.str1.13405053720543497480.1)
-                  00009b94    00000021     sm.o (.rodata.str1.13948261255381090312.1)
-                  00009bb5    00000021     functions.o (.rodata.str1.14296218639596138037.1)
+                  00009b94    00000021     functions.o (.rodata.str1.14296218639596138037.1)
+                  00009bb5    00000021     sm.o (.rodata.str1.16693181242034351236.1)
                   00009bd6    00000021     functions.o (.rodata.str1.17124744513834159004.1)
-                  00009bf7    00000021     sm.o (.rodata.str1.18120461028340026678.1)
+                  00009bf7    00000021     sm.o (.rodata.str1.5816792156425397620.1)
                   00009c18    00000021     sm.o (.rodata.str1.5902499864709179373.1)
                   00009c39    00000021     functions.o (.rodata.str1.7276749916342729794.1)
                   00009c5a    00000020     functions.o (.rodata.str1.1121117191475404019.1)
                   00009c7a    00000020     functions.o (.rodata.str1.13258710136769708401.1)
                   00009c9a    00000020     functions.o (.rodata.str1.1463293767001829125.1)
-                  00009cba    00000020     functions.o (.rodata.str1.15667472894159448674.1)
-                  00009cda    00000020     functions.o (.rodata.str1.16699442666505370998.1)
-                  00009cfa    00000020     sm.o (.rodata.str1.176426320472047157.1)
+                  00009cba    00000020     sm.o (.rodata.str1.15093750064768470170.1)
+                  00009cda    00000020     functions.o (.rodata.str1.15667472894159448674.1)
+                  00009cfa    00000020     functions.o (.rodata.str1.16699442666505370998.1)
                   00009d1a    00000020     functions.o (.rodata.str1.2090735207208419621.1)
                   00009d3a    00000020     functions.o (.rodata.str1.3274426514815924028.1)
                   00009d5a    00000020     functions.o (.rodata.str1.3741468063811768988.1)
@@ -555,11 +561,11 @@ section   page    origin      length       input sections
                   00009dba    00000020     functions.o (.rodata.str1.5699953771227312792.1)
                   00009dda    00000020     functions.o (.rodata.str1.6743441520423956273.1)
                   00009dfa    0000001f     functions.o (.rodata.str1.11517924573668616356.1)
-                  00009e19    0000001f     sm.o (.rodata.str1.11717421970834805807.1)
-                  00009e38    0000001f     functions.o (.rodata.str1.13529407018213730301.1)
-                  00009e57    0000001f     sm.o (.rodata.str1.13621750700109600483.1)
-                  00009e76    0000001f     main.o (.rodata.str1.14112174005742061988.1)
-                  00009e95    0000001f     sm.o (.rodata.str1.16693181242034351236.1)
+                  00009e19    0000001f     functions.o (.rodata.str1.13529407018213730301.1)
+                  00009e38    0000001f     sm.o (.rodata.str1.13621750700109600483.1)
+                  00009e57    0000001f     main.o (.rodata.str1.14112174005742061988.1)
+                  00009e76    0000001f     sm.o (.rodata.str1.14409242992350981092.1)
+                  00009e95    0000001f     sm.o (.rodata.str1.176426320472047157.1)
                   00009eb4    0000001f     functions.o (.rodata.str1.1810987313933839541.1)
                   00009ed3    0000001f     functions.o (.rodata.str1.1879081474855052955.1)
                   00009ef2    0000001f     functions.o (.rodata.str1.3121139948745544124.1)
@@ -571,11 +577,11 @@ section   page    origin      length       input sections
                   00009faa    0000001e     functions.o (.rodata.str1.389011575781332116.1)
                   00009fc8    0000001e     functions.o (.rodata.str1.5117621188084071403.1)
                   00009fe6    0000001e     functions.o (.rodata.str1.5896414462293131170.1)
-                  0000a004    0000001d     sm.o (.rodata.str1.11772150931471950449.1)
+                  0000a004    0000001d     sm.o (.rodata.str1.18168530628163698856.1)
                   0000a021    0000001d     functions.o (.rodata.str1.9504405780896684869.1)
                   0000a03e    0000001c     functions.o (.rodata.str1.10868672936327135180.1)
                   0000a05a    0000001c     main.o (.rodata.str1.12180500075719773345.1)
-                  0000a076    0000001c     sm.o (.rodata.str1.15093750064768470170.1)
+                  0000a076    0000001c     sm.o (.rodata.str1.12397014039803638819.1)
                   0000a092    0000001b     functions.o (.rodata.str1.11364996628600094536.1)
                   0000a0ad    0000001b     functions.o (.rodata.str1.12649739183381639352.1)
                   0000a0c8    0000001b     functions.o (.rodata.str1.13225435875195226696.1)
@@ -583,10 +589,10 @@ section   page    origin      length       input sections
                   0000a0fe    0000001b     functions.o (.rodata.str1.17954340015018547257.1)
                   0000a119    0000001b     functions.o (.rodata.str1.18157200286260056646.1)
                   0000a134    0000001b     functions.o (.rodata.str1.2128294674425382420.1)
-                  0000a14f    0000001b     sm.o (.rodata.str1.2461285371842842857.1)
-                  0000a16a    0000001b     functions.o (.rodata.str1.2606492479815574346.1)
-                  0000a185    0000001b     functions.o (.rodata.str1.6433388484108913441.1)
-                  0000a1a0    0000001b     functions.o (.rodata.str1.6500671132244866452.1)
+                  0000a14f    0000001b     functions.o (.rodata.str1.2606492479815574346.1)
+                  0000a16a    0000001b     functions.o (.rodata.str1.6433388484108913441.1)
+                  0000a185    0000001b     functions.o (.rodata.str1.6500671132244866452.1)
+                  0000a1a0    0000001b     sm.o (.rodata.str1.6706714306804812513.1)
                   0000a1bb    0000001a     functions.o (.rodata.str1.11548324711019379123.1)
                   0000a1d5    0000001a     functions.o (.rodata.str1.12871985577256932554.1)
                   0000a1ef    0000001a     functions.o (.rodata.str1.13786467237224150958.1)
@@ -597,7 +603,7 @@ section   page    origin      length       input sections
                   0000a271    0000001a     functions.o (.rodata.str1.2153166669032916089.1)
                   0000a28b    0000001a     functions.o (.rodata.str1.4040450050525152614.1)
                   0000a2a5    0000001a     sm.o (.rodata.str1.4973344438314436649.1)
-                  0000a2bf    0000001a     sm.o (.rodata.str1.6706714306804812513.1)
+                  0000a2bf    0000001a     sm.o (.rodata.str1.7778359008883983518.1)
                   0000a2d9    00000019     functions.o (.rodata.str1.11596568296542930794.1)
                   0000a2f2    00000019     functions.o (.rodata.str1.14496393926573069083.1)
                   0000a30b    00000019     functions.o (.rodata.str1.14504089057119714207.1)
@@ -610,13 +616,13 @@ section   page    origin      length       input sections
                   0000a3b8    00000018     functions.o (.rodata.str1.10029850049327752681.1)
                   0000a3d0    00000018     functions.o (.rodata.str1.11087625087312282266.1)
                   0000a3e8    00000018     functions.o (.rodata.str1.2190941444116491765.1)
-                  0000a400    00000018     sm.o (.rodata.str1.3526079463663072691.1)
-                  0000a418    00000018     functions.o (.rodata.str1.8113497073403762318.1)
-                  0000a430    00000018     main.o (.rodata.str1.8154729771448623357.1)
+                  0000a400    00000018     functions.o (.rodata.str1.8113497073403762318.1)
+                  0000a418    00000018     main.o (.rodata.str1.8154729771448623357.1)
+                  0000a430    00000018     sm.o (.rodata.str1.9289128541405963657.1)
                   0000a448    00000018     functions.o (.rodata.str1.9987864939932165754.1)
                   0000a460    00000017     functions.o (.rodata.str1.12869987097872302101.1)
-                  0000a477    00000017     functions.o (.rodata.str1.14425403555696131028.1)
-                  0000a48e    00000017     sm.o (.rodata.str1.14489403169315687886.1)
+                  0000a477    00000017     sm.o (.rodata.str1.13806940085091765864.1)
+                  0000a48e    00000017     functions.o (.rodata.str1.14425403555696131028.1)
                   0000a4a5    00000017     functions.o (.rodata.str1.14660004578859228044.1)
                   0000a4bc    00000017     functions.o (.rodata.str1.17588442350683572369.1)
                   0000a4d3    00000017     functions.o (.rodata.str1.2299744636238869032.1)
@@ -662,7 +668,7 @@ section   page    origin      length       input sections
                   0000a842    00000015     functions.o (.rodata.str1.455706336395187257.1)
                   0000a857    00000015     uart.o (.rodata.str1.8171864734171609186.1)
                   0000a86c    00000015     functions.o (.rodata.str1.9393216526452698668.1)
-                  0000a881    00000014     sm.o (.rodata.str1.5312347836719562665.1)
+                  0000a881    00000014     sm.o (.rodata.str1.11772150931471950449.1)
                   0000a895    00000014     functions.o (.rodata.str1.9119127971185803168.1)
                   0000a8a9    00000013     functions.o (.rodata.str1.17418132220924322792.1)
                   0000a8bc    00000012     functions.o (.rodata.str1.5320122413559821118.1)
@@ -685,7 +691,7 @@ section   page    origin      length       input sections
                   0000a9c8    0000000d     functions.o (.rodata.str1.5905555877690922764.1)
                   0000a9d5    0000000c     functions.o (.rodata.str1.13707145581914847747.1)
                   0000a9e1    0000000c     functions.o (.rodata.str1.14826907694073300720.1)
-                  0000a9ed    0000000c     sm.o (.rodata.str1.9744198617531312687.1)
+                  0000a9ed    0000000c     sm.o (.rodata.str1.2461285371842842857.1)
                   0000a9f9    0000000b     functions.o (.rodata.str1.12082073636076449582.1)
                   0000aa04    0000000b     functions.o (.rodata.str1.62749256631814321.1)
                   0000aa0f    0000000b     sm.o (.rodata.str1.6327918373674271190.1)
@@ -705,35 +711,35 @@ section   page    origin      length       input sections
                   0000aa94    00000008     ti_msp_dl_config.o (.rodata.gRTCCalendarConfig)
                   0000aa9c    00000008     functions.o (.rodata.str1.11391304066098951517.1)
                   0000aaa4    00000008     functions.o (.rodata.str1.11457859038367029433.1)
-                  0000aaac    00000008     functions.o (.rodata.str1.13647871663007229205.1)
-                  0000aab4    00000008     functions.o (.rodata.str1.14249227603012650231.1)
-                  0000aabc    00000008     functions.o (.rodata.str1.17144429639171527548.1)
-                  0000aac4    00000008     sm.o (.rodata.str1.1754728263209323642.1)
+                  0000aaac    00000008     sm.o (.rodata.str1.11648297443984318551.1)
+                  0000aab4    00000008     functions.o (.rodata.str1.13647871663007229205.1)
+                  0000aabc    00000008     functions.o (.rodata.str1.14249227603012650231.1)
+                  0000aac4    00000008     functions.o (.rodata.str1.17144429639171527548.1)
                   0000aacc    00000008     functions.o (.rodata.str1.17669684748118727147.1)
                   0000aad4    00000008     sm.o (.rodata.str1.2368464458259458814.1)
                   0000aadc    00000008     main.o (.rodata.str1.2846389346932560359.1)
                   0000aae4    00000008     functions.o (.rodata.str1.4307635291288551838.1)
-                  0000aaec    00000008     sm.o (.rodata.str1.5049054583350999548.1)
-                  0000aaf4    00000008     sm.o (.rodata.str1.6205510967830628372.1)
+                  0000aaec    00000008     sm.o (.rodata.str1.6205510967830628372.1)
+                  0000aaf4    00000008     sm.o (.rodata.str1.6474326562643168034.1)
                   0000aafc    00000008     functions.o (.rodata.str1.6954128830300373732.1)
                   0000ab04    00000008     functions.o (.rodata.str1.7324634916810494498.1)
                   0000ab0c    00000008     functions.o (.rodata.str1.7723146404961276984.1)
                   0000ab14    00000008     sm.o (.rodata.str1.9131400256122924013.1)
-                  0000ab1c    00000007     sm.o (.rodata.str1.14195156662174812531.1)
-                  0000ab23    00000007     functions.o (.rodata.str1.18285776561876861988.1)
-                  0000ab2a    00000007     functions.o (.rodata.str1.1832783851567210609.1)
+                  0000ab1c    00000007     functions.o (.rodata.str1.18285776561876861988.1)
+                  0000ab23    00000007     functions.o (.rodata.str1.1832783851567210609.1)
+                  0000ab2a    00000007     sm.o (.rodata.str1.3526079463663072691.1)
                   0000ab31    00000007     functions.o (.rodata.str1.5994875290679588583.1)
                   0000ab38    00000007     functions.o (.rodata.str1.7261598007108977983.1)
                   0000ab3f    00000007     functions.o (.rodata.str1.9629253951102113371.1)
-                  0000ab46    00000006     functions.o (.rodata.str1.12609848238114409581.1)
-                  0000ab4c    00000006     functions.o (.rodata.str1.14779408147115502373.1)
-                  0000ab52    00000006     functions.o (.rodata.str1.15416425971347363818.1)
-                  0000ab58    00000006     main.o (.rodata.str1.15996357275703397564.1)
-                  0000ab5e    00000006     functions.o (.rodata.str1.18169768820860067831.1)
-                  0000ab64    00000006     functions.o (.rodata.str1.2872345601479061820.1)
-                  0000ab6a    00000006     sm.o (.rodata.str1.5132831376632134849.1)
-                  0000ab70    00000006     sm.o (.rodata.str1.5816792156425397620.1)
-                  0000ab76    00000006     sm.o (.rodata.str1.9289128541405963657.1)
+                  0000ab46    00000006     sm.o (.rodata.str1.11717421970834805807.1)
+                  0000ab4c    00000006     functions.o (.rodata.str1.12609848238114409581.1)
+                  0000ab52    00000006     sm.o (.rodata.str1.14195156662174812531.1)
+                  0000ab58    00000006     functions.o (.rodata.str1.14779408147115502373.1)
+                  0000ab5e    00000006     functions.o (.rodata.str1.15416425971347363818.1)
+                  0000ab64    00000006     main.o (.rodata.str1.15996357275703397564.1)
+                  0000ab6a    00000006     functions.o (.rodata.str1.18169768820860067831.1)
+                  0000ab70    00000006     functions.o (.rodata.str1.2872345601479061820.1)
+                  0000ab76    00000006     sm.o (.rodata.str1.4246753389219725692.1)
                   0000ab7c    00000006     functions.o (.rodata.str1.976629323795015702.1)
                   0000ab82    00000005     sm.o (.rodata.str1.11280623484315938962.1)
                   0000ab87    00000005     functions.o (.rodata.str1.11538060877586311343.1)
@@ -751,18 +757,18 @@ section   page    origin      length       input sections
                   0000abc3    00000005     functions.o (.rodata.str1.4910338030008278487.1)
                   0000abc8    00000004     functions.o (.rodata.str1.11371842499512143921.1)
                   0000abcc    00000004     functions.o (.rodata.str1.12257129677820421622.1)
-                  0000abd0    00000004     sm.o (.rodata.str1.12397014039803638819.1)
-                  0000abd4    00000004     functions.o (.rodata.str1.14079700471513303319.1)
-                  0000abd8    00000004     functions.o (.rodata.str1.14424774467072349609.1)
-                  0000abdc    00000004     functions.o (.rodata.str1.16386345573460399209.1)
-                  0000abe0    00000004     main.o (.rodata.str1.17100691992556644108.1)
-                  0000abe4    00000004     functions.o (.rodata.str1.2006883888705870762.1)
-                  0000abe8    00000004     functions.o (.rodata.str1.3544098629501009633.1)
-                  0000abec    00000004     functions.o (.rodata.str1.4959705119256106851.1)
-                  0000abf0    00000003     uart.o (.rodata.str1.12819099410943012003.1)
-                  0000abf3    00000003     functions.o (.rodata.str1.13318008327193210645.1)
-                  0000abf6    00000003     main.o (.rodata.str1.2123964117280943167.1)
-                  0000abf9    00000003     functions.o (.rodata.str1.504123949362312185.1)
+                  0000abd0    00000004     functions.o (.rodata.str1.14079700471513303319.1)
+                  0000abd4    00000004     functions.o (.rodata.str1.14424774467072349609.1)
+                  0000abd8    00000004     functions.o (.rodata.str1.16386345573460399209.1)
+                  0000abdc    00000004     main.o (.rodata.str1.17100691992556644108.1)
+                  0000abe0    00000004     functions.o (.rodata.str1.2006883888705870762.1)
+                  0000abe4    00000004     functions.o (.rodata.str1.3544098629501009633.1)
+                  0000abe8    00000004     functions.o (.rodata.str1.4959705119256106851.1)
+                  0000abec    00000004     sm.o (.rodata.str1.9744198617531312687.1)
+                  0000abf0    00000003     functions.o (.rodata.str1.13318008327193210645.1)
+                  0000abf3    00000003     main.o (.rodata.str1.2123964117280943167.1)
+                  0000abf6    00000003     functions.o (.rodata.str1.504123949362312185.1)
+                  0000abf9    00000003     sm.o (.rodata.str1.5049054583350999548.1)
                   0000abfc    00000003     functions.o (.rodata.str1.7213520456192855849.1)
                   0000abff    00000003     main.o (.rodata.str1.7702501944640899365.1)
                   0000ac02    00000002     ti_msp_dl_config.o (.rodata.gI2C_0ClockConfig)
@@ -837,13 +843,13 @@ MODULE SUMMARY
        ------                         ----    -------   -------
     .\
        functions.o                    5218    5711      0      
-       sm.o                           5920    2704      797    
-       ti_msp_dl_config.o             2800    84        40     
-       helper_functions.o             1238    127       0      
+       sm.o                           5940    2704      797    
+       ti_msp_dl_config.o             2796    84        40     
+       helper_functions.o             1234    127       0      
        main.o                         532     293       11     
        startup_mspm0g350x_ticlang.o   8       192       0      
     +--+------------------------------+-------+---------+---------+
-       Total:                         15716   9111      848    
+       Total:                         15728   9111      848    
                                                                
     .\HAL\
        spi_master.o                   644     0         1052   
@@ -853,9 +859,9 @@ MODULE SUMMARY
        Total:                         3316    92        1327   
                                                                
     .\ics\BQ25628\
-       BQ25628_functions.o            2068    1560      16     
+       BQ25628_functions.o            2064    1560      16     
     +--+------------------------------+-------+---------+---------+
-       Total:                         2068    1560      16     
+       Total:                         2064    1560      16     
                                                                
     .\ics\BQ27Z7\
        BQ27Z7_functions.o             1704    0         28     
@@ -944,7 +950,7 @@ MODULE SUMMARY
        Stack:                         0       0         512    
        Linker Generated:              0       51        0      
     +--+------------------------------+-------+---------+---------+
-       Grand Total:                   32944   11105     2740   
+       Grand Total:                   32952   11105     2740   
 
 
 LINKER GENERATED COPY TABLES
@@ -968,11 +974,11 @@ callee name               trampoline name
    callee addr  tramp addr   call addr  call info
 --------------  -----------  ---------  ----------------
 __aeabi_dsub              $Tramp$TT$L$PI$$__aeabi_dsub
-   00002ba1     0000811c     00008118   libc.a : _printfi.c.obj (.text.OUTLINED_FUNCTION_0)
+   00002811     00008124     00008120   libc.a : _printfi.c.obj (.text.OUTLINED_FUNCTION_0)
 __aeabi_fadd              $Tramp$TT$L$PI$$__aeabi_fadd
-   0000420b     00008138     00008134   libc.a : s_roundf.c.obj (.text.OUTLINED_FUNCTION_0)
+   0000415b     00008140     0000813c   libc.a : s_roundf.c.obj (.text.OUTLINED_FUNCTION_0)
 _c_int00_noargs           $Tramp$TT$L$PI$$_c_int00_noargs
-   000071bd     00008180     0000817a   startup_mspm0g350x_ticlang.o (.text.Reset_Handler)
+   000071c5     00008188     00008182   startup_mspm0g350x_ticlang.o (.text.Reset_Handler)
 
 [3 trampolines]
 [3 trampoline calls]
@@ -982,173 +988,173 @@ GLOBAL SYMBOLS: SORTED ALPHABETICALLY BY Name
 
 address   name                          
 -------   ----                          
-00008173  ADC0_IRQHandler               
-00008173  ADC1_IRQHandler               
-00008173  AES_IRQHandler                
-00006a1d  BQ25628E_ADC_Control          
-00006675  BQ25628E_ApplyProfile         
-00007f6d  BQ25628E_Disable_Watchdog     
-000080fd  BQ25628E_GetFaultFlags        
-00007fd1  BQ25628E_Get_IBAT_mA          
-00007fdd  BQ25628E_Get_IBUS_mA          
-00007fe9  BQ25628E_Get_TBAT_C           
-00007ff5  BQ25628E_Get_TDIE_C           
-00008001  BQ25628E_Get_VBAT_mV          
-0000800d  BQ25628E_Get_VBUS_mV          
-00008019  BQ25628E_Get_VSYS_mV          
-00008025  BQ25628E_HardwareInit         
-00005ed9  BQ25628E_Init_Default         
-00006afd  BQ25628E_ReadReg16            
-00006d75  BQ25628E_ReadReg8             
-00005b15  BQ25628E_Set_ICHG_mA          
-00005b6d  BQ25628E_Set_IINDPM_mA        
-00007f7b  BQ25628E_Set_PeakDischarge_6A 
-00005f2d  BQ25628E_Set_Precharge_mA     
-00005f81  BQ25628E_Set_Termination_mA   
-00005381  BQ25628E_Set_VINDPM_mV        
-000057c9  BQ25628E_Set_VREG_mV          
-00005829  BQ25628E_Set_VSYSMIN_mV       
-00006123  BQ25628E_UpdateBits8          
-00002621  BQ25628E_UpdateTelemetry      
-00006b65  BQ25628E_WriteReg16           
-0000727d  BQ25628E_WriteReg8            
-000058e9  BQ27Z746_GetChargingStatus    
-00005d7d  BQ27Z746_GetChemID            
-00005dd3  BQ27Z746_GetDeviceType        
-00005e29  BQ27Z746_GetFirmwareVersion   
-0000563d  BQ27Z746_GetOperationStatus   
-0000569f  BQ27Z746_GetSafetyStatus      
-00004e65  BQ27Z746_GetTempConfig        
-00008031  BQ27Z746_Get_AvgCurrent_mA    
-0000803d  BQ27Z746_Get_AvgPower_mW      
-00008049  BQ27Z746_Get_BatteryStatus    
-00008055  BQ27Z746_Get_Current_mA       
-00008061  BQ27Z746_Get_CycleCount       
-0000806d  BQ27Z746_Get_FullChargeCap_mAh
-00008079  BQ27Z746_Get_InternalTemp_C   
-00008085  BQ27Z746_Get_RemainingCap_mAh 
-00008091  BQ27Z746_Get_SOC_pct          
-0000809d  BQ27Z746_Get_StateOfHealth_pct
-000080a9  BQ27Z746_Get_Temperature_C    
-000080b5  BQ27Z746_Get_TimeToEmpty_min  
-000080c1  BQ27Z746_Get_TimeToFull_min   
-000080cd  BQ27Z746_Get_Voltage_mV       
-00006a55  BQ27Z746_Init                 
-00007ead  BQ27Z746_IsDischarging        
-00007ebd  BQ27Z746_IsFullyCharged       
-00007ecd  BQ27Z746_IsFullyDischarged    
-00003665  BQ27Z746_MAC_Read             
-00007b95  BQ27Z746_ReadAvgCurrent_mA    
-00007ba9  BQ27Z746_ReadAvgPower_mW      
-00007d9d  BQ27Z746_ReadBatteryStatus    
-00007bbd  BQ27Z746_ReadCurrent_mA       
-00007daf  BQ27Z746_ReadCycleCount       
-00007dc1  BQ27Z746_ReadFullChargeCap_mAh
-00007b11  BQ27Z746_ReadInternalTemp_C   
-00007dd3  BQ27Z746_ReadRemainingCap_mAh 
-00007bd1  BQ27Z746_ReadSOC_pct          
-00007be5  BQ27Z746_ReadStateOfHealth_pct
-00007b27  BQ27Z746_ReadTemperature_C    
-00007de5  BQ27Z746_ReadTimeToEmpty_min  
-00007df7  BQ27Z746_ReadTimeToFull_min   
-00007e09  BQ27Z746_ReadVoltage_mV       
-00004715  BQ27Z746_UpdateTelemetry      
-00008176  C$$EXIT                       
-00008173  CANFD0_IRQHandler             
-00004051  CLI_ProcessInput              
-000059a5  CLI_RegisterCommand           
-00004fc1  CLI_Tokenize                  
-00008173  DAC0_IRQHandler               
-00008107  DL_Common_delayCycles         
-000062b5  DL_DMA_initChannel            
-00005947  DL_I2C_fillControllerTXFIFO   
-00006bf5  DL_I2C_flushControllerRXFIFO  
-00006879  DL_I2C_flushControllerTXFIFO  
-00007231  DL_I2C_setClockConfig         
-00004c75  DL_RTC_Common_getCalendarTime 
-0000452d  DL_RTC_Common_initCalendar    
-000065ed  DL_SPI_init                   
-00007e51  DL_SPI_setClockConfig         
-00006515  DL_UART_init                  
-00007e75  DL_UART_setClockConfig        
-00006c55  DL_UART_transmitDataBlocking  
-00008173  DMA_IRQHandler                
-00008173  Default_Handler               
-00008173  GROUP0_IRQHandler             
-00005bc5  GROUP1_IRQHandler             
-00008177  HOSTexit                      
-00008173  HardFault_Handler             
-00007eed  I2C0_IRQHandler               
-00007efd  I2C1_IRQHandler               
-00002ec1  I2C_ReadDevice                
-000042d9  I2C_TryAddress                
-00003aa1  I2C_WriteDevice               
-00008173  NMI_Handler                   
-000080d9  PWR_BlockFastClocks           
-00007699  PWR_DisableI2C0               
-000076b5  PWR_DisableSPI1               
-000076d1  PWR_DisableUART0              
-0000711d  PWR_EnableCoreInterrupts      
-00007145  PWR_EnableI2C0                
-00006da1  PWR_EnableSPI1                
-0000716d  PWR_EnableUART0               
-00007f0d  PWR_EnterActiveProfile        
-00007a39  PWR_EnterMeasureProfile       
-00007f1d  PWR_ExitActiveProfile         
-00007a51  PWR_ExitMeasureProfile        
-00008153  PWR_UnblockFastClocks         
-00008173  PendSV_Handler                
-00007f2d  RTC_DisablePrescaler          
-00007f3d  RTC_EnablePrescaler           
-00005fd5  RTC_GetTime                   
-000066b9  RTC_IRQHandler                
-000043ad  RTC_SetTime                   
-0000817b  Reset_Handler                 
-00001b69  Run_Legacy_Monitors           
-00005889  SM_ChargingSafetyCheck        
-00005449  SM_GetChargeString            
-00004ed9  SM_GetStateString             
-00006c85  SM_Init                       
-0000655d  SM_LoadCharger                
-00005111  SM_LoadCredentials            
-00007a69  SM_LoadPeriod                 
-00006631  SM_LoadSTMConfig              
-00000a91  SM_Run                        
-00004bf5  SM_SafetyCheck                
-000068b5  SM_Transition                 
-00008173  SPI0_IRQHandler               
-000063e5  SPI1_IRQHandler               
-000047b1  SPI_Controller_Arm            
-00005a01  SPI_Controller_Init           
-00008173  SVC_Handler                   
-00007ab1  SYSCFG_DL_DMA_CH0_init        
-00007ac9  SYSCFG_DL_DMA_CH1_init        
-000080e5  SYSCFG_DL_DMA_init            
-000029f9  SYSCFG_DL_GPIO_init           
-000054ad  SYSCFG_DL_I2C_0_init          
-00005511  SYSCFG_DL_I2C_1_init          
-00006215  SYSCFG_DL_RTC_init            
-00005a5d  SYSCFG_DL_SPI_1_init          
-0000730d  SYSCFG_DL_SYSCTL_init         
-00006431  SYSCFG_DL_UART_0_init         
-00006b31  SYSCFG_DL_init                
-0000483d  SYSCFG_DL_initPower           
-00003889  Shared_I2C_IRQHandler         
-00008173  SysTick_Handler               
-00008173  TIMA0_IRQHandler              
-00008173  TIMA1_IRQHandler              
-00008173  TIMG0_IRQHandler              
-00008173  TIMG12_IRQHandler             
-00008173  TIMG6_IRQHandler              
-00008173  TIMG7_IRQHandler              
-00008173  TIMG8_IRQHandler              
-00007e87  TI_memcpy_small               
-00007fc1  TI_memset_small               
-000076ed  UART0_IRQHandler              
-00008173  UART1_IRQHandler              
-00008173  UART2_IRQHandler              
-00008173  UART3_IRQHandler              
-00004479  UARTReceive                   
+0000817b  ADC0_IRQHandler               
+0000817b  ADC1_IRQHandler               
+0000817b  AES_IRQHandler                
+000069f1  BQ25628E_ADC_Control          
+0000660d  BQ25628E_ApplyProfile         
+00007f75  BQ25628E_Disable_Watchdog     
+00008105  BQ25628E_GetFaultFlags        
+00007fd9  BQ25628E_Get_IBAT_mA          
+00007fe5  BQ25628E_Get_IBUS_mA          
+00007ff1  BQ25628E_Get_TBAT_C           
+00007ffd  BQ25628E_Get_TDIE_C           
+00008009  BQ25628E_Get_VBAT_mV          
+00008015  BQ25628E_Get_VBUS_mV          
+00008021  BQ25628E_Get_VSYS_mV          
+0000802d  BQ25628E_HardwareInit         
+00006071  BQ25628E_Init_Default         
+00006ad1  BQ25628E_ReadReg16            
+00006d7d  BQ25628E_ReadReg8             
+00005a59  BQ25628E_Set_ICHG_mA          
+00005ab1  BQ25628E_Set_IINDPM_mA        
+00007f83  BQ25628E_Set_PeakDischarge_6A 
+00005ecb  BQ25628E_Set_Precharge_mA     
+00005f1f  BQ25628E_Set_Termination_mA   
+00005269  BQ25628E_Set_VINDPM_mV        
+000056b1  BQ25628E_Set_VREG_mV          
+00005711  BQ25628E_Set_VSYSMIN_mV       
+000060c1  BQ25628E_UpdateBits8          
+000020f5  BQ25628E_UpdateTelemetry      
+00006b6d  BQ25628E_WriteReg16           
+00007285  BQ25628E_WriteReg8            
+000057d1  BQ27Z746_GetChargingStatus    
+00005d71  BQ27Z746_GetChemID            
+00005dc7  BQ27Z746_GetDeviceType        
+00005e1d  BQ27Z746_GetFirmwareVersion   
+00005525  BQ27Z746_GetOperationStatus   
+00005587  BQ27Z746_GetSafetyStatus      
+00004d4d  BQ27Z746_GetTempConfig        
+00008039  BQ27Z746_Get_AvgCurrent_mA    
+00008045  BQ27Z746_Get_AvgPower_mW      
+00008051  BQ27Z746_Get_BatteryStatus    
+0000805d  BQ27Z746_Get_Current_mA       
+00008069  BQ27Z746_Get_CycleCount       
+00008075  BQ27Z746_Get_FullChargeCap_mAh
+00008081  BQ27Z746_Get_InternalTemp_C   
+0000808d  BQ27Z746_Get_RemainingCap_mAh 
+00008099  BQ27Z746_Get_SOC_pct          
+000080a5  BQ27Z746_Get_StateOfHealth_pct
+000080b1  BQ27Z746_Get_Temperature_C    
+000080bd  BQ27Z746_Get_TimeToEmpty_min  
+000080c9  BQ27Z746_Get_TimeToFull_min   
+000080d5  BQ27Z746_Get_Voltage_mV       
+00006a29  BQ27Z746_Init                 
+00007eb5  BQ27Z746_IsDischarging        
+00007ec5  BQ27Z746_IsFullyCharged       
+00007ed5  BQ27Z746_IsFullyDischarged    
+000035b5  BQ27Z746_MAC_Read             
+00007b9d  BQ27Z746_ReadAvgCurrent_mA    
+00007bb1  BQ27Z746_ReadAvgPower_mW      
+00007da5  BQ27Z746_ReadBatteryStatus    
+00007bc5  BQ27Z746_ReadCurrent_mA       
+00007db7  BQ27Z746_ReadCycleCount       
+00007dc9  BQ27Z746_ReadFullChargeCap_mAh
+00007b19  BQ27Z746_ReadInternalTemp_C   
+00007ddb  BQ27Z746_ReadRemainingCap_mAh 
+00007bd9  BQ27Z746_ReadSOC_pct          
+00007bed  BQ27Z746_ReadStateOfHealth_pct
+00007b2f  BQ27Z746_ReadTemperature_C    
+00007ded  BQ27Z746_ReadTimeToEmpty_min  
+00007dff  BQ27Z746_ReadTimeToFull_min   
+00007e11  BQ27Z746_ReadVoltage_mV       
+00004665  BQ27Z746_UpdateTelemetry      
+0000817e  C$$EXIT                       
+0000817b  CANFD0_IRQHandler             
+00003fa1  CLI_ProcessInput              
+0000588d  CLI_RegisterCommand           
+00004ea9  CLI_Tokenize                  
+0000817b  DAC0_IRQHandler               
+0000810f  DL_Common_delayCycles         
+00006251  DL_DMA_initChannel            
+0000582f  DL_I2C_fillControllerTXFIFO   
+00006bfd  DL_I2C_flushControllerRXFIFO  
+00006811  DL_I2C_flushControllerTXFIFO  
+00007239  DL_I2C_setClockConfig         
+00004c55  DL_RTC_Common_getCalendarTime 
+0000447d  DL_RTC_Common_initCalendar    
+00006541  DL_SPI_init                   
+00007e59  DL_SPI_setClockConfig         
+000064b1  DL_UART_init                  
+00007e7d  DL_UART_setClockConfig        
+00006c5d  DL_UART_transmitDataBlocking  
+0000817b  DMA_IRQHandler                
+0000817b  Default_Handler               
+0000817b  GROUP0_IRQHandler             
+00005b09  GROUP1_IRQHandler             
+0000817f  HOSTexit                      
+0000817b  HardFault_Handler             
+00007ef5  I2C0_IRQHandler               
+00007f05  I2C1_IRQHandler               
+00002b31  I2C_ReadDevice                
+00004229  I2C_TryAddress                
+000039f1  I2C_WriteDevice               
+0000817b  NMI_Handler                   
+000080e1  PWR_BlockFastClocks           
+000076a1  PWR_DisableI2C0               
+000076bd  PWR_DisableSPI1               
+000076d9  PWR_DisableUART0              
+00007125  PWR_EnableCoreInterrupts      
+0000714d  PWR_EnableI2C0                
+00006da9  PWR_EnableSPI1                
+00007175  PWR_EnableUART0               
+00007f15  PWR_EnterActiveProfile        
+00007a41  PWR_EnterMeasureProfile       
+00007f25  PWR_ExitActiveProfile         
+00007a59  PWR_ExitMeasureProfile        
+0000815b  PWR_UnblockFastClocks         
+0000817b  PendSV_Handler                
+00007f35  RTC_DisablePrescaler          
+00007f45  RTC_EnablePrescaler           
+00005f75  RTC_GetTime                   
+00006651  RTC_IRQHandler                
+000042fd  RTC_SetTime                   
+00008183  Reset_Handler                 
+00001441  Run_Legacy_Monitors           
+00005771  SM_ChargingSafetyCheck        
+00005331  SM_GetChargeString            
+00004dc1  SM_GetStateString             
+00006c8d  SM_Init                       
+00006585  SM_LoadCharger                
+00004ff9  SM_LoadCredentials            
+00007a71  SM_LoadPeriod                 
+000065c9  SM_LoadSTMConfig              
+00005c11  SM_Run                        
+00004bd5  SM_SafetyCheck                
+00006889  SM_Transition                 
+0000817b  SPI0_IRQHandler               
+00006381  SPI1_IRQHandler               
+00004791  SPI_Controller_Arm            
+000059a1  SPI_Controller_Init           
+0000817b  SVC_Handler                   
+00007ab9  SYSCFG_DL_DMA_CH0_init        
+00007ad1  SYSCFG_DL_DMA_CH1_init        
+000080ed  SYSCFG_DL_DMA_init            
+000024cd  SYSCFG_DL_GPIO_init           
+00005395  SYSCFG_DL_I2C_0_init          
+000053f9  SYSCFG_DL_I2C_1_init          
+000061b1  SYSCFG_DL_RTC_init            
+00005c69  SYSCFG_DL_SPI_1_init          
+00007315  SYSCFG_DL_SYSCTL_init         
+000063cd  SYSCFG_DL_UART_0_init         
+00006b39  SYSCFG_DL_init                
+0000481d  SYSCFG_DL_initPower           
+000037d9  Shared_I2C_IRQHandler         
+0000817b  SysTick_Handler               
+0000817b  TIMA0_IRQHandler              
+0000817b  TIMA1_IRQHandler              
+0000817b  TIMG0_IRQHandler              
+0000817b  TIMG12_IRQHandler             
+0000817b  TIMG6_IRQHandler              
+0000817b  TIMG7_IRQHandler              
+0000817b  TIMG8_IRQHandler              
+00007e8f  TI_memcpy_small               
+00007fc9  TI_memset_small               
+000076f5  UART0_IRQHandler              
+0000817b  UART1_IRQHandler              
+0000817b  UART2_IRQHandler              
+0000817b  UART3_IRQHandler              
+000043c9  UARTReceive                   
 20200790  UART_Buffer                   
 20208000  __STACK_END                   
 00000200  __STACK_SIZE                  
@@ -1166,119 +1172,119 @@ address   name
 0000ac44  __TI_CINIT_Warm               
 0000ac20  __TI_Handler_Table_Base       
 0000ac2c  __TI_Handler_Table_Limit      
-00006969  __TI_auto_init_nobinit_nopinit
-00004de9  __TI_decompress_lzss          
-00007e99  __TI_decompress_none          
-00005ccd  __TI_ltoa                     
+0000693d  __TI_auto_init_nobinit_nopinit
+00004cd1  __TI_decompress_lzss          
+00007ea1  __TI_decompress_none          
+00005cc1  __TI_ltoa                     
 ffffffff  __TI_pprof_out_hndl           
 000000c1  __TI_printfi                  
 ffffffff  __TI_prof_data_size           
 ffffffff  __TI_prof_data_start          
 00000000  __TI_static_base__            
-00007f5d  __TI_zero_init                
-00002bab  __adddf3                      
-0000420b  __addsf3                      
+00007f65  __TI_zero_init                
+0000281b  __adddf3                      
+0000415b  __addsf3                      
 00008bf0  __aeabi_ctype_table_          
 00008bf0  __aeabi_ctype_table_C         
-000064c9  __aeabi_d2iz                  
-00002bab  __aeabi_dadd                  
-00005701  __aeabi_dcmpeq                
-0000573d  __aeabi_dcmpge                
-00005751  __aeabi_dcmpgt                
-00005729  __aeabi_dcmple                
-00005715  __aeabi_dcmplt                
-00003995  __aeabi_ddiv                  
-00003da9  __aeabi_dmul                  
-00002ba1  __aeabi_dsub                  
+00006465  __aeabi_d2iz                  
+0000281b  __aeabi_dadd                  
+000055e9  __aeabi_dcmpeq                
+00005625  __aeabi_dcmpge                
+00005639  __aeabi_dcmpgt                
+00005611  __aeabi_dcmple                
+000055fd  __aeabi_dcmplt                
+000038e5  __aeabi_ddiv                  
+00003cf9  __aeabi_dmul                  
+00002811  __aeabi_dsub                  
 20200888  __aeabi_errno                 
-0000815d  __aeabi_errno_addr            
-00006739  __aeabi_f2d                   
-00006a8d  __aeabi_f2iz                  
-0000420b  __aeabi_fadd                  
-00005765  __aeabi_fcmpeq                
-000057a1  __aeabi_fcmpge                
-000057b5  __aeabi_fcmpgt                
-0000578d  __aeabi_fcmple                
-00005779  __aeabi_fcmplt                
-00004b71  __aeabi_fdiv                  
-000048c9  __aeabi_fmul                  
-00004201  __aeabi_fsub                  
-00006f01  __aeabi_i2d                   
-000068f1  __aeabi_i2f                   
-00005e81  __aeabi_idiv                  
-00002d33  __aeabi_idiv0                 
-00005e81  __aeabi_idivmod               
-00004673  __aeabi_ldiv0                 
-00007411  __aeabi_llsl                  
-000072c5  __aeabi_lmul                  
-000080f1  __aeabi_memclr                
-000080f1  __aeabi_memclr4               
-000080f1  __aeabi_memclr8               
-00008165  __aeabi_memcpy                
-00008165  __aeabi_memcpy4               
-00008165  __aeabi_memcpy8               
-00007f89  __aeabi_memset                
-00007f89  __aeabi_memset4               
-00007f89  __aeabi_memset8               
-000066f9  __aeabi_uidiv                 
-000066f9  __aeabi_uidivmod              
-00007d61  __aeabi_uldivmod              
-00007411  __ashldi3                     
+00008165  __aeabi_errno_addr            
+000066d1  __aeabi_f2d                   
+00006a61  __aeabi_f2iz                  
+0000415b  __aeabi_fadd                  
+0000564d  __aeabi_fcmpeq                
+00005689  __aeabi_fcmpge                
+0000569d  __aeabi_fcmpgt                
+00005675  __aeabi_fcmple                
+00005661  __aeabi_fcmplt                
+00004b51  __aeabi_fdiv                  
+000048a9  __aeabi_fmul                  
+00004151  __aeabi_fsub                  
+00006f09  __aeabi_i2d                   
+000068c5  __aeabi_i2f                   
+00005e75  __aeabi_idiv                  
+000029a3  __aeabi_idiv0                 
+00005e75  __aeabi_idivmod               
+000045c3  __aeabi_ldiv0                 
+00007419  __aeabi_llsl                  
+000072cd  __aeabi_lmul                  
+000080f9  __aeabi_memclr                
+000080f9  __aeabi_memclr4               
+000080f9  __aeabi_memclr8               
+0000816d  __aeabi_memcpy                
+0000816d  __aeabi_memcpy4               
+0000816d  __aeabi_memcpy8               
+00007f91  __aeabi_memset                
+00007f91  __aeabi_memset4               
+00007f91  __aeabi_memset8               
+00006691  __aeabi_uidiv                 
+00006691  __aeabi_uidivmod              
+00007d69  __aeabi_uldivmod              
+00007419  __ashldi3                     
 ffffffff  __binit__                     
-00005249  __cmpdf2                      
-000069a5  __cmpsf2                      
-00003995  __divdf3                      
-00004b71  __divsf3                      
-00005249  __eqdf2                       
-000069a5  __eqsf2                       
-00006739  __extendsfdf2                 
-000064c9  __fixdfsi                     
-00006a8d  __fixsfsi                     
-00006f01  __floatsidf                   
-000068f1  __floatsisf                   
-00004f4d  __gedf2                       
-0000692d  __gesf2                       
-00004f4d  __gtdf2                       
-0000692d  __gtsf2                       
-00005249  __ledf2                       
-000069a5  __lesf2                       
-00005249  __ltdf2                       
-000069a5  __ltsf2                       
+00005131  __cmpdf2                      
+00006979  __cmpsf2                      
+000038e5  __divdf3                      
+00004b51  __divsf3                      
+00005131  __eqdf2                       
+00006979  __eqsf2                       
+000066d1  __extendsfdf2                 
+00006465  __fixdfsi                     
+00006a61  __fixsfsi                     
+00006f09  __floatsidf                   
+000068c5  __floatsisf                   
+00004e35  __gedf2                       
+00006901  __gesf2                       
+00004e35  __gtdf2                       
+00006901  __gtsf2                       
+00005131  __ledf2                       
+00006979  __lesf2                       
+00005131  __ltdf2                       
+00006979  __ltsf2                       
 UNDEFED   __mpu_init                    
-00003da9  __muldf3                      
-000072c5  __muldi3                      
-000069e1  __muldsi3                     
-000048c9  __mulsf3                      
-00005249  __nedf2                       
-000069a5  __nesf2                       
+00003cf9  __muldf3                      
+000072cd  __muldi3                      
+000069b5  __muldsi3                     
+000048a9  __mulsf3                      
+00005131  __nedf2                       
+00006979  __nesf2                       
 20207e00  __stack                       
 20200000  __start___llvm_prf_bits       
 20200000  __start___llvm_prf_cnts       
 20200000  __stop___llvm_prf_bits        
 20200000  __stop___llvm_prf_cnts        
-00002ba1  __subdf3                      
-00004201  __subsf3                      
-000045d1  __udivmoddi4                  
-000071bd  _c_int00_noargs               
-00003191  _calculateTempFromRt          
+00002811  __subdf3                      
+00004151  __subsf3                      
+00004521  __udivmoddi4                  
+000071c5  _c_int00_noargs               
+000030e1  _calculateTempFromRt          
 UNDEFED   _system_post_cinit            
-00008191  _system_pre_init              
-0000816d  abort                         
-00006779  atoi                          
+00008199  _system_pre_init              
+00008175  abort                         
+00006711  atoi                          
 ffffffff  binit                         
 202008ac  bq_monitor_active             
 202008ad  char_index                    
-00002195  cmd_bq                        
-000011b9  cmd_gauge                     
-00003ba9  cmd_hall                      
-00006265  cmd_help                      
-00003e8d  cmd_i2cscan                   
-00003045  cmd_pwr                       
-000016dd  cmd_sm                        
+000017f5  cmd_bq                        
+00000a91  cmd_gauge                     
+00003af9  cmd_hall                      
+00006201  cmd_help                      
+00003ddd  cmd_i2cscan                   
+00002f95  cmd_pwr                       
+00000fb5  cmd_sm                        
 202008ae  data_received                 
-00004955  floorf                        
-00005ab9  frexp                         
-00005ab9  frexpl                        
+00004935  floorf                        
+000059fd  frexp                         
+000059fd  frexpl                        
 20200868  gI2cControllerStatus          
 20200858  gRxCount                      
 2020085c  gRxLen                        
@@ -1289,49 +1295,49 @@ ffffffff  binit
 20200860  gTxCount                      
 20200864  gTxLen                        
 2020081a  gTxPacket                     
-00007391  gauge_address                 
-00006f2d  gauge_cmd_read                
-00006f59  gauge_init                    
+00007399  gauge_address                 
+00006f35  gauge_cmd_read                
+00006f61  gauge_init                    
 202008b0  gauge_monitor_active          
-00005031  gauge_read                    
-000050a1  gauge_write                   
-00006f85  get_UART_buffer               
-00007195  hall_init                     
+00004f19  gauge_read                    
+00004f89  gauge_write                   
+00006f8d  get_UART_buffer               
+0000719d  hall_init                     
 202008b1  hall_monitor_active           
 202008b2  hall_wakeup_flag              
-00007b7f  i2c_init                      
+00007b87  i2c_init                      
 00000000  interruptVectors              
-00004129  ldexp                         
-00004129  ldexpl                        
-00005575  main                          
-0000732f  memccpy                       
+00004079  ldexp                         
+00004079  ldexpl                        
+0000545d  main                          
+00007337  memccpy                       
 2020089c  monitor_rate                  
-000067b9  printToUART                   
-000052b1  roundf                        
+00006751  printToUART                   
+00005199  roundf                        
 202008b4  rtc_minute_tick               
 202008b5  rtc_second_tick               
-00004129  scalbn                        
-00004129  scalbnl                       
-00004675  setupCLI                      
+00004079  scalbn                        
+00004079  scalbnl                       
+000045c5  setupCLI                      
 20200600  sm_context                    
-0000647d  snprintf                      
-000067f9  spi_init                      
+00006419  snprintf                      
+00006791  spi_init                      
 2020083c  stm32Spi                      
 202008b6  stm_io2_flag                  
-00007d89  strchr                        
-000049e1  strcmp                        
-00007f97  strcpy                        
-000072e9  strcspn                       
-00007fb3  strlen                        
-00006fb1  strncpy                       
-00007257  strspn                        
-000065a5  strtok                        
+00007d91  strchr                        
+000049c1  strcmp                        
+00007f9f  strcpy                        
+000072f1  strcspn                       
+00007fbb  strlen                        
+00006fb9  strncpy                       
+0000725f  strspn                        
+000064f9  strtok                        
 00008aac  thermistor_table_E3103JT2A    
 000081a0  thermistor_table_ntcc_10k     
-000073d1  uart_init                     
-000055d9  uart_printf                   
-00006839  vsnprintf                     
-00007f4d  wcslen                        
+000073d9  uart_init                     
+000054c1  uart_printf                   
+000067d1  vsnprintf                     
+00007f55  wcslen                        
 
 
 GLOBAL SYMBOLS: SORTED BY Symbol Address 
@@ -1351,297 +1357,297 @@ address   name
 00000000  interruptVectors              
 000000c1  __TI_printfi                  
 00000200  __STACK_SIZE                  
-00000a91  SM_Run                        
-000011b9  cmd_gauge                     
-000016dd  cmd_sm                        
-00001b69  Run_Legacy_Monitors           
-00002195  cmd_bq                        
-00002621  BQ25628E_UpdateTelemetry      
-000029f9  SYSCFG_DL_GPIO_init           
-00002ba1  __aeabi_dsub                  
-00002ba1  __subdf3                      
-00002bab  __adddf3                      
-00002bab  __aeabi_dadd                  
-00002d33  __aeabi_idiv0                 
-00002ec1  I2C_ReadDevice                
-00003045  cmd_pwr                       
-00003191  _calculateTempFromRt          
-00003665  BQ27Z746_MAC_Read             
-00003889  Shared_I2C_IRQHandler         
-00003995  __aeabi_ddiv                  
-00003995  __divdf3                      
-00003aa1  I2C_WriteDevice               
-00003ba9  cmd_hall                      
-00003da9  __aeabi_dmul                  
-00003da9  __muldf3                      
-00003e8d  cmd_i2cscan                   
-00004051  CLI_ProcessInput              
-00004129  ldexp                         
-00004129  ldexpl                        
-00004129  scalbn                        
-00004129  scalbnl                       
-00004201  __aeabi_fsub                  
-00004201  __subsf3                      
-0000420b  __addsf3                      
-0000420b  __aeabi_fadd                  
-000042d9  I2C_TryAddress                
-000043ad  RTC_SetTime                   
-00004479  UARTReceive                   
-0000452d  DL_RTC_Common_initCalendar    
-000045d1  __udivmoddi4                  
-00004673  __aeabi_ldiv0                 
-00004675  setupCLI                      
-00004715  BQ27Z746_UpdateTelemetry      
-000047b1  SPI_Controller_Arm            
-0000483d  SYSCFG_DL_initPower           
-000048c9  __aeabi_fmul                  
-000048c9  __mulsf3                      
-00004955  floorf                        
-000049e1  strcmp                        
-00004b71  __aeabi_fdiv                  
-00004b71  __divsf3                      
-00004bf5  SM_SafetyCheck                
-00004c75  DL_RTC_Common_getCalendarTime 
-00004de9  __TI_decompress_lzss          
-00004e65  BQ27Z746_GetTempConfig        
-00004ed9  SM_GetStateString             
-00004f4d  __gedf2                       
-00004f4d  __gtdf2                       
-00004fc1  CLI_Tokenize                  
-00005031  gauge_read                    
-000050a1  gauge_write                   
-00005111  SM_LoadCredentials            
-00005249  __cmpdf2                      
-00005249  __eqdf2                       
-00005249  __ledf2                       
-00005249  __ltdf2                       
-00005249  __nedf2                       
-000052b1  roundf                        
-00005381  BQ25628E_Set_VINDPM_mV        
-00005449  SM_GetChargeString            
-000054ad  SYSCFG_DL_I2C_0_init          
-00005511  SYSCFG_DL_I2C_1_init          
-00005575  main                          
-000055d9  uart_printf                   
-0000563d  BQ27Z746_GetOperationStatus   
-0000569f  BQ27Z746_GetSafetyStatus      
-00005701  __aeabi_dcmpeq                
-00005715  __aeabi_dcmplt                
-00005729  __aeabi_dcmple                
-0000573d  __aeabi_dcmpge                
-00005751  __aeabi_dcmpgt                
-00005765  __aeabi_fcmpeq                
-00005779  __aeabi_fcmplt                
-0000578d  __aeabi_fcmple                
-000057a1  __aeabi_fcmpge                
-000057b5  __aeabi_fcmpgt                
-000057c9  BQ25628E_Set_VREG_mV          
-00005829  BQ25628E_Set_VSYSMIN_mV       
-00005889  SM_ChargingSafetyCheck        
-000058e9  BQ27Z746_GetChargingStatus    
-00005947  DL_I2C_fillControllerTXFIFO   
-000059a5  CLI_RegisterCommand           
-00005a01  SPI_Controller_Init           
-00005a5d  SYSCFG_DL_SPI_1_init          
-00005ab9  frexp                         
-00005ab9  frexpl                        
-00005b15  BQ25628E_Set_ICHG_mA          
-00005b6d  BQ25628E_Set_IINDPM_mA        
-00005bc5  GROUP1_IRQHandler             
-00005ccd  __TI_ltoa                     
-00005d7d  BQ27Z746_GetChemID            
-00005dd3  BQ27Z746_GetDeviceType        
-00005e29  BQ27Z746_GetFirmwareVersion   
-00005e81  __aeabi_idiv                  
-00005e81  __aeabi_idivmod               
-00005ed9  BQ25628E_Init_Default         
-00005f2d  BQ25628E_Set_Precharge_mA     
-00005f81  BQ25628E_Set_Termination_mA   
-00005fd5  RTC_GetTime                   
-00006123  BQ25628E_UpdateBits8          
-00006215  SYSCFG_DL_RTC_init            
-00006265  cmd_help                      
-000062b5  DL_DMA_initChannel            
-000063e5  SPI1_IRQHandler               
-00006431  SYSCFG_DL_UART_0_init         
-0000647d  snprintf                      
-000064c9  __aeabi_d2iz                  
-000064c9  __fixdfsi                     
-00006515  DL_UART_init                  
-0000655d  SM_LoadCharger                
-000065a5  strtok                        
-000065ed  DL_SPI_init                   
-00006631  SM_LoadSTMConfig              
-00006675  BQ25628E_ApplyProfile         
-000066b9  RTC_IRQHandler                
-000066f9  __aeabi_uidiv                 
-000066f9  __aeabi_uidivmod              
-00006739  __aeabi_f2d                   
-00006739  __extendsfdf2                 
-00006779  atoi                          
-000067b9  printToUART                   
-000067f9  spi_init                      
-00006839  vsnprintf                     
-00006879  DL_I2C_flushControllerTXFIFO  
-000068b5  SM_Transition                 
-000068f1  __aeabi_i2f                   
-000068f1  __floatsisf                   
-0000692d  __gesf2                       
-0000692d  __gtsf2                       
-00006969  __TI_auto_init_nobinit_nopinit
-000069a5  __cmpsf2                      
-000069a5  __eqsf2                       
-000069a5  __lesf2                       
-000069a5  __ltsf2                       
-000069a5  __nesf2                       
-000069e1  __muldsi3                     
-00006a1d  BQ25628E_ADC_Control          
-00006a55  BQ27Z746_Init                 
-00006a8d  __aeabi_f2iz                  
-00006a8d  __fixsfsi                     
-00006afd  BQ25628E_ReadReg16            
-00006b31  SYSCFG_DL_init                
-00006b65  BQ25628E_WriteReg16           
-00006bf5  DL_I2C_flushControllerRXFIFO  
-00006c55  DL_UART_transmitDataBlocking  
-00006c85  SM_Init                       
-00006d75  BQ25628E_ReadReg8             
-00006da1  PWR_EnableSPI1                
-00006f01  __aeabi_i2d                   
-00006f01  __floatsidf                   
-00006f2d  gauge_cmd_read                
-00006f59  gauge_init                    
-00006f85  get_UART_buffer               
-00006fb1  strncpy                       
-0000711d  PWR_EnableCoreInterrupts      
-00007145  PWR_EnableI2C0                
-0000716d  PWR_EnableUART0               
-00007195  hall_init                     
-000071bd  _c_int00_noargs               
-00007231  DL_I2C_setClockConfig         
-00007257  strspn                        
-0000727d  BQ25628E_WriteReg8            
-000072c5  __aeabi_lmul                  
-000072c5  __muldi3                      
-000072e9  strcspn                       
-0000730d  SYSCFG_DL_SYSCTL_init         
-0000732f  memccpy                       
-00007391  gauge_address                 
-000073d1  uart_init                     
-00007411  __aeabi_llsl                  
-00007411  __ashldi3                     
-00007699  PWR_DisableI2C0               
-000076b5  PWR_DisableSPI1               
-000076d1  PWR_DisableUART0              
-000076ed  UART0_IRQHandler              
-00007a39  PWR_EnterMeasureProfile       
-00007a51  PWR_ExitMeasureProfile        
-00007a69  SM_LoadPeriod                 
-00007ab1  SYSCFG_DL_DMA_CH0_init        
-00007ac9  SYSCFG_DL_DMA_CH1_init        
-00007b11  BQ27Z746_ReadInternalTemp_C   
-00007b27  BQ27Z746_ReadTemperature_C    
-00007b7f  i2c_init                      
-00007b95  BQ27Z746_ReadAvgCurrent_mA    
-00007ba9  BQ27Z746_ReadAvgPower_mW      
-00007bbd  BQ27Z746_ReadCurrent_mA       
-00007bd1  BQ27Z746_ReadSOC_pct          
-00007be5  BQ27Z746_ReadStateOfHealth_pct
-00007d61  __aeabi_uldivmod              
-00007d89  strchr                        
-00007d9d  BQ27Z746_ReadBatteryStatus    
-00007daf  BQ27Z746_ReadCycleCount       
-00007dc1  BQ27Z746_ReadFullChargeCap_mAh
-00007dd3  BQ27Z746_ReadRemainingCap_mAh 
-00007de5  BQ27Z746_ReadTimeToEmpty_min  
-00007df7  BQ27Z746_ReadTimeToFull_min   
-00007e09  BQ27Z746_ReadVoltage_mV       
-00007e51  DL_SPI_setClockConfig         
-00007e75  DL_UART_setClockConfig        
-00007e87  TI_memcpy_small               
-00007e99  __TI_decompress_none          
-00007ead  BQ27Z746_IsDischarging        
-00007ebd  BQ27Z746_IsFullyCharged       
-00007ecd  BQ27Z746_IsFullyDischarged    
-00007eed  I2C0_IRQHandler               
-00007efd  I2C1_IRQHandler               
-00007f0d  PWR_EnterActiveProfile        
-00007f1d  PWR_ExitActiveProfile         
-00007f2d  RTC_DisablePrescaler          
-00007f3d  RTC_EnablePrescaler           
-00007f4d  wcslen                        
-00007f5d  __TI_zero_init                
-00007f6d  BQ25628E_Disable_Watchdog     
-00007f7b  BQ25628E_Set_PeakDischarge_6A 
-00007f89  __aeabi_memset                
-00007f89  __aeabi_memset4               
-00007f89  __aeabi_memset8               
-00007f97  strcpy                        
-00007fb3  strlen                        
-00007fc1  TI_memset_small               
-00007fd1  BQ25628E_Get_IBAT_mA          
-00007fdd  BQ25628E_Get_IBUS_mA          
-00007fe9  BQ25628E_Get_TBAT_C           
-00007ff5  BQ25628E_Get_TDIE_C           
-00008001  BQ25628E_Get_VBAT_mV          
-0000800d  BQ25628E_Get_VBUS_mV          
-00008019  BQ25628E_Get_VSYS_mV          
-00008025  BQ25628E_HardwareInit         
-00008031  BQ27Z746_Get_AvgCurrent_mA    
-0000803d  BQ27Z746_Get_AvgPower_mW      
-00008049  BQ27Z746_Get_BatteryStatus    
-00008055  BQ27Z746_Get_Current_mA       
-00008061  BQ27Z746_Get_CycleCount       
-0000806d  BQ27Z746_Get_FullChargeCap_mAh
-00008079  BQ27Z746_Get_InternalTemp_C   
-00008085  BQ27Z746_Get_RemainingCap_mAh 
-00008091  BQ27Z746_Get_SOC_pct          
-0000809d  BQ27Z746_Get_StateOfHealth_pct
-000080a9  BQ27Z746_Get_Temperature_C    
-000080b5  BQ27Z746_Get_TimeToEmpty_min  
-000080c1  BQ27Z746_Get_TimeToFull_min   
-000080cd  BQ27Z746_Get_Voltage_mV       
-000080d9  PWR_BlockFastClocks           
-000080e5  SYSCFG_DL_DMA_init            
-000080f1  __aeabi_memclr                
-000080f1  __aeabi_memclr4               
-000080f1  __aeabi_memclr8               
-000080fd  BQ25628E_GetFaultFlags        
-00008107  DL_Common_delayCycles         
-00008153  PWR_UnblockFastClocks         
-0000815d  __aeabi_errno_addr            
-00008165  __aeabi_memcpy                
-00008165  __aeabi_memcpy4               
-00008165  __aeabi_memcpy8               
-0000816d  abort                         
-00008173  ADC0_IRQHandler               
-00008173  ADC1_IRQHandler               
-00008173  AES_IRQHandler                
-00008173  CANFD0_IRQHandler             
-00008173  DAC0_IRQHandler               
-00008173  DMA_IRQHandler                
-00008173  Default_Handler               
-00008173  GROUP0_IRQHandler             
-00008173  HardFault_Handler             
-00008173  NMI_Handler                   
-00008173  PendSV_Handler                
-00008173  SPI0_IRQHandler               
-00008173  SVC_Handler                   
-00008173  SysTick_Handler               
-00008173  TIMA0_IRQHandler              
-00008173  TIMA1_IRQHandler              
-00008173  TIMG0_IRQHandler              
-00008173  TIMG12_IRQHandler             
-00008173  TIMG6_IRQHandler              
-00008173  TIMG7_IRQHandler              
-00008173  TIMG8_IRQHandler              
-00008173  UART1_IRQHandler              
-00008173  UART2_IRQHandler              
-00008173  UART3_IRQHandler              
-00008176  C$$EXIT                       
-00008177  HOSTexit                      
-0000817b  Reset_Handler                 
-00008191  _system_pre_init              
+00000a91  cmd_gauge                     
+00000fb5  cmd_sm                        
+00001441  Run_Legacy_Monitors           
+000017f5  cmd_bq                        
+000020f5  BQ25628E_UpdateTelemetry      
+000024cd  SYSCFG_DL_GPIO_init           
+00002811  __aeabi_dsub                  
+00002811  __subdf3                      
+0000281b  __adddf3                      
+0000281b  __aeabi_dadd                  
+000029a3  __aeabi_idiv0                 
+00002b31  I2C_ReadDevice                
+00002f95  cmd_pwr                       
+000030e1  _calculateTempFromRt          
+000035b5  BQ27Z746_MAC_Read             
+000037d9  Shared_I2C_IRQHandler         
+000038e5  __aeabi_ddiv                  
+000038e5  __divdf3                      
+000039f1  I2C_WriteDevice               
+00003af9  cmd_hall                      
+00003cf9  __aeabi_dmul                  
+00003cf9  __muldf3                      
+00003ddd  cmd_i2cscan                   
+00003fa1  CLI_ProcessInput              
+00004079  ldexp                         
+00004079  ldexpl                        
+00004079  scalbn                        
+00004079  scalbnl                       
+00004151  __aeabi_fsub                  
+00004151  __subsf3                      
+0000415b  __addsf3                      
+0000415b  __aeabi_fadd                  
+00004229  I2C_TryAddress                
+000042fd  RTC_SetTime                   
+000043c9  UARTReceive                   
+0000447d  DL_RTC_Common_initCalendar    
+00004521  __udivmoddi4                  
+000045c3  __aeabi_ldiv0                 
+000045c5  setupCLI                      
+00004665  BQ27Z746_UpdateTelemetry      
+00004791  SPI_Controller_Arm            
+0000481d  SYSCFG_DL_initPower           
+000048a9  __aeabi_fmul                  
+000048a9  __mulsf3                      
+00004935  floorf                        
+000049c1  strcmp                        
+00004b51  __aeabi_fdiv                  
+00004b51  __divsf3                      
+00004bd5  SM_SafetyCheck                
+00004c55  DL_RTC_Common_getCalendarTime 
+00004cd1  __TI_decompress_lzss          
+00004d4d  BQ27Z746_GetTempConfig        
+00004dc1  SM_GetStateString             
+00004e35  __gedf2                       
+00004e35  __gtdf2                       
+00004ea9  CLI_Tokenize                  
+00004f19  gauge_read                    
+00004f89  gauge_write                   
+00004ff9  SM_LoadCredentials            
+00005131  __cmpdf2                      
+00005131  __eqdf2                       
+00005131  __ledf2                       
+00005131  __ltdf2                       
+00005131  __nedf2                       
+00005199  roundf                        
+00005269  BQ25628E_Set_VINDPM_mV        
+00005331  SM_GetChargeString            
+00005395  SYSCFG_DL_I2C_0_init          
+000053f9  SYSCFG_DL_I2C_1_init          
+0000545d  main                          
+000054c1  uart_printf                   
+00005525  BQ27Z746_GetOperationStatus   
+00005587  BQ27Z746_GetSafetyStatus      
+000055e9  __aeabi_dcmpeq                
+000055fd  __aeabi_dcmplt                
+00005611  __aeabi_dcmple                
+00005625  __aeabi_dcmpge                
+00005639  __aeabi_dcmpgt                
+0000564d  __aeabi_fcmpeq                
+00005661  __aeabi_fcmplt                
+00005675  __aeabi_fcmple                
+00005689  __aeabi_fcmpge                
+0000569d  __aeabi_fcmpgt                
+000056b1  BQ25628E_Set_VREG_mV          
+00005711  BQ25628E_Set_VSYSMIN_mV       
+00005771  SM_ChargingSafetyCheck        
+000057d1  BQ27Z746_GetChargingStatus    
+0000582f  DL_I2C_fillControllerTXFIFO   
+0000588d  CLI_RegisterCommand           
+000059a1  SPI_Controller_Init           
+000059fd  frexp                         
+000059fd  frexpl                        
+00005a59  BQ25628E_Set_ICHG_mA          
+00005ab1  BQ25628E_Set_IINDPM_mA        
+00005b09  GROUP1_IRQHandler             
+00005c11  SM_Run                        
+00005c69  SYSCFG_DL_SPI_1_init          
+00005cc1  __TI_ltoa                     
+00005d71  BQ27Z746_GetChemID            
+00005dc7  BQ27Z746_GetDeviceType        
+00005e1d  BQ27Z746_GetFirmwareVersion   
+00005e75  __aeabi_idiv                  
+00005e75  __aeabi_idivmod               
+00005ecb  BQ25628E_Set_Precharge_mA     
+00005f1f  BQ25628E_Set_Termination_mA   
+00005f75  RTC_GetTime                   
+00006071  BQ25628E_Init_Default         
+000060c1  BQ25628E_UpdateBits8          
+000061b1  SYSCFG_DL_RTC_init            
+00006201  cmd_help                      
+00006251  DL_DMA_initChannel            
+00006381  SPI1_IRQHandler               
+000063cd  SYSCFG_DL_UART_0_init         
+00006419  snprintf                      
+00006465  __aeabi_d2iz                  
+00006465  __fixdfsi                     
+000064b1  DL_UART_init                  
+000064f9  strtok                        
+00006541  DL_SPI_init                   
+00006585  SM_LoadCharger                
+000065c9  SM_LoadSTMConfig              
+0000660d  BQ25628E_ApplyProfile         
+00006651  RTC_IRQHandler                
+00006691  __aeabi_uidiv                 
+00006691  __aeabi_uidivmod              
+000066d1  __aeabi_f2d                   
+000066d1  __extendsfdf2                 
+00006711  atoi                          
+00006751  printToUART                   
+00006791  spi_init                      
+000067d1  vsnprintf                     
+00006811  DL_I2C_flushControllerTXFIFO  
+00006889  SM_Transition                 
+000068c5  __aeabi_i2f                   
+000068c5  __floatsisf                   
+00006901  __gesf2                       
+00006901  __gtsf2                       
+0000693d  __TI_auto_init_nobinit_nopinit
+00006979  __cmpsf2                      
+00006979  __eqsf2                       
+00006979  __lesf2                       
+00006979  __ltsf2                       
+00006979  __nesf2                       
+000069b5  __muldsi3                     
+000069f1  BQ25628E_ADC_Control          
+00006a29  BQ27Z746_Init                 
+00006a61  __aeabi_f2iz                  
+00006a61  __fixsfsi                     
+00006ad1  BQ25628E_ReadReg16            
+00006b39  SYSCFG_DL_init                
+00006b6d  BQ25628E_WriteReg16           
+00006bfd  DL_I2C_flushControllerRXFIFO  
+00006c5d  DL_UART_transmitDataBlocking  
+00006c8d  SM_Init                       
+00006d7d  BQ25628E_ReadReg8             
+00006da9  PWR_EnableSPI1                
+00006f09  __aeabi_i2d                   
+00006f09  __floatsidf                   
+00006f35  gauge_cmd_read                
+00006f61  gauge_init                    
+00006f8d  get_UART_buffer               
+00006fb9  strncpy                       
+00007125  PWR_EnableCoreInterrupts      
+0000714d  PWR_EnableI2C0                
+00007175  PWR_EnableUART0               
+0000719d  hall_init                     
+000071c5  _c_int00_noargs               
+00007239  DL_I2C_setClockConfig         
+0000725f  strspn                        
+00007285  BQ25628E_WriteReg8            
+000072cd  __aeabi_lmul                  
+000072cd  __muldi3                      
+000072f1  strcspn                       
+00007315  SYSCFG_DL_SYSCTL_init         
+00007337  memccpy                       
+00007399  gauge_address                 
+000073d9  uart_init                     
+00007419  __aeabi_llsl                  
+00007419  __ashldi3                     
+000076a1  PWR_DisableI2C0               
+000076bd  PWR_DisableSPI1               
+000076d9  PWR_DisableUART0              
+000076f5  UART0_IRQHandler              
+00007a41  PWR_EnterMeasureProfile       
+00007a59  PWR_ExitMeasureProfile        
+00007a71  SM_LoadPeriod                 
+00007ab9  SYSCFG_DL_DMA_CH0_init        
+00007ad1  SYSCFG_DL_DMA_CH1_init        
+00007b19  BQ27Z746_ReadInternalTemp_C   
+00007b2f  BQ27Z746_ReadTemperature_C    
+00007b87  i2c_init                      
+00007b9d  BQ27Z746_ReadAvgCurrent_mA    
+00007bb1  BQ27Z746_ReadAvgPower_mW      
+00007bc5  BQ27Z746_ReadCurrent_mA       
+00007bd9  BQ27Z746_ReadSOC_pct          
+00007bed  BQ27Z746_ReadStateOfHealth_pct
+00007d69  __aeabi_uldivmod              
+00007d91  strchr                        
+00007da5  BQ27Z746_ReadBatteryStatus    
+00007db7  BQ27Z746_ReadCycleCount       
+00007dc9  BQ27Z746_ReadFullChargeCap_mAh
+00007ddb  BQ27Z746_ReadRemainingCap_mAh 
+00007ded  BQ27Z746_ReadTimeToEmpty_min  
+00007dff  BQ27Z746_ReadTimeToFull_min   
+00007e11  BQ27Z746_ReadVoltage_mV       
+00007e59  DL_SPI_setClockConfig         
+00007e7d  DL_UART_setClockConfig        
+00007e8f  TI_memcpy_small               
+00007ea1  __TI_decompress_none          
+00007eb5  BQ27Z746_IsDischarging        
+00007ec5  BQ27Z746_IsFullyCharged       
+00007ed5  BQ27Z746_IsFullyDischarged    
+00007ef5  I2C0_IRQHandler               
+00007f05  I2C1_IRQHandler               
+00007f15  PWR_EnterActiveProfile        
+00007f25  PWR_ExitActiveProfile         
+00007f35  RTC_DisablePrescaler          
+00007f45  RTC_EnablePrescaler           
+00007f55  wcslen                        
+00007f65  __TI_zero_init                
+00007f75  BQ25628E_Disable_Watchdog     
+00007f83  BQ25628E_Set_PeakDischarge_6A 
+00007f91  __aeabi_memset                
+00007f91  __aeabi_memset4               
+00007f91  __aeabi_memset8               
+00007f9f  strcpy                        
+00007fbb  strlen                        
+00007fc9  TI_memset_small               
+00007fd9  BQ25628E_Get_IBAT_mA          
+00007fe5  BQ25628E_Get_IBUS_mA          
+00007ff1  BQ25628E_Get_TBAT_C           
+00007ffd  BQ25628E_Get_TDIE_C           
+00008009  BQ25628E_Get_VBAT_mV          
+00008015  BQ25628E_Get_VBUS_mV          
+00008021  BQ25628E_Get_VSYS_mV          
+0000802d  BQ25628E_HardwareInit         
+00008039  BQ27Z746_Get_AvgCurrent_mA    
+00008045  BQ27Z746_Get_AvgPower_mW      
+00008051  BQ27Z746_Get_BatteryStatus    
+0000805d  BQ27Z746_Get_Current_mA       
+00008069  BQ27Z746_Get_CycleCount       
+00008075  BQ27Z746_Get_FullChargeCap_mAh
+00008081  BQ27Z746_Get_InternalTemp_C   
+0000808d  BQ27Z746_Get_RemainingCap_mAh 
+00008099  BQ27Z746_Get_SOC_pct          
+000080a5  BQ27Z746_Get_StateOfHealth_pct
+000080b1  BQ27Z746_Get_Temperature_C    
+000080bd  BQ27Z746_Get_TimeToEmpty_min  
+000080c9  BQ27Z746_Get_TimeToFull_min   
+000080d5  BQ27Z746_Get_Voltage_mV       
+000080e1  PWR_BlockFastClocks           
+000080ed  SYSCFG_DL_DMA_init            
+000080f9  __aeabi_memclr                
+000080f9  __aeabi_memclr4               
+000080f9  __aeabi_memclr8               
+00008105  BQ25628E_GetFaultFlags        
+0000810f  DL_Common_delayCycles         
+0000815b  PWR_UnblockFastClocks         
+00008165  __aeabi_errno_addr            
+0000816d  __aeabi_memcpy                
+0000816d  __aeabi_memcpy4               
+0000816d  __aeabi_memcpy8               
+00008175  abort                         
+0000817b  ADC0_IRQHandler               
+0000817b  ADC1_IRQHandler               
+0000817b  AES_IRQHandler                
+0000817b  CANFD0_IRQHandler             
+0000817b  DAC0_IRQHandler               
+0000817b  DMA_IRQHandler                
+0000817b  Default_Handler               
+0000817b  GROUP0_IRQHandler             
+0000817b  HardFault_Handler             
+0000817b  NMI_Handler                   
+0000817b  PendSV_Handler                
+0000817b  SPI0_IRQHandler               
+0000817b  SVC_Handler                   
+0000817b  SysTick_Handler               
+0000817b  TIMA0_IRQHandler              
+0000817b  TIMA1_IRQHandler              
+0000817b  TIMG0_IRQHandler              
+0000817b  TIMG12_IRQHandler             
+0000817b  TIMG6_IRQHandler              
+0000817b  TIMG7_IRQHandler              
+0000817b  TIMG8_IRQHandler              
+0000817b  UART1_IRQHandler              
+0000817b  UART2_IRQHandler              
+0000817b  UART3_IRQHandler              
+0000817e  C$$EXIT                       
+0000817f  HOSTexit                      
+00008183  Reset_Handler                 
+00008199  _system_pre_init              
 000081a0  thermistor_table_ntcc_10k     
 00008aac  thermistor_table_E3103JT2A    
 00008bf0  __aeabi_ctype_table_          

@@ -24,8 +24,8 @@ typedef enum {
 /* Charging Profile Configuration */
 #define BQ_INIT_VREG_MV          3600   
 #define BQ_INIT_ICHG_MA          1000    
-#define BQ_INIT_IINDPM_MA        2000   
-#define BQ_INIT_VINDPM_MV        4500   
+#define BQ_INIT_IINDPM_MA        1000  
+#define BQ_INIT_VINDPM_MV        11000   
 #define BQ_INIT_VSYSMIN_MV       3600  
 
 #define BQ_INIT_IPRECHG_MA       100    

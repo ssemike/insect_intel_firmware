@@ -14,7 +14,7 @@
 #define SM_VBAT_FULL_MV           3650
 #define SM_VBAT_CHARGE_START_MV   3400
 #define SM_SAFETY_POLL_S          5
-#define SM_INACTIVITY_TIMEOUT_S          240
+#define SM_INACTIVITY_TIMEOUT_S         600
 #define SM_I2C_RETRY_S   5
 #define SM_FAULT_RETRY_S 5
 
@@ -45,6 +45,12 @@ static bool SM_ProcessFault(uint32_t gauge_safety, uint8_t charger_fault);
 static void SM_PrepareTelemetryResponse(void);
 static void SM_PrepareSTMConfigResponse(void);
 static void SM_PrepareSTMCredentialsResponse(void);
+
+static void SM_HandleState_INIT(void);
+static void SM_HandleState_CHARGING(void);
+static void SM_HandleState_POWER_STM(void);
+static void SM_HandleState_IDLE(void);
+static void SM_HandleState_CRITICAL_FAULT(void);
 
 
 /* ── Hardware Abstraction Helpers ────────────────────────── */
@@ -157,252 +163,261 @@ static void SM_Handle_RTC_Tick(void) {
     }  
 }
 
+static void SM_HandleState_INIT(void) {
+
+    if (!sm_context.entry_done) {
+        if (!I2C_TryAddress(I2C_0_INST, GAUGE_I2C_ADDR) || !I2C_TryAddress(I2C_0_INST, BQ25628E_I2C_ADDR)) {
+            sm_context.fault_source = SM_FAULT_I2C_BUS;
+            SM_Transition(SM_STATE_CRITICAL_FAULT);
+            return;
+        }
+        bool gauge_ok   = BQ27Z746_Init(I2C_0_INST);
+        BQ25628E_HardwareInit();
+        BQ25628E_ApplyProfile(&sm_context.sm_charger_config);
+        bool charger_ok = true;
+                        
+        if (!gauge_ok || !charger_ok) {
+            sm_context.fault_source = SM_FAULT_INIT_FAILED;
+            SM_Transition(SM_STATE_CRITICAL_FAULT);
+        } else {
+            SM_PostWake_Branch();
+        }
+    }
+}
+
+static void SM_HandleState_CHARGING(void) {
+
+    if (!sm_context.entry_done) {
+        DL_GPIO_clearPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_CHARGER_EN_PIN);
+        uart_printf("[SM] Charging started\n");
+        sm_context.critical_msg_sent = false;
+        sm_context.entry_done = true;
+        sm_context.last_charging_tick = sm_context.minute_counter; 
+        RTC_DisablePrescaler();
+        DL_GPIO_clearInterruptStatus(GPIOB, EXTERNAL_INTERRUPT_SETUP_INT_PIN);
+        DL_GPIO_enableInterrupt(GPIOB, EXTERNAL_INTERRUPT_SETUP_INT_PIN);
+        sm_context.wake_reason = SM_WAKE_NORMAL;
+        PWR_ExitMeasureProfile();
+    }
+    if (hall_wakeup_flag) {
+        hall_wakeup_flag = false;
+        sm_context.wake_reason = SM_WAKE_SETUP;
+        RTC_EnablePrescaler();
+        PWR_EnterMeasureProfile();
+        SM_Transition(SM_STATE_POWER_STM);
+        return;
+    }
+    if (sm_context.minute_counter != sm_context.last_charging_tick) {
+        sm_context.last_charging_tick = sm_context.minute_counter; 
+        PWR_EnterMeasureProfile();
+        if (SM_SafetyCheck()) return;
+        if (SM_ChargingSafetyCheck()) return;
+        SM_PowerContext_t pwr = SM_FetchPowerContext();
+        if (pwr.vbat_mv >= SM_VBAT_FULL_MV || pwr.charger_done) {
+            DL_GPIO_setPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_CHARGER_EN_PIN);
+            uart_printf("[SM] Charging complete (VBAT %dmV >= %dmV) / Charging terminated: \n", pwr.vbat_mv, SM_VBAT_FULL_MV);
+            SM_Transition(SM_STATE_IDLE);
+            return;
+        } else {
+            uart_printf("[SM] CHARGING | VBUS:%4dmV VBAT:%4dmV IBAT:%4dmA SOC:%3d%% TBAT:%3.1fC TDIE:%3dC CHG_STAT:%s\n",
+                BQ25628E_Get_VBUS_mV(), pwr.vbat_mv, BQ27Z746_Get_Current_mA(),
+                BQ27Z746_Get_SOC_pct(), BQ25628E_Get_TBAT_C(), BQ25628E_Get_TDIE_C(),
+                SM_GetChargeString(pwr.chg_stat));
+        }            
+        if (SM_NeedsPeriodicSTMWake(pwr)) {
+            RTC_EnablePrescaler();
+            sm_context.last_stm_periodic_minute = sm_context.minute_counter;
+            SM_Transition(SM_STATE_POWER_STM);
+            return;
+        }
+    }
+    PWR_ExitMeasureProfile();
+    __WFI();
+}
+
+static void SM_HandleState_POWER_STM(void) {
+
+    if (!sm_context.entry_done) {
+        if (sm_context.wake_reason == SM_WAKE_SETUP) {
+            DL_GPIO_setPins(DIGITAL_OUTPUT_PORTA_PORT, DIGITAL_OUTPUT_PORTA_STM_MCU_IO1_PIN);
+        } else {
+            DL_GPIO_clearPins(DIGITAL_OUTPUT_PORTA_PORT, DIGITAL_OUTPUT_PORTA_STM_MCU_IO1_PIN);
+        }
+        RTC_EnablePrescaler();
+        SM_SetSTMPower(true);
+        sm_context.stm_power_on_s = sm_context.second_counter;
+        sm_context.last_io2_activity_s = sm_context.second_counter;
+        uart_printf("[SM] STM32 powered : reason: %s\n",
+            (sm_context.wake_reason == SM_WAKE_SETUP) ? "SETUP" : "NORMAL");
+        sm_context.entry_done = true;
+        sm_context.stm_data_sent = false;
+        DL_GPIO_disableInterrupt(EXTERNAL_INTERRUPT_CHARGER_INT_PORT, EXTERNAL_INTERRUPT_SETUP_INT_PIN);
+        DL_GPIO_enableInterrupt(EXTERNAL_INTERRUPT_STM_MCU_IO2_PORT, EXTERNAL_INTERRUPT_STM_MCU_IO2_PIN);
+        stm_io2_flag = false;
+    }
+    if (stm_io2_flag) {
+        sm_context.last_io2_activity_s = sm_context.second_counter;
+        stm_io2_flag = false;
+        stm32Spi.rxDone = false;
+        if (sm_context.has_pending_response) {
+            SPI_Controller_Arm(&stm32Spi);
+            sm_context.has_pending_response = false;
+        } else {
+            sm_context.stm_data_sent = true;
+            SM_SendOffer();
+        }
+    }
+    /* Process STM32 reply and send next packet immediately */
+    if (sm_context.stm_data_sent && stm32Spi.rxDone) {
+        stm32Spi.rxDone = false;
+        sm_context.stm_data_sent = false;
+        uart_printf("\n Received from STM32:\n");
+        for (int i = 0; i < 20; i++) {
+            uart_printf("%02X ", stm32Spi.rxBuf[i]);
+        }
+        // delay_cycles(320000);
+        SM_DispatchIncomingPacket();
+     }
+
+    /* Inactivity timeout — resets each time IO2 fires */
+    if ((sm_context.second_counter - sm_context.last_io2_activity_s) >= SM_INACTIVITY_TIMEOUT_S) {
+        uart_printf("[SM] STM32 inactivity timeout\n");
+        SM_SetSTMPower(false);
+        SM_ResumeSystemContext();
+    }
+}
+
+static void SM_HandleState_IDLE(void) {
+
+    if (!sm_context.entry_done) {
+        sm_context.wake_reason = SM_WAKE_NORMAL;
+        SM_SetSTMPower(false);
+        sm_context.sleep_entry_minute = sm_context.minute_counter;
+        DL_GPIO_disableInterrupt(EXTERNAL_INTERRUPT_STM_MCU_IO2_PORT, EXTERNAL_INTERRUPT_STM_MCU_IO2_PIN);
+        DL_GPIO_clearInterruptStatus(GPIOB, EXTERNAL_INTERRUPT_SETUP_INT_PIN);
+        DL_GPIO_enableInterrupt(GPIOB, EXTERNAL_INTERRUPT_SETUP_INT_PIN);
+        hall_wakeup_flag = false;
+        RTC_DisablePrescaler();
+        SM_PowerContext_t pwr = SM_FetchPowerContext();
+        if (pwr.vbat_mv < SM_VBAT_CHARGE_START_MV) {
+            DL_GPIO_clearPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_CHARGER_EN_PIN);
+            uart_printf("[SM] Charging in IDLE enabled\n");
+        } else {
+            DL_GPIO_setPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_CHARGER_EN_PIN);
+            uart_printf("[SM] Charging in IDLE disabled\n");
+        }      
+        uart_printf("[SM] Entering IDLE\n");
+        sm_context.entry_done = true;
+        PWR_ExitMeasureProfile();
+    }
+    if (sm_context.sleep_entry_minute != sm_context.minute_counter) {
+        sm_context.sleep_entry_minute = sm_context.minute_counter;
+        PWR_EnterMeasureProfile();
+        if (SM_SafetyCheck()) return;
+        SM_PowerContext_t pwr = SM_FetchPowerContext();
+        if (pwr.is_charging) {
+            SM_Transition(SM_STATE_CHARGING);
+            return;
+        }
+        if (SM_NeedsPeriodicSTMWake(pwr)) {
+            RTC_EnablePrescaler();
+            sm_context.last_stm_periodic_minute = sm_context.minute_counter;
+            SM_Transition(SM_STATE_POWER_STM);
+            return;
+        }
+    }
+    if (hall_wakeup_flag) {
+        hall_wakeup_flag = false;
+        sm_context.wake_reason = SM_WAKE_SETUP;
+        RTC_EnablePrescaler();
+        PWR_EnterMeasureProfile();
+        SM_Transition(SM_STATE_POWER_STM);
+        return;
+    }
+    PWR_ExitMeasureProfile();
+    __WFI();
+}
+
+static void SM_HandleState_CRITICAL_FAULT(void) {
+    if (!sm_context.entry_done) {
+        SM_SetSTMPower(false);
+        DL_GPIO_disableInterrupt(GPIOB, EXTERNAL_INTERRUPT_SETUP_INT_PIN);
+        DL_GPIO_setPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_CHARGER_EN_PIN);
+        RTC_EnablePrescaler();
+        const char* fault_str = "UNKNOWN";
+        switch (sm_context.fault_source) {
+            case SM_FAULT_I2C_BUS:      fault_str = "I2C_BUS"; break;
+            case SM_FAULT_GAUGE:        fault_str = "GAUGE"; break;
+            case SM_FAULT_CHARGER:      fault_str = "CHARGER"; break;
+            case SM_FAULT_INIT_FAILED:  fault_str = "INIT_FAILED"; break;
+            default: break;
+        }
+        uart_printf("[SM] CRITICAL FAULT, source: %s\n", fault_str);
+        sm_context.fault_retry_s = sm_context.second_counter;
+
+        if (sm_context.fault_source == SM_FAULT_GAUGE) {
+            SM_DecodeBatterySafetyStatus(last_safety_status);
+        } else if (sm_context.fault_source == SM_FAULT_CHARGER) {
+            SM_DecodeChargingSafetyStatus(last_charger_status);
+        } else if (sm_context.fault_source == SM_FAULT_I2C_BUS) {
+            uart_printf("[SM] I2C bus fault. Retrying every %ds\n", SM_I2C_RETRY_S);
+        }else if (sm_context.fault_source == SM_FAULT_INIT_FAILED) {
+            uart_printf("[SM] Initialization failed, power cycle board\n");
+        }
+        sm_context.entry_done = true;
+    }
+
+    /* INIT_FAILED is unrecoverable, nothing to retry */
+    if (sm_context.fault_source == SM_FAULT_INIT_FAILED) return;
+
+    uint32_t elapsed = sm_context.second_counter - sm_context.fault_retry_s;
+    uint32_t interval = (sm_context.fault_source == SM_FAULT_I2C_BUS) ? SM_I2C_RETRY_S : SM_FAULT_RETRY_S;
+
+    if (elapsed >= interval) {
+        sm_context.fault_retry_s = sm_context.second_counter;
+
+        /* I2C bus fault: just probe the addresses, go back to INIT if found */
+        if (sm_context.fault_source == SM_FAULT_I2C_BUS) {
+            uart_printf("[SM] Retrying I2C bus...\n");
+            gauge_init();
+            if (I2C_TryAddress(I2C_0_INST, GAUGE_I2C_ADDR) &&
+                I2C_TryAddress(I2C_0_INST, BQ25628E_I2C_ADDR)) {
+                uart_printf("[SM] I2C devices found, returning to INIT\n");
+                SM_Transition(SM_STATE_INIT);
+            } else {
+                uart_printf("[SM] I2C still unavailable\n");
+            }
+            return;
+        }
+
+        /* Gauge / charger faults: read live status and clear if clean */
+        BQ27Z746_GetSafetyStatus(I2C_0_INST, &last_safety_status);
+        last_charger_status = BQ25628E_GetFaultFlags();
+
+        if (last_safety_status == 0 && last_charger_status == 0) {
+            uart_printf("[SM] All safety flags clear\n");
+            SM_Transition(SM_STATE_IDLE);
+        } else {
+            if (last_safety_status != 0) {
+                uart_printf("[SM] Battery Fault Active: 0x%08X\n", (unsigned int)last_safety_status);
+                SM_DecodeBatterySafetyStatus(last_safety_status);
+            }
+            if (last_charger_status != 0) {
+                uart_printf("[SM] Charger Fault Active: 0x%02X\n", last_charger_status);
+                SM_DecodeChargingSafetyStatus(last_charger_status);
+            }
+        }
+    }
+}
+
 void SM_Run(void) {
     SM_Handle_RTC_Tick();
     switch (sm_context.current) {
-        case SM_STATE_INIT: {
-            if (!sm_context.entry_done) {
-                if (!I2C_TryAddress(I2C_0_INST, GAUGE_I2C_ADDR) || !I2C_TryAddress(I2C_0_INST, BQ25628E_I2C_ADDR)) {
-                    sm_context.fault_source = SM_FAULT_I2C_BUS;
-                    SM_Transition(SM_STATE_CRITICAL_FAULT);
-                    return;
-                }
-                bool gauge_ok   = BQ27Z746_Init(I2C_0_INST);
-                BQ25628E_HardwareInit();
-                BQ25628E_ApplyProfile(&sm_context.sm_charger_config);
-                bool charger_ok = true;
-                                
-                if (!gauge_ok || !charger_ok) {
-                    sm_context.fault_source = SM_FAULT_INIT_FAILED;
-                    SM_Transition(SM_STATE_CRITICAL_FAULT);
-                } else {
-                    SM_PostWake_Branch();
-                }
-            }
-            break;
-        }
-        case SM_STATE_CHARGING: {
-            if (!sm_context.entry_done) {
-                DL_GPIO_clearPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_CHARGER_EN_PIN);
-                uart_printf("[SM] Charging started\n");
-                sm_context.critical_msg_sent = false;
-                sm_context.entry_done = true;
-                sm_context.last_charging_tick = sm_context.minute_counter; 
-                RTC_DisablePrescaler();
-                DL_GPIO_clearInterruptStatus(GPIOB, EXTERNAL_INTERRUPT_SETUP_INT_PIN);
-                DL_GPIO_enableInterrupt(GPIOB, EXTERNAL_INTERRUPT_SETUP_INT_PIN);
-                sm_context.wake_reason = SM_WAKE_NORMAL;
-                PWR_ExitMeasureProfile();
-            }
-            if (hall_wakeup_flag) {
-                hall_wakeup_flag = false;
-                sm_context.wake_reason = SM_WAKE_SETUP;
-                RTC_EnablePrescaler();
-                PWR_EnterMeasureProfile();
-                SM_Transition(SM_STATE_POWER_STM);
-                break;
-            }
-            if (sm_context.minute_counter != sm_context.last_charging_tick) {
-                sm_context.last_charging_tick = sm_context.minute_counter; 
-                PWR_EnterMeasureProfile();
-                if (SM_SafetyCheck()) return;
-                if (SM_ChargingSafetyCheck()) return;
-                SM_PowerContext_t pwr = SM_FetchPowerContext();
-                if (pwr.vbat_mv >= SM_VBAT_FULL_MV || pwr.charger_done) {
-                    DL_GPIO_setPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_CHARGER_EN_PIN);
-                    uart_printf("[SM] Charging complete (VBAT %dmV >= %dmV) / Charging terminated: \n", pwr.vbat_mv, SM_VBAT_FULL_MV);
-                    SM_Transition(SM_STATE_IDLE);
-                    break;
-                } else {
-                    uart_printf("[SM] CHARGING | VBUS:%4dmV VBAT:%4dmV IBAT:%4dmA SOC:%3d%% TBAT:%3.1fC TDIE:%3dC CHG_STAT:%s\n",
-                        BQ25628E_Get_VBUS_mV(), pwr.vbat_mv, BQ27Z746_Get_Current_mA(),
-                        BQ27Z746_Get_SOC_pct(), BQ25628E_Get_TBAT_C(), BQ25628E_Get_TDIE_C(),
-                        SM_GetChargeString(pwr.chg_stat));
-                }            
-                if (SM_NeedsPeriodicSTMWake(pwr)) {
-                    RTC_EnablePrescaler();
-                    sm_context.last_stm_periodic_minute = sm_context.minute_counter;
-                    SM_Transition(SM_STATE_POWER_STM);
-                    break;
-                }
-            }
-            PWR_ExitMeasureProfile();
-            __WFI();
-             break;
-        }
-        case SM_STATE_POWER_STM: {
-            if (!sm_context.entry_done) {
-                if (sm_context.wake_reason == SM_WAKE_SETUP) {
-                    DL_GPIO_setPins(DIGITAL_OUTPUT_PORTA_PORT, DIGITAL_OUTPUT_PORTA_STM_MCU_IO1_PIN);
-                } else {
-                    DL_GPIO_clearPins(DIGITAL_OUTPUT_PORTA_PORT, DIGITAL_OUTPUT_PORTA_STM_MCU_IO1_PIN);
-                }
-                RTC_EnablePrescaler();
-                SM_SetSTMPower(true);
-                sm_context.stm_power_on_s = sm_context.second_counter;
-                sm_context.last_io2_activity_s = sm_context.second_counter;
-                uart_printf("[SM] STM32 powered : reason: %s\n",
-                    (sm_context.wake_reason == SM_WAKE_SETUP) ? "SETUP" : "NORMAL");
-                sm_context.entry_done = true;
-                sm_context.stm_data_sent = false;
-                DL_GPIO_disableInterrupt(EXTERNAL_INTERRUPT_CHARGER_INT_PORT, EXTERNAL_INTERRUPT_SETUP_INT_PIN);
-                DL_GPIO_enableInterrupt(EXTERNAL_INTERRUPT_STM_MCU_IO2_PORT, EXTERNAL_INTERRUPT_STM_MCU_IO2_PIN);
-                stm_io2_flag = false;
-            }
-            if (stm_io2_flag) {
-                sm_context.last_io2_activity_s = sm_context.second_counter;
-                stm_io2_flag = false;
-                stm32Spi.rxDone = false;
-                sm_context.stm_data_sent = true;
-                if (sm_context.has_pending_response) {
-                    SPI_Controller_Arm(&stm32Spi);
-                    sm_context.has_pending_response = false;
-                } else {
-                    SM_SendOffer();
-                }
-            }
-            /* Process STM32 reply and send next packet immediately */
-            if (sm_context.stm_data_sent && stm32Spi.rxDone) {
-                stm32Spi.rxDone = false;
-                sm_context.stm_data_sent = false;
-                uart_printf("\n Received from STM32:\n");
-                for (int i = 0; i < 20; i++) {
-                    uart_printf("%02X ", stm32Spi.rxBuf[i]);
-                }
-                // delay_cycles(320000);
-                SM_DispatchIncomingPacket();
-             }
-
-            /* Inactivity timeout — resets each time IO2 fires */
-            if ((sm_context.second_counter - sm_context.last_io2_activity_s) >= SM_INACTIVITY_TIMEOUT_S) {
-                uart_printf("[SM] STM32 inactivity timeout\n");
-                SM_SetSTMPower(false);
-                SM_ResumeSystemContext();
-            }
-            break;
-        }
-        case SM_STATE_IDLE: {
-            if (!sm_context.entry_done) {
-                sm_context.wake_reason = SM_WAKE_NORMAL;
-                SM_SetSTMPower(false);
-                sm_context.sleep_entry_minute = sm_context.minute_counter;
-                DL_GPIO_disableInterrupt(EXTERNAL_INTERRUPT_STM_MCU_IO2_PORT, EXTERNAL_INTERRUPT_STM_MCU_IO2_PIN);
-                DL_GPIO_clearInterruptStatus(GPIOB, EXTERNAL_INTERRUPT_SETUP_INT_PIN);
-                DL_GPIO_enableInterrupt(GPIOB, EXTERNAL_INTERRUPT_SETUP_INT_PIN);
-                hall_wakeup_flag = false;
-                RTC_DisablePrescaler();
-                SM_PowerContext_t pwr = SM_FetchPowerContext();
-                if (pwr.vbat_mv < SM_VBAT_CHARGE_START_MV) {
-                    DL_GPIO_clearPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_CHARGER_EN_PIN);
-                    uart_printf("[SM] Charging in IDLE enabled\n");
-                } else {
-                    DL_GPIO_setPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_CHARGER_EN_PIN);
-                    uart_printf("[SM] Charging in IDLE disabled\n");
-                }      
-                uart_printf("[SM] Entering IDLE\n");
-                sm_context.entry_done = true;
-                PWR_ExitMeasureProfile();
-            }
-            if (sm_context.sleep_entry_minute != sm_context.minute_counter) {
-                sm_context.sleep_entry_minute = sm_context.minute_counter;
-                PWR_EnterMeasureProfile();
-                if (SM_SafetyCheck()) return;
-                SM_PowerContext_t pwr = SM_FetchPowerContext();
-                if (pwr.is_charging) {
-                    SM_Transition(SM_STATE_CHARGING);
-                    break;
-                }
-                if (SM_NeedsPeriodicSTMWake(pwr)) {
-                    RTC_EnablePrescaler();
-                    sm_context.last_stm_periodic_minute = sm_context.minute_counter;
-                    SM_Transition(SM_STATE_POWER_STM);
-                    break;
-                }
-            }
-            if (hall_wakeup_flag) {
-                hall_wakeup_flag = false;
-                sm_context.wake_reason = SM_WAKE_SETUP;
-                RTC_EnablePrescaler();
-                PWR_EnterMeasureProfile();
-                SM_Transition(SM_STATE_POWER_STM);
-                break;
-            }
-            PWR_ExitMeasureProfile();
-            __WFI();
-            break;
-        }
-        case SM_STATE_CRITICAL_FAULT: {
-            if (!sm_context.entry_done) {
-                SM_SetSTMPower(false);
-                DL_GPIO_disableInterrupt(GPIOB, EXTERNAL_INTERRUPT_SETUP_INT_PIN);
-                DL_GPIO_setPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_CHARGER_EN_PIN);
-                RTC_EnablePrescaler();
-                const char* fault_str = "UNKNOWN";
-                switch (sm_context.fault_source) {
-                    case SM_FAULT_I2C_BUS:      fault_str = "I2C_BUS"; break;
-                    case SM_FAULT_GAUGE:        fault_str = "GAUGE"; break;
-                    case SM_FAULT_CHARGER:      fault_str = "CHARGER"; break;
-                    case SM_FAULT_INIT_FAILED:  fault_str = "INIT_FAILED"; break;
-                    default: break;
-                }
-                uart_printf("[SM] CRITICAL FAULT, source: %s\n", fault_str);
-                sm_context.fault_retry_s = sm_context.second_counter;
-
-                if (sm_context.fault_source == SM_FAULT_GAUGE) {
-                    SM_DecodeBatterySafetyStatus(last_safety_status);
-                } else if (sm_context.fault_source == SM_FAULT_CHARGER) {
-                    SM_DecodeChargingSafetyStatus(last_charger_status);
-                } else if (sm_context.fault_source == SM_FAULT_I2C_BUS) {
-                    uart_printf("[SM] I2C bus fault. Retrying every %ds\n", SM_I2C_RETRY_S);
-                }else if (sm_context.fault_source == SM_FAULT_INIT_FAILED) {
-                    uart_printf("[SM] Initialization failed, power cycle board\n");
-                }
-                sm_context.entry_done = true;
-            }
-
-            /* INIT_FAILED is unrecoverable, nothing to retry */
-            if (sm_context.fault_source == SM_FAULT_INIT_FAILED) break;
-
-            uint32_t elapsed = sm_context.second_counter - sm_context.fault_retry_s;
-            uint32_t interval = (sm_context.fault_source == SM_FAULT_I2C_BUS) ? SM_I2C_RETRY_S : SM_FAULT_RETRY_S;
-
-            if (elapsed >= interval) {
-                sm_context.fault_retry_s = sm_context.second_counter;
-
-                /* I2C bus fault: just probe the addresses, go back to INIT if found */
-                if (sm_context.fault_source == SM_FAULT_I2C_BUS) {
-                    uart_printf("[SM] Retrying I2C bus...\n");
-                    gauge_init();
-                    if (I2C_TryAddress(I2C_0_INST, GAUGE_I2C_ADDR) &&
-                        I2C_TryAddress(I2C_0_INST, BQ25628E_I2C_ADDR)) {
-                        uart_printf("[SM] I2C devices found, returning to INIT\n");
-                        SM_Transition(SM_STATE_INIT);
-                    } else {
-                        uart_printf("[SM] I2C still unavailable\n");
-                    }
-                    break;
-                }
-
-                /* Gauge / charger faults: read live status and clear if clean */
-                BQ27Z746_GetSafetyStatus(I2C_0_INST, &last_safety_status);
-                last_charger_status = BQ25628E_GetFaultFlags();
-
-                if (last_safety_status == 0 && last_charger_status == 0) {
-                    uart_printf("[SM] All safety flags clear\n");
-                    SM_Transition(SM_STATE_IDLE);
-                } else {
-                    if (last_safety_status != 0) {
-                        uart_printf("[SM] Battery Fault Active: 0x%08X\n", (unsigned int)last_safety_status);
-                        SM_DecodeBatterySafetyStatus(last_safety_status);
-                    }
-                    if (last_charger_status != 0) {
-                        uart_printf("[SM] Charger Fault Active: 0x%02X\n", last_charger_status);
-                        SM_DecodeChargingSafetyStatus(last_charger_status);
-                    }
-                }
-            }
-            break;
-        }
+        case SM_STATE_INIT:           SM_HandleState_INIT();           break;
+        case SM_STATE_CHARGING:       SM_HandleState_CHARGING();       break;
+        case SM_STATE_POWER_STM:      SM_HandleState_POWER_STM();      break;
+        case SM_STATE_IDLE:           SM_HandleState_IDLE();           break;
+        case SM_STATE_CRITICAL_FAULT: SM_HandleState_CRITICAL_FAULT(); break;
     }
 }
 
@@ -481,6 +496,15 @@ static void SM_PrepareNack(void) {
     SM_PrepareSimpleMsg(MSG_NACK);  
     sm_context.has_pending_response = true;
 }
+static SM_SpiPacket_t* SM_InitDataPacket(SM_PayloadId_t pid) {
+    SM_SpiPacket_t *pkt = (SM_SpiPacket_t *)stm32Spi.txBuf;
+    memset(stm32Spi.txBuf, 0, stm32Spi.size);
+    pkt->pkt.header.msg_type   = MSG_DATA;
+    pkt->pkt.header.payload_id = pid;
+    sm_context.has_pending_response = true;
+    return pkt;
+}
+
 static void SM_PrepareTelemetryResponse(void)
 {
     SM_PowerContext_t pwr = SM_FetchPowerContext();
@@ -536,11 +560,7 @@ static void SM_PrepareTelemetryResponse(void)
         sm_context.sm_charger_config.iprechg_mA,
         sm_context.sm_charger_config.iterm_mA);
 
-    SM_SpiPacket_t *pkt = (SM_SpiPacket_t *)stm32Spi.txBuf;
-    memset(stm32Spi.txBuf, 0, stm32Spi.size);
-
-    pkt->pkt.header.msg_type   = MSG_DATA;
-    pkt->pkt.header.payload_id = PID_TELEMETRY;
+    SM_SpiPacket_t *pkt = SM_InitDataPacket(PID_TELEMETRY);
     size_t len = strlen(json_buf);
     if (len > sizeof(pkt->pkt.payload.telemetry.json))
         len = sizeof(pkt->pkt.payload.telemetry.json);
@@ -552,20 +572,14 @@ static void SM_PrepareTelemetryResponse(void)
         sm_context.critical_msg_sent = true;
         uart_printf("[SM] Critical low battery detected, sending last packet till charge\n");
     }
-    sm_context.has_pending_response = true;
 }
 
 static void SM_PrepareRTCResponse(void)
 {
-    SM_SpiPacket_t *pkt = (SM_SpiPacket_t *)stm32Spi.txBuf;
-    memset(stm32Spi.txBuf, 0, stm32Spi.size);
     RTC_GetTime(&sm_context.sm_rtc_config);
-    pkt->pkt.header.msg_type   = MSG_DATA;
-    pkt->pkt.header.payload_id = PID_RTC_GET;
+    SM_SpiPacket_t *pkt = SM_InitDataPacket(PID_RTC_GET);
     pkt->pkt.header.length     = sizeof(SM_RTCConfig_t);
     pkt->pkt.payload.rtc_data = sm_context.sm_rtc_config;
-
-    sm_context.has_pending_response = true;
 }
 
 static void SM_HandleRequest(uint8_t pid)
@@ -629,34 +643,22 @@ static void SM_HandleConfig(uint8_t pid, const void *payload)
 
 static void SM_PrepareSTMConfigResponse(void)
 {
-    SM_SpiPacket_t *pkt = (SM_SpiPacket_t *)stm32Spi.txBuf;
-    memset(stm32Spi.txBuf, 0, stm32Spi.size);
-
-    pkt->pkt.header.msg_type   = MSG_DATA;
-    pkt->pkt.header.payload_id = PID_STM_CFG;
+    SM_SpiPacket_t *pkt = SM_InitDataPacket(PID_STM_CFG);
     pkt->pkt.header.length     = sizeof(SM_STMConfig_t);
     pkt->pkt.payload.stm_config = sm_context.stm_config;
 
     uart_printf("[SM] STM config response sent (defaults: %s)\n",
         sm_context.stm_config_received ? "no" : "yes");
-
-    sm_context.has_pending_response = true;
 }
 
 static void SM_PrepareSTMCredentialsResponse(void)
 {
-    SM_SpiPacket_t *pkt = (SM_SpiPacket_t *)stm32Spi.txBuf;
-    memset(stm32Spi.txBuf, 0, stm32Spi.size);
-
-    pkt->pkt.header.msg_type   = MSG_DATA;
-    pkt->pkt.header.payload_id = PID_STM_CREDENTIALS;
+    SM_SpiPacket_t *pkt = SM_InitDataPacket(PID_STM_CREDENTIALS);
     pkt->pkt.header.length     = sizeof(SM_STMCredentials_t);
     pkt->pkt.payload.stm_credentials = sm_context.stm_credentials;
 
     uart_printf("[SM] Credentials response sent (defaults: %s)\n",
         sm_context.stm_credentials_received ? "no" : "yes");
-
-    sm_context.has_pending_response = true;
 }
 
 static void SM_DispatchIncomingPacket(void)
