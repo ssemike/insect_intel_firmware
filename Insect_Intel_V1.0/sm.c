@@ -94,6 +94,7 @@ void SM_Init(void)
 {
     memset(&sm_context, 0, sizeof(SM_Context_t));
     sm_context.current = SM_STATE_INIT;
+    sm_context.first_boot = true;
     SM_LoadCharger();
     SM_LoadPeriod();
     SM_LoadCredentials();
@@ -238,6 +239,7 @@ static void SM_HandleState_CHARGING(void) {
 static void SM_HandleState_POWER_STM(void) {
 
     if (!sm_context.entry_done) {
+        sm_context.total_wakes++;
         if (sm_context.wake_reason == SM_WAKE_SETUP) {
             DL_GPIO_setPins(DIGITAL_OUTPUT_PORTA_PORT, DIGITAL_OUTPUT_PORTA_STM_MCU_IO1_PIN);
         } else {
@@ -247,8 +249,9 @@ static void SM_HandleState_POWER_STM(void) {
         SM_SetSTMPower(true);
         sm_context.stm_power_on_s = sm_context.second_counter;
         sm_context.last_io2_activity_s = sm_context.second_counter;
-        uart_printf("[SM] STM32 powered : reason: %s\n",
-            (sm_context.wake_reason == SM_WAKE_SETUP) ? "SETUP" : "NORMAL");
+        uart_printf("[SM] STM32 powered : reason: %s (wake #%lu)\n",
+            (sm_context.wake_reason == SM_WAKE_SETUP) ? "SETUP" : "NORMAL",
+            (unsigned long)sm_context.total_wakes);
         sm_context.entry_done = true;
         sm_context.stm_data_sent = false;
         DL_GPIO_disableInterrupt(EXTERNAL_INTERRUPT_CHARGER_INT_PORT, EXTERNAL_INTERRUPT_SETUP_INT_PIN);
@@ -281,7 +284,8 @@ static void SM_HandleState_POWER_STM(void) {
 
     /* Inactivity timeout — resets each time IO2 fires */
     if ((sm_context.second_counter - sm_context.last_io2_activity_s) >= SM_INACTIVITY_TIMEOUT_S) {
-        uart_printf("[SM] STM32 inactivity timeout\n");
+        sm_context.inactivity_timeouts++;
+        uart_printf("[SM] STM32 inactivity timeout (#%lu)\n", (unsigned long)sm_context.inactivity_timeouts);
         SM_SetSTMPower(false);
         SM_ResumeSystemContext();
     }
@@ -540,6 +544,8 @@ static void SM_PrepareTelemetryResponse(void)
         "\"chgstat\":\"%s\","
         "\"lowbattery\":%d,"
         "\"wake_interval\":%d,"
+        "\"wakes\":%lu,\"inactivity_timeouts\":%lu,"
+        "\"first_boot\":%d,"
         "\"vreg\":%d,\"cfg_ichg\":%d,\"iindpm\":%d,"
         "\"vindpm\":%d,\"vsysmin\":%d,\"iprechg\":%d,\"iterm\":%d}",
         BQ27Z746_Get_SOC_pct(), BQ27Z746_Get_StateOfHealth_pct(),
@@ -552,6 +558,9 @@ static void SM_PrepareTelemetryResponse(void)
         (unsigned int)last_safety_status, batt_status, chg_flags, fault_flags,
         SM_GetChargeString(pwr.chg_stat), pwr.is_critical_low ? 1 : 0,
         sm_context.stm_wake_period.wake_interval_minutes,
+        (unsigned long)sm_context.total_wakes,
+        (unsigned long)sm_context.inactivity_timeouts,
+        sm_context.first_boot ? 1 : 0,
         sm_context.sm_charger_config.vreg_mV,
         sm_context.sm_charger_config.ichg_mA,
         sm_context.sm_charger_config.iindpm_mA,
@@ -559,6 +568,8 @@ static void SM_PrepareTelemetryResponse(void)
         sm_context.sm_charger_config.vsysmin_mV,
         sm_context.sm_charger_config.iprechg_mA,
         sm_context.sm_charger_config.iterm_mA);
+
+    sm_context.first_boot = false;
 
     SM_SpiPacket_t *pkt = SM_InitDataPacket(PID_TELEMETRY);
     size_t len = strlen(json_buf);
@@ -618,6 +629,10 @@ static void SM_HandleConfig(uint8_t pid, const void *payload)
         sm_context.stm_wake_period = *cfg;
         sm_context.wake_interval_configured = true;
         SM_PrepareAck();
+    } else if (pid == PID_KEEP_ALIVE) {
+        sm_context.last_io2_activity_s = sm_context.second_counter;
+        SM_PrepareAck();
+        uart_printf("[SM] Keep-alive received: resetting inactivity timer\n");
     }
     else if (pid == PID_STM_CFG) {
         const SM_STMConfig_t *cfg = (const SM_STMConfig_t *)payload;

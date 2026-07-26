@@ -23,7 +23,8 @@ typedef enum {
     PID_CHARGER_CFG = 0x04,
     PID_PERIOD_SET  = 0x05,
     PID_STM_CFG     = 0x06,
-    PID_STM_CREDENTIALS = 0x07
+    PID_STM_CREDENTIALS = 0x07,
+    PID_KEEP_ALIVE  = 0x08
 } SM_PayloadId_t;
 
 /* ── Packet Header (4 bytes) ───────────────────────────────────────────── */
@@ -50,6 +51,10 @@ typedef struct {
     uint8_t reserved;
 } SM_AckPayload_t;
 
+typedef struct {
+    uint8_t reserved;
+} SM_KeepAlivePayload_t;
+
 /* ── Full 512-byte SPI packet overlay ──────────────────────────────────── */
 typedef union {
     uint8_t raw[512];
@@ -65,6 +70,7 @@ typedef union {
             SM_STMConfigPayload_t     stm_config;
             SM_STMCredentialsPayload_t  stm_credentials;  
             SM_PeriodConfigPayload_t    stm_wake_period;  
+            SM_KeepAlivePayload_t     keep_alive;
             uint8_t                   raw_payload[508];
         } payload;
     } pkt;
