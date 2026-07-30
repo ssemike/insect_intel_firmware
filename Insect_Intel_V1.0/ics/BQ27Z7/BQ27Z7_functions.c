@@ -66,6 +66,9 @@ bool BQ27Z746_MAC_Read(I2C_Regs *i2c, uint16_t cmd, uint8_t *pData, uint8_t *pLe
     if (gauge_write(i2c, BQ27Z746_REG_ALTMANUFACTURERACCESS, cmd_bytes, 2) != 2)
         return false;
 
+    /* Give gauge IC 1 ms to process MAC command and populate response buffer */
+    delay_cycles(32000);
+
     /* Step 2: read back the full 36-byte frame */
     if (gauge_read(i2c, BQ27Z746_REG_ALTMANUFACTURERACCESS, frame, BQ27Z746_MAC_FRAME_LEN)
             != BQ27Z746_MAC_FRAME_LEN)

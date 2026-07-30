@@ -46,12 +46,40 @@ static void SM_PrepareTelemetryResponse(void);
 static void SM_PrepareSTMConfigResponse(void);
 static void SM_PrepareSTMCredentialsResponse(void);
 
+static void SM_Heartbeat(void);
+
 static void SM_HandleState_INIT(void);
 static void SM_HandleState_CHARGING(void);
 static void SM_HandleState_POWER_STM(void);
 static void SM_HandleState_IDLE(void);
 static void SM_HandleState_CRITICAL_FAULT(void);
 
+
+/* ── Heartbeat ───────────────────────────────────────────── */
+
+/*
+ * Printed once per minute, on the minute-tick branch of IDLE and CHARGING —
+ * i.e. immediately after PWR_EnterMeasureProfile() has brought the UART back
+ * up, which is the only window in those states where a print is possible.
+ *
+ * Its real job is liveness: if these stop arriving, the main loop has stalled,
+ * and the timestamp of the last one tells you when.
+ */
+static void SM_Heartbeat(void)
+{
+    uint32_t period      = sm_context.stm_wake_period.wake_interval_minutes;
+    uint32_t since_wake  = sm_context.minute_counter - sm_context.last_stm_periodic_minute;
+    uint32_t next_wake   = (since_wake >= period) ? 0U : (period - since_wake);
+
+    uart_printf("[HB] %s | up %lum | %lum since STM wake | next in %lum | wakes:%lu | i2c t/o:%lu rec:%lu\n",
+        SM_GetStateString(),
+        (unsigned long)sm_context.minute_counter,
+        (unsigned long)since_wake,
+        (unsigned long)next_wake,
+        (unsigned long)sm_context.total_wakes,
+        (unsigned long)I2C_GetTimeoutCount(),
+        (unsigned long)I2C_GetRecoveryCount());
+}
 
 /* ── Hardware Abstraction Helpers ────────────────────────── */
 
@@ -167,6 +195,9 @@ static void SM_Handle_RTC_Tick(void) {
 static void SM_HandleState_INIT(void) {
 
     if (!sm_context.entry_done) {
+        PWR_EnterMeasureProfile();
+        sm_context.entry_done = true;
+
         if (!I2C_TryAddress(I2C_0_INST, GAUGE_I2C_ADDR) || !I2C_TryAddress(I2C_0_INST, BQ25628E_I2C_ADDR)) {
             sm_context.fault_source = SM_FAULT_I2C_BUS;
             SM_Transition(SM_STATE_CRITICAL_FAULT);
@@ -189,6 +220,9 @@ static void SM_HandleState_INIT(void) {
 static void SM_HandleState_CHARGING(void) {
 
     if (!sm_context.entry_done) {
+        /* This block prints before it powers the bus down, so establish the
+         * profile rather than trusting the transition we arrived through. */
+        PWR_EnterMeasureProfile();
         DL_GPIO_clearPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_CHARGER_EN_PIN);
         uart_printf("[SM] Charging started\n");
         sm_context.critical_msg_sent = false;
@@ -209,8 +243,9 @@ static void SM_HandleState_CHARGING(void) {
         return;
     }
     if (sm_context.minute_counter != sm_context.last_charging_tick) {
-        sm_context.last_charging_tick = sm_context.minute_counter; 
+        sm_context.last_charging_tick = sm_context.minute_counter;
         PWR_EnterMeasureProfile();
+        SM_Heartbeat();
         if (SM_SafetyCheck()) return;
         if (SM_ChargingSafetyCheck()) return;
         SM_PowerContext_t pwr = SM_FetchPowerContext();
@@ -239,6 +274,7 @@ static void SM_HandleState_CHARGING(void) {
 static void SM_HandleState_POWER_STM(void) {
 
     if (!sm_context.entry_done) {
+        PWR_EnterMeasureProfile();
         sm_context.total_wakes++;
         if (sm_context.wake_reason == SM_WAKE_SETUP) {
             DL_GPIO_setPins(DIGITAL_OUTPUT_PORTA_PORT, DIGITAL_OUTPUT_PORTA_STM_MCU_IO1_PIN);
@@ -294,6 +330,10 @@ static void SM_HandleState_POWER_STM(void) {
 static void SM_HandleState_IDLE(void) {
 
     if (!sm_context.entry_done) {
+        /* This block does a full I2C read (SM_FetchPowerContext) and three
+         * prints before it powers the bus down, so establish the profile
+         * rather than trusting the transition we arrived through. */
+        PWR_EnterMeasureProfile();
         sm_context.wake_reason = SM_WAKE_NORMAL;
         SM_SetSTMPower(false);
         sm_context.sleep_entry_minute = sm_context.minute_counter;
@@ -317,6 +357,7 @@ static void SM_HandleState_IDLE(void) {
     if (sm_context.sleep_entry_minute != sm_context.minute_counter) {
         sm_context.sleep_entry_minute = sm_context.minute_counter;
         PWR_EnterMeasureProfile();
+        SM_Heartbeat();
         if (SM_SafetyCheck()) return;
         SM_PowerContext_t pwr = SM_FetchPowerContext();
         if (pwr.is_charging) {
@@ -344,6 +385,7 @@ static void SM_HandleState_IDLE(void) {
 
 static void SM_HandleState_CRITICAL_FAULT(void) {
     if (!sm_context.entry_done) {
+        PWR_EnterMeasureProfile();
         SM_SetSTMPower(false);
         DL_GPIO_disableInterrupt(GPIOB, EXTERNAL_INTERRUPT_SETUP_INT_PIN);
         DL_GPIO_setPins(DIGITAL_OUTPUT_PORTB_PORT, DIGITAL_OUTPUT_PORTB_CHARGER_EN_PIN);
@@ -372,13 +414,18 @@ static void SM_HandleState_CRITICAL_FAULT(void) {
     }
 
     /* INIT_FAILED is unrecoverable, nothing to retry */
-    if (sm_context.fault_source == SM_FAULT_INIT_FAILED) return;
+    if (sm_context.fault_source == SM_FAULT_INIT_FAILED) {
+        PWR_ExitMeasureProfile();
+        __WFI();
+        return;
+    }
 
     uint32_t elapsed = sm_context.second_counter - sm_context.fault_retry_s;
     uint32_t interval = (sm_context.fault_source == SM_FAULT_I2C_BUS) ? SM_I2C_RETRY_S : SM_FAULT_RETRY_S;
 
     if (elapsed >= interval) {
         sm_context.fault_retry_s = sm_context.second_counter;
+        PWR_EnterMeasureProfile();
 
         /* I2C bus fault: just probe the addresses, go back to INIT if found */
         if (sm_context.fault_source == SM_FAULT_I2C_BUS) {
@@ -388,20 +435,23 @@ static void SM_HandleState_CRITICAL_FAULT(void) {
                 I2C_TryAddress(I2C_0_INST, BQ25628E_I2C_ADDR)) {
                 uart_printf("[SM] I2C devices found, returning to INIT\n");
                 SM_Transition(SM_STATE_INIT);
-            } else {
-                uart_printf("[SM] I2C still unavailable\n");
+                return;     /* leave the bus powered — INIT needs it */
             }
-            return;
-        }
-
-        /* Gauge / charger faults: read live status and clear if clean */
-        BQ27Z746_GetSafetyStatus(I2C_0_INST, &last_safety_status);
-        last_charger_status = BQ25628E_GetFaultFlags();
-
-        if (last_safety_status == 0 && last_charger_status == 0) {
-            uart_printf("[SM] All safety flags clear\n");
-            SM_Transition(SM_STATE_IDLE);
+            uart_printf("[SM] I2C still unavailable\n");
+            /* Fall through to power down and sleep until the next retry.
+             * Returning here would leave I2C0, UART0 and the fast clocks up
+             * and skip the __WFI(), so a board with a dead I2C bus would spin
+             * at full power until the battery died. */
         } else {
+            /* Gauge / charger faults: read live status and clear if clean */
+            BQ27Z746_GetSafetyStatus(I2C_0_INST, &last_safety_status);
+            last_charger_status = BQ25628E_GetFaultFlags();
+
+            if (last_safety_status == 0 && last_charger_status == 0) {
+                uart_printf("[SM] All safety flags clear\n");
+                SM_Transition(SM_STATE_IDLE);
+                return;     /* leave the bus powered — IDLE entry reads it */
+            }
             if (last_safety_status != 0) {
                 uart_printf("[SM] Battery Fault Active: 0x%08X\n", (unsigned int)last_safety_status);
                 SM_DecodeBatterySafetyStatus(last_safety_status);
@@ -412,6 +462,9 @@ static void SM_HandleState_CRITICAL_FAULT(void) {
             }
         }
     }
+
+    PWR_ExitMeasureProfile();
+    __WFI();
 }
 
 void SM_Run(void) {
@@ -426,8 +479,13 @@ void SM_Run(void) {
 }
 
 bool SM_SafetyCheck(void) {
-    if (sm_context.current == SM_STATE_CRITICAL_FAULT || 
+    if (sm_context.current == SM_STATE_CRITICAL_FAULT ||
         sm_context.current == SM_STATE_INIT) return false;
+
+    /* The gauge lives on I2C0, which is gated off outside the MEASURE profile.
+     * A stale rtc_second_tick can land us here with the bus unpowered; skip the
+     * check rather than issue a transaction that cannot complete. */
+    if (!g_i2c0_powered) return false;
 
     uint32_t safety = 0;
     BQ27Z746_GetSafetyStatus(I2C_0_INST, &safety);
@@ -444,6 +502,9 @@ bool SM_SafetyCheck(void) {
 }
 
 bool SM_ChargingSafetyCheck(void) {
+    /* Charger is on the same gated I2C0 bus — see SM_SafetyCheck. */
+    if (!g_i2c0_powered) return false;
+
     uint8_t fault_flags = BQ25628E_GetFaultFlags();
     if (fault_flags != 0U) {
         last_charger_status = fault_flags;

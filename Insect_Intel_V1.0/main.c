@@ -79,17 +79,51 @@ void RTC_IRQHandler(void)
 }
 
 
+/*
+ * GROUP1 carries more than just GPIOA and GPIOB.
+ *
+ * The previous version had no default case, so any other group-1 source — or
+ * any GPIO pin whose edge polarity is programmed but whose handler we do not
+ * implement, such as CHARGER_INT on PB1 — would assert the NVIC line with
+ * nothing ever clearing it. The handler would return, the line would still be
+ * asserted, and the CPU would re-enter immediately: an interrupt storm that
+ * never lets the main loop run again. The board looks dead but keeps drawing
+ * current, and only a power cycle recovers it.
+ *
+ * Two changes: drain every pending source in a bounded loop rather than one
+ * per entry, and unconditionally clear anything unrecognised.
+ */
 void GROUP1_IRQHandler(void) {
-    switch (DL_Interrupt_getPendingGroup(DL_INTERRUPT_GROUP_1)) {
-        
-        case EXTERNAL_INTERRUPT_GPIOA_INT_IIDX: 
-            DL_GPIO_clearInterruptStatus(GPIOA, EXTERNAL_INTERRUPT_STM_MCU_IO2_PIN);
-            stm_io2_flag = true;
-            break;
+    /* Bounded so a source we cannot clear degrades into a slow loop rather
+     * than a permanent lockup. */
+    for (uint8_t guard = 0U; guard < 8U; guard++) {
+        uint32_t pending = DL_Interrupt_getPendingGroup(DL_INTERRUPT_GROUP_1);
 
-        case EXTERNAL_INTERRUPT_GPIOB_INT_IIDX: 
-            DL_GPIO_clearInterruptStatus(GPIOB, EXTERNAL_INTERRUPT_SETUP_INT_PIN);
-            hall_wakeup_flag = true;
-            break;
+        if (pending == 0U) {
+            break;                      /* nothing left to service */
+        }
+
+        switch (pending) {
+
+            case EXTERNAL_INTERRUPT_GPIOA_INT_IIDX:
+                DL_GPIO_clearInterruptStatus(GPIOA, EXTERNAL_INTERRUPT_STM_MCU_IO2_PIN);
+                stm_io2_flag = true;
+                break;
+
+            case EXTERNAL_INTERRUPT_GPIOB_INT_IIDX:
+                DL_GPIO_clearInterruptStatus(GPIOB, EXTERNAL_INTERRUPT_SETUP_INT_PIN);
+                hall_wakeup_flag = true;
+                break;
+
+            default:
+                /* Unknown source. Clear every pin flag on both ports — this
+                 * catches pins whose edge polarity is programmed but which we
+                 * do not otherwise track (CHARGER_INT on PB1 is one), so the
+                 * line cannot stay asserted with nothing to acknowledge it.
+                 * The only edges lost are ones nothing was watching. */
+                DL_GPIO_clearInterruptStatus(GPIOA, 0xFFFFFFFFU);
+                DL_GPIO_clearInterruptStatus(GPIOB, 0xFFFFFFFFU);
+                break;
+        }
     }
 }

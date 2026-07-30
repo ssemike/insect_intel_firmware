@@ -87,13 +87,36 @@ void printf_user(char* string, uint8_t string_length, char end_char){
     }
 }
 
+/*
+ * Send a string over the UART, stopping at `end_char` (inclusive) or at the
+ * NUL terminator, whichever comes first, and in any case after UART_TX_MAX_LEN
+ * characters.
+ *
+ * The previous version transmitted string[0] and then tested string[1], so an
+ * empty string caused it to transmit the terminator and then walk uninitialised
+ * memory until it happened to find another zero byte.
+ */
 void printToUART(char* string, char end_char){
-    uint32_t i = 0;
-    while(1){
-        DL_UART_Main_transmitDataBlocking(UART_0_INST, string[i]);
-        i++;
-        if(string[i] == end_char){
-            break;
+    if (string == NULL) {
+        return;
+    }
+    /* UART is power-gated by the MEASURE/ACTIVE profiles. Writing to it while
+     * it is unpowered would block forever inside transmitDataBlocking. */
+    if (!g_uart0_powered) {
+        return;
+    }
+
+    for (uint32_t i = 0; i < UART_TX_MAX_LEN; i++) {
+        char c = string[i];
+
+        if (c == '\0') {
+            return;                 /* always stop at the terminator */
+        }
+
+        DL_UART_Main_transmitDataBlocking(UART_0_INST, c);
+
+        if (c == end_char) {
+            return;                 /* sentinel sent, done */
         }
     }
 }
@@ -162,23 +185,40 @@ typedef void (*CommandFunc)(char *args);
  * @return int  number of characters output. Can be used to ascertain function has output correctly.
  *              Max output is 256 characters at a time (buffer limit).
  */
+/*
+ * The format buffer is static, not automatic.
+ *
+ * It used to be `char buffer[768]` on the stack, against a linker-reserved
+ * stack of 512 bytes — vsnprintf's own frame and any interrupt taken during
+ * the call pushed the stack pointer well past the reserved region into
+ * whatever happened to sit below it. It survived only because the space below
+ * .stack was unused.
+ *
+ * Consequence of making it static: uart_printf is not reentrant. Do not call
+ * it from an interrupt handler. All current callers are main-context.
+ */
+static char gPrintfBuffer[UART_PRINTF_BUF_SIZE];
+
 int uart_printf(const char *fmt, ...){
-    char buffer[768];           // Adjust buffer size as needed
+    /* Nothing to do if the UART is power-gated off */
+    if (!g_uart0_powered) {
+        return 0;
+    }
+
     va_list args;
     va_start(args, fmt);
-    int len = vsnprintf(buffer, sizeof(buffer), fmt, args);
+    int len = vsnprintf(gPrintfBuffer, sizeof(gPrintfBuffer), fmt, args);
     va_end(args);
 
     if (len < 0) {
         return len;   // formatting error
     }
 
-    if (len >= sizeof(buffer)) {
-        len = sizeof(buffer) - 1;  // actual transmitted length
+    if (len >= (int)sizeof(gPrintfBuffer)) {
+        len = (int)sizeof(gPrintfBuffer) - 1;  // truncated; actual transmitted length
     }
 
-    printToUART(buffer, '\0');
-
+    printToUART(gPrintfBuffer, '\0');
 
     return len;
 }

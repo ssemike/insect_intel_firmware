@@ -19,9 +19,24 @@ typedef enum {
     I2C_ERROR_ARB_LOST
 } I2C_Status;
 
+/* ─────────────────────────────────────────────────────────────────────────────
+ * Peripheral power-state flags.
+ *
+ * Defined in helper_functions.c and maintained by the PWR_Enable / PWR_Disable
+ * helpers. The I2C driver refuses to start a transaction when the relevant
+ * instance is powered down, because register reads on an unpowered peripheral
+ * return 0 and a status-polling loop would never terminate.
+ * ───────────────────────────────────────────────────────────────────────────*/
+extern volatile bool g_i2c0_powered;
+extern volatile bool g_i2c1_powered;
+
 void i2c_init(void);
 // Shared logic for I2C Interrupts
 void Shared_I2C_IRQHandler(I2C_Regs *i2c);
+
+/* Diagnostics: how many transactions timed out and how many bus recoveries ran */
+uint32_t I2C_GetTimeoutCount(void);
+uint32_t I2C_GetRecoveryCount(void);
 
 // Generic I2C write - i2c: I2C_0_INST or I2C_1_INST
 I2C_Status I2C_WriteDevice(I2C_Regs *i2c, uint8_t dev_addr, uint8_t reg_addr, 

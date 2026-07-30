@@ -5,6 +5,27 @@
 #include "HAL/i2c.h"
 #include "sm.h"
 #include "ics/BQ25628/BQ25628_functions.h"
+
+/* ═════════════════════════════════════════════════════════════════════════════
+ * Peripheral power-state tracking
+ *
+ * These mirror the DL_*_enablePower / DL_*_disablePower calls below. The I2C
+ * and UART drivers consult them before starting a blocking transaction: reads
+ * of an unpowered peripheral return 0, so a status-polling loop on a gated
+ * peripheral never terminates and wedges the entire main loop.
+ *
+ * They start `true` because SYSCFG_DL_init() powers everything up at reset.
+ * ═══════════════════════════════════════════════════════════════════════════*/
+volatile bool g_i2c0_powered  = true;
+volatile bool g_i2c1_powered  = true;
+volatile bool g_uart0_powered = true;
+volatile bool g_spi1_powered  = true;
+
+/* ~6 character times at 9600 baud, 32 MHz CPU clock. See PWR_DisableUART0. */
+#define UART0_TX_DRAIN_CYCLES   (200000U)
+
+extern volatile bool rtc_second_tick;
+
 /* ═════════════════════════════════════════════════════════════════════════════
  * Clock gating
  * ═══════════════════════════════════════════════════════════════════════════*/
@@ -32,10 +53,15 @@ void PWR_EnableI2C0(void)
     delay_cycles(POWER_STARTUP_DELAY);
     SYSCFG_DL_I2C_0_init();
     i2c_init();
+    g_i2c0_powered = true;
 }
 
 void PWR_DisableI2C0(void)
 {
+    /* Flag first: from this point no new transaction may start, which closes
+     * the window where an in-flight call could reach the peripheral after the
+     * clock has gone away. */
+    g_i2c0_powered = false;
     DL_I2C_disableController(I2C_0_INST);
     DL_I2C_disablePower(I2C_0_INST);
 }
@@ -51,10 +77,12 @@ void PWR_EnableI2C1(void)
     delay_cycles(POWER_STARTUP_DELAY);
     SYSCFG_DL_I2C_1_init();
     i2c_init();
+    g_i2c1_powered = true;
 }
 
 void PWR_DisableI2C1(void)
 {
+    g_i2c1_powered = false;
     DL_I2C_disableController(I2C_1_INST);
     DL_I2C_disablePower(I2C_1_INST);
 }
@@ -70,10 +98,22 @@ void PWR_EnableUART0(void)
     delay_cycles(POWER_STARTUP_DELAY);
     SYSCFG_DL_UART_0_init();
     uart_init();
+    g_uart0_powered = true;
 }
 
 void PWR_DisableUART0(void)
 {
+    /* Let the tail of the last message clock out before the peripheral loses
+     * power, otherwise prints made immediately before entering a sleep profile
+     * get truncated.
+     *
+     * A fixed delay rather than a busy-flag poll on purpose: it cannot spin
+     * forever under any fault condition. 9600 baud is ~1.04 ms per character,
+     * the TX FIFO is 4 deep plus the shift register, so ~6 character times
+     * (~6.3 ms, ~200k cycles at 32 MHz) covers a full FIFO. */
+    delay_cycles(UART0_TX_DRAIN_CYCLES);
+
+    g_uart0_powered = false;
     DL_UART_Main_disable(UART_0_INST);
     DL_UART_Main_disablePower(UART_0_INST);
 }
@@ -90,10 +130,12 @@ void PWR_EnableSPI1(void)
     SYSCFG_DL_SPI_1_init();
     SYSCFG_DL_DMA_init();
     spi_init();
+    g_spi1_powered = true;
 }
 
 void PWR_DisableSPI1(void)
 {
+    g_spi1_powered = false;
     DL_SPI_disable(SPI_1_INST);
     DL_SPI_disablePower(SPI_1_INST);
 }
@@ -108,16 +150,31 @@ void PWR_EnterMinimumProfile(void)
     PWR_DisableI2C1();
 }
 
+/*
+ * Both of these are idempotent.
+ *
+ * That matters for two reasons. It makes PWR_EnterMeasureProfile() free to
+ * call defensively at the top of every state entry block, so a state no longer
+ * has to trust that whoever transitioned into it left the bus powered. And it
+ * stops PWR_ExitMeasureProfile() paying the UART drain delay a second time on
+ * the loop pass where a state entry block and the sleep tail both call it.
+ */
 void PWR_EnterMeasureProfile(void)
 {
-    PWR_EnableI2C0();
+    if (g_i2c0_powered && g_uart0_powered) {
+        return;                             /* already up, nothing to do */
+    }
+    if (!g_i2c0_powered) PWR_EnableI2C0();
     PWR_UnblockFastClocks();
-    PWR_EnableUART0();
+    if (!g_uart0_powered) PWR_EnableUART0();
     delay_cycles(3200);
 }
 
 void PWR_ExitMeasureProfile(void)
 {
+    if (!g_i2c0_powered && !g_uart0_powered) {
+        return;                             /* already down */
+    }
     PWR_DisableI2C0();
     PWR_DisableUART0();
     PWR_BlockFastClocks();
@@ -159,11 +216,34 @@ void PWR_EnableCoreInterrupts(void)
 }
 
 void RTC_EnablePrescaler(void) {
+    /* Drop any edge that accumulated while the prescaler interrupt was masked,
+     * so the seconds counter does not jump on re-enable. */
+    DL_RTC_clearInterruptStatus(RTC, DL_RTC_INTERRUPT_PRESCALER1);
+    rtc_second_tick = false;
     DL_RTC_enableInterrupt(RTC, DL_RTC_INTERRUPT_PRESCALER1);
 }
 
+/*
+ * Disabling the prescaler interrupt is not enough on its own.
+ *
+ * The 1 Hz interrupt is asynchronous to the state machine. If it fires during
+ * a state-entry block — which takes several milliseconds because of the I2C
+ * reads and UART prints — rtc_second_tick is left set. The entry block then
+ * calls PWR_ExitMeasureProfile(), gating I2C0 and UART0 off. On the very next
+ * pass through the main loop SM_Handle_RTC_Tick() sees the stale flag, bumps
+ * second_counter, and can trip the 5-second SM_SafetyCheck(), which issues an
+ * I2C read against a peripheral that no longer has a clock.
+ *
+ * That was one of the paths to the "board is powered but completely
+ * unresponsive until power cycled" failure. Clear the hardware flag and the
+ * software flag together, with a barrier so the ordering is not reordered.
+ */
 void RTC_DisablePrescaler(void) {
     DL_RTC_disableInterrupt(RTC, DL_RTC_INTERRUPT_PRESCALER1);
+    DL_RTC_clearInterruptStatus(RTC, DL_RTC_INTERRUPT_PRESCALER1);
+    __DSB();
+    __ISB();
+    rtc_second_tick = false;
 }
 
 

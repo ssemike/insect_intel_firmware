@@ -1,6 +1,12 @@
 /*
  * Shared I2C Functions File for BQ7690x / BQ27Z7
  * Updated for Dual-Instance Support (I2C0 and I2C1)
+ *
+ * HARDENED VERSION
+ *  - every wait loop is bounded by a timeout (no more permanent main-loop hangs)
+ *  - gI2cControllerStatus is volatile (it is written from the IRQ handler)
+ *  - transactions are refused if the peripheral is powered down
+ *  - a bus-recovery sequence (9 clocks + manual STOP) runs after a timeout
  */
 
 #include <stdio.h>
@@ -10,9 +16,37 @@
 #include "ti_msp_dl_config.h"
 #include "i2c.h"
 
+/* ─────────────────────────────────────────────────────────────────────────────
+ * Timeout configuration
+ *
+ * These are loop-iteration counts, not cycles. Each iteration is a peripheral
+ * register read plus a decrement/compare, so roughly 8-12 CPU cycles at 32 MHz.
+ * 200000 iterations therefore corresponds to somewhere around 50-75 ms, which
+ * is far longer than any legitimate transaction on this bus (the longest is a
+ * 34-byte block read at 100 kHz, about 3.5 ms) but short enough that a stuck
+ * bus never stalls the state machine for a noticeable amount of time.
+ * ───────────────────────────────────────────────────────────────────────────*/
+#define I2C_TIMEOUT_LOOPS       (200000UL)
+
+/* Half-period for the manual bus-recovery clock: ~5 us at 32 MHz => ~100 kHz */
+#define I2C_RECOVERY_HALF_BIT   (160U)
+
+/* Wait while `cond` is true. Sets `timed_out` if the loop budget is exhausted. */
+#define I2C_WAIT_WHILE(cond, timed_out)                     \
+    do {                                                    \
+        uint32_t _to = I2C_TIMEOUT_LOOPS;                   \
+        (timed_out) = false;                                \
+        while (cond) {                                      \
+            if (--_to == 0U) { (timed_out) = true; break; } \
+        }                                                   \
+    } while (0)
+
 /* Configuration */
 
 // Indicates status of I2C
+// NOTE: volatile — this is written by Shared_I2C_IRQHandler and polled by the
+// blocking loops below. Without volatile the compiler is free to cache it in a
+// register and spin forever.
 enum I2cControllerStatus {
     I2C_STATUS_IDLE = 0,
     I2C_STATUS_TX_STARTED,
@@ -22,23 +56,153 @@ enum I2cControllerStatus {
     I2C_STATUS_RX_INPROGRESS,
     I2C_STATUS_RX_COMPLETE,
     I2C_STATUS_ERROR,
-} gI2cControllerStatus;
+};
+volatile enum I2cControllerStatus gI2cControllerStatus;
 
 // Counters and Buffers
 uint32_t gTxLen, gTxCount;
-uint8_t gTxPacket[34];
-uint8_t gRxPacket[34];
-uint32_t gRxLen, gRxCount;
+uint8_t gTxPacket[64];
+uint8_t gRxPacket[64];
+volatile uint32_t gRxLen, gRxCount;
+
+/* Diagnostics — readable over the CLI to see whether the bus is misbehaving */
+volatile uint32_t gI2cTimeoutCount   = 0;
+volatile uint32_t gI2cRecoveryCount  = 0;
 
 /********* I2C Master Driver Functions *********/
 
-//initialize uart
+//initialize i2c
 void i2c_init(void){
     NVIC_ClearPendingIRQ(I2C_0_INST_INT_IRQN);
-    // NVIC_ClearPendingIRQ(I2C_1_INST_INT_IRQN);
+    NVIC_ClearPendingIRQ(I2C_1_INST_INT_IRQN);
     NVIC_EnableIRQ(I2C_0_INST_INT_IRQN);
-    // NVIC_EnableIRQ(I2C_1_INST_INT_IRQN);
+    NVIC_EnableIRQ(I2C_1_INST_INT_IRQN);
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * Power gating guard
+ *
+ * PWR_ExitMeasureProfile() calls DL_I2C_disablePower(). Reads of a powered-down
+ * peripheral return 0, so a status-polling loop would never see its exit
+ * condition. Every entry point checks this first.
+ * ───────────────────────────────────────────────────────────────────────────*/
+static bool I2C_IsPowered(I2C_Regs *i2c)
+{
+    if (i2c == I2C_0_INST) return g_i2c0_powered;
+    if (i2c == I2C_1_INST) return g_i2c1_powered;
+    return false;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * Bus recovery
+ *
+ * Called after a timeout. A slave that was reset (or glitched) part way through
+ * sending a byte can hold SDA low forever, which wedges the controller. Driving
+ * up to 9 clock pulses lets it finish that byte, then a manual STOP releases the
+ * bus. Finally the controller is reset and re-initialised.
+ * ───────────────────────────────────────────────────────────────────────────*/
+static void I2C_BusRecover(I2C_Regs *i2c)
+{
+    uint32_t sdaIomux, sclIomux, sdaFunc, sclFunc;
+    GPIO_Regs *port;
+    uint32_t sdaPin, sclPin;
+
+    if (i2c == I2C_0_INST) {
+        sdaIomux = GPIO_I2C_0_IOMUX_SDA;  sdaFunc = GPIO_I2C_0_IOMUX_SDA_FUNC;
+        sclIomux = GPIO_I2C_0_IOMUX_SCL;  sclFunc = GPIO_I2C_0_IOMUX_SCL_FUNC;
+        port     = GPIO_I2C_0_SDA_PORT;
+        sdaPin   = GPIO_I2C_0_SDA_PIN;    sclPin  = GPIO_I2C_0_SCL_PIN;
+    } else if (i2c == I2C_1_INST) {
+        sdaIomux = GPIO_I2C_1_IOMUX_SDA;  sdaFunc = GPIO_I2C_1_IOMUX_SDA_FUNC;
+        sclIomux = GPIO_I2C_1_IOMUX_SCL;  sclFunc = GPIO_I2C_1_IOMUX_SCL_FUNC;
+        port     = GPIO_I2C_1_SDA_PORT;
+        sdaPin   = GPIO_I2C_1_SDA_PIN;    sclPin  = GPIO_I2C_1_SCL_PIN;
+    } else {
+        return;
+    }
+
+    gI2cRecoveryCount++;
+
+    /* Take manual control of the two pins.
+     *
+     * SCL is configured as an OPEN-DRAIN output (HIZ_ENABLE): writing 1 puts
+     * the pin in high-Z and the pull-up raises the line, writing 0 drives it
+     * low. That matters — a push-pull output would fight a slave that is
+     * clock-stretching or holding the line low, which is exactly the fault
+     * condition we are trying to recover from.
+     *
+     * SDA starts as an input so we can watch for the slave releasing it. */
+    DL_GPIO_initDigitalOutputFeatures(sclIomux,
+        DL_GPIO_INVERSION_DISABLE, DL_GPIO_RESISTOR_PULL_UP,
+        DL_GPIO_DRIVE_STRENGTH_LOW, DL_GPIO_HIZ_ENABLE);
+    DL_GPIO_initDigitalInputFeatures(sdaIomux,
+        DL_GPIO_INVERSION_DISABLE, DL_GPIO_RESISTOR_PULL_UP,
+        DL_GPIO_HYSTERESIS_DISABLE, DL_GPIO_WAKEUP_DISABLE);
+
+    DL_GPIO_setPins(port, sclPin);          /* release SCL high */
+    DL_GPIO_enableOutput(port, sclPin);
+    delay_cycles(I2C_RECOVERY_HALF_BIT);
+
+    /* Up to 9 clocks, stopping early once the slave lets SDA go high */
+    for (uint8_t i = 0U; i < 9U; i++) {
+        if ((DL_GPIO_readPins(port, sdaPin) & sdaPin) != 0U) {
+            break;
+        }
+        DL_GPIO_clearPins(port, sclPin);    /* drive SCL low */
+        delay_cycles(I2C_RECOVERY_HALF_BIT);
+        DL_GPIO_setPins(port, sclPin);      /* release SCL high */
+        delay_cycles(I2C_RECOVERY_HALF_BIT);
+    }
+
+    /* Manual STOP condition: SDA low -> high while SCL is high.
+     * SDA also becomes an open-drain output for this. */
+    DL_GPIO_initDigitalOutputFeatures(sdaIomux,
+        DL_GPIO_INVERSION_DISABLE, DL_GPIO_RESISTOR_PULL_UP,
+        DL_GPIO_DRIVE_STRENGTH_LOW, DL_GPIO_HIZ_ENABLE);
+    DL_GPIO_clearPins(port, sdaPin);        /* SDA low */
+    DL_GPIO_enableOutput(port, sdaPin);
+    delay_cycles(I2C_RECOVERY_HALF_BIT);
+    DL_GPIO_setPins(port, sclPin);          /* SCL high */
+    delay_cycles(I2C_RECOVERY_HALF_BIT);
+    DL_GPIO_setPins(port, sdaPin);          /* SDA released high => STOP */
+    delay_cycles(I2C_RECOVERY_HALF_BIT);
+
+    /* Hand the pins back to the I2C peripheral */
+    DL_GPIO_disableOutput(port, sdaPin);
+    DL_GPIO_disableOutput(port, sclPin);
+    DL_GPIO_initPeripheralInputFunctionFeatures(sdaIomux, sdaFunc,
+        DL_GPIO_INVERSION_DISABLE, DL_GPIO_RESISTOR_PULL_UP,
+        DL_GPIO_HYSTERESIS_DISABLE, DL_GPIO_WAKEUP_DISABLE);
+    DL_GPIO_initPeripheralInputFunctionFeatures(sclIomux, sclFunc,
+        DL_GPIO_INVERSION_DISABLE, DL_GPIO_RESISTOR_PULL_UP,
+        DL_GPIO_HYSTERESIS_DISABLE, DL_GPIO_WAKEUP_DISABLE);
+    DL_GPIO_enableHiZ(sdaIomux);
+    DL_GPIO_enableHiZ(sclIomux);
+
+    /* Reset and re-initialise the controller itself */
+    DL_I2C_reset(i2c);
+    DL_I2C_enablePower(i2c);
+    delay_cycles(POWER_STARTUP_DELAY);
+    if (i2c == I2C_0_INST) {
+        SYSCFG_DL_I2C_0_init();
+    } else {
+        SYSCFG_DL_I2C_1_init();
+    }
+    i2c_init();
+
+    gI2cControllerStatus = I2C_STATUS_IDLE;
+}
+
+/* Common exit path for a timed-out transaction */
+static I2C_Status I2C_HandleTimeout(I2C_Regs *i2c)
+{
+    gI2cTimeoutCount++;
+    I2C_BusRecover(i2c);
+    return I2C_ERROR_TIMEOUT;
+}
+
+uint32_t I2C_GetTimeoutCount(void)  { return gI2cTimeoutCount;  }
+uint32_t I2C_GetRecoveryCount(void) { return gI2cRecoveryCount; }
 
 // Shared Logic for I2C0 and I2C1 Interrupts
 void Shared_I2C_IRQHandler(I2C_Regs *i2c) {
@@ -75,8 +239,18 @@ void Shared_I2C_IRQHandler(I2C_Regs *i2c) {
     }
 }
 
-I2C_Status I2C_WriteDevice(I2C_Regs *i2c, uint8_t dev_addr, uint8_t reg_addr, 
+I2C_Status I2C_WriteDevice(I2C_Regs *i2c, uint8_t dev_addr, uint8_t reg_addr,
                            uint8_t *reg_data, uint8_t count) {
+    bool timed_out;
+
+    /* Never touch a powered-down peripheral */
+    if (!I2C_IsPowered(i2c)) {
+        return I2C_ERROR_TIMEOUT;
+    }
+    if (count > (uint8_t)(sizeof(gTxPacket) - 1U)) {
+        return I2C_ERROR_NACK;
+    }
+
     gTxPacket[0] = reg_addr;
     for (int i = 0; i < count; i++) {
         gTxPacket[i+1] = reg_data[i];
@@ -86,29 +260,42 @@ I2C_Status I2C_WriteDevice(I2C_Regs *i2c, uint8_t dev_addr, uint8_t reg_addr,
     DL_I2C_fillControllerTXFIFO(i2c, &gTxPacket[0], count + 1);
     DL_I2C_enableInterrupt(i2c, DL_I2C_INTERRUPT_CONTROLLER_TXFIFO_TRIGGER);
 
-    while (!(DL_I2C_getControllerStatus(i2c) & DL_I2C_CONTROLLER_STATUS_IDLE));
+    I2C_WAIT_WHILE(!(DL_I2C_getControllerStatus(i2c) & DL_I2C_CONTROLLER_STATUS_IDLE), timed_out);
+    if (timed_out) return I2C_HandleTimeout(i2c);
 
     gI2cControllerStatus = I2C_STATUS_TX_STARTED; // Reset before transfer
     DL_I2C_startControllerTransfer(i2c, dev_addr, DL_I2C_CONTROLLER_DIRECTION_TX, count + 1);
 
-    while ((gI2cControllerStatus != I2C_STATUS_TX_COMPLETE) && 
-           (gI2cControllerStatus != I2C_STATUS_ERROR));
+    I2C_WAIT_WHILE((gI2cControllerStatus != I2C_STATUS_TX_COMPLETE) &&
+                   (gI2cControllerStatus != I2C_STATUS_ERROR), timed_out);
+    if (timed_out) return I2C_HandleTimeout(i2c);
 
     // Check result
     if (gI2cControllerStatus == I2C_STATUS_ERROR) {
         DL_I2C_flushControllerTXFIFO(i2c);
-        return I2C_ERROR_NACK; 
+        return I2C_ERROR_NACK;
     }
 
-    while (DL_I2C_getControllerStatus(i2c) & DL_I2C_CONTROLLER_STATUS_BUSY_BUS);
-    
+    I2C_WAIT_WHILE(DL_I2C_getControllerStatus(i2c) & DL_I2C_CONTROLLER_STATUS_BUSY_BUS, timed_out);
+    if (timed_out) return I2C_HandleTimeout(i2c);
+
     delay_cycles(1000);
     DL_I2C_flushControllerTXFIFO(i2c);
-    
+
     return I2C_SUCCESS;
 }
 
 I2C_Status I2C_ReadDevice(I2C_Regs *i2c, uint8_t dev_addr, uint8_t reg_addr, uint8_t *reg_data, uint8_t count){
+    bool timed_out;
+
+    /* Never touch a powered-down peripheral */
+    if (!I2C_IsPowered(i2c)) {
+        return I2C_ERROR_TIMEOUT;
+    }
+    if (count > (uint8_t)sizeof(gRxPacket)) {
+        return I2C_ERROR_NACK;
+    }
+
     gRxLen   = count;
     gRxCount = 0;
 
@@ -121,18 +308,23 @@ I2C_Status I2C_ReadDevice(I2C_Regs *i2c, uint8_t dev_addr, uint8_t reg_addr, uin
     DL_I2C_fillControllerTXFIFO(i2c, gTxPacket, 1);
     DL_I2C_enableInterrupt(i2c, DL_I2C_INTERRUPT_CONTROLLER_TXFIFO_TRIGGER);
 
-    while (!(DL_I2C_getControllerStatus(i2c) & DL_I2C_CONTROLLER_STATUS_IDLE));
+    I2C_WAIT_WHILE(!(DL_I2C_getControllerStatus(i2c) & DL_I2C_CONTROLLER_STATUS_IDLE), timed_out);
+    if (timed_out) return I2C_HandleTimeout(i2c);
+
     DL_I2C_startControllerTransfer(i2c, dev_addr, DL_I2C_CONTROLLER_DIRECTION_TX, 1);
 
-    while ((gI2cControllerStatus != I2C_STATUS_TX_COMPLETE) &&
-           (gI2cControllerStatus != I2C_STATUS_ERROR));
+    I2C_WAIT_WHILE((gI2cControllerStatus != I2C_STATUS_TX_COMPLETE) &&
+                   (gI2cControllerStatus != I2C_STATUS_ERROR), timed_out);
+    if (timed_out) return I2C_HandleTimeout(i2c);
 
     if (gI2cControllerStatus == I2C_STATUS_ERROR) {
         DL_I2C_flushControllerTXFIFO(i2c);
         return I2C_ERROR_NACK;
     }
 
-    while (DL_I2C_getControllerStatus(i2c) & DL_I2C_CONTROLLER_STATUS_BUSY_BUS);
+    I2C_WAIT_WHILE(DL_I2C_getControllerStatus(i2c) & DL_I2C_CONTROLLER_STATUS_BUSY_BUS, timed_out);
+    if (timed_out) return I2C_HandleTimeout(i2c);
+
     delay_cycles(1000);
 
     // === Phase 2: Read data (RX) ===
@@ -140,8 +332,9 @@ I2C_Status I2C_ReadDevice(I2C_Regs *i2c, uint8_t dev_addr, uint8_t reg_addr, uin
                                DL_I2C_INTERRUPT_CONTROLLER_RX_DONE);
     DL_I2C_startControllerTransfer(i2c, dev_addr, DL_I2C_CONTROLLER_DIRECTION_RX, count);
 
-    while ((gI2cControllerStatus != I2C_STATUS_RX_COMPLETE) &&
-           (gI2cControllerStatus != I2C_STATUS_ERROR));
+    I2C_WAIT_WHILE((gI2cControllerStatus != I2C_STATUS_RX_COMPLETE) &&
+                   (gI2cControllerStatus != I2C_STATUS_ERROR), timed_out);
+    if (timed_out) return I2C_HandleTimeout(i2c);
 
     if (gI2cControllerStatus == I2C_STATUS_ERROR) {
         DL_I2C_flushControllerRXFIFO(i2c);
@@ -162,46 +355,55 @@ I2C_Status I2C_ReadDevice(I2C_Regs *i2c, uint8_t dev_addr, uint8_t reg_addr, uin
 bool I2C_TryAddress(I2C_Regs *i2c, uint8_t dev_addr)
 {
     uint8_t dummy = 0x00;
-    
+    bool timed_out;
+
+    /* Never touch a powered-down peripheral */
+    if (!I2C_IsPowered(i2c)) {
+        return false;
+    }
+
     // Reset the controller status before attempting transfer
     gI2cControllerStatus = I2C_STATUS_IDLE;
-    
+
     DL_I2C_flushControllerTXFIFO(i2c);
-    
+
     // Wait for idle state
-    while (!(DL_I2C_getControllerStatus(i2c) & DL_I2C_CONTROLLER_STATUS_IDLE));
-    
+    I2C_WAIT_WHILE(!(DL_I2C_getControllerStatus(i2c) & DL_I2C_CONTROLLER_STATUS_IDLE), timed_out);
+    if (timed_out) { (void)I2C_HandleTimeout(i2c); return false; }
+
     // Enable the TX interrupt to detect completion/error
     DL_I2C_enableInterrupt(i2c, DL_I2C_INTERRUPT_CONTROLLER_TXFIFO_TRIGGER);
-    
+
     // Fill FIFO with dummy byte
     DL_I2C_fillControllerTXFIFO(i2c, &dummy, 1);
-    
+
     // Start the transfer
     DL_I2C_startControllerTransfer(i2c, dev_addr, DL_I2C_CONTROLLER_DIRECTION_TX, 1);
-    
+
     // Wait for completion or error
-    while ((gI2cControllerStatus != I2C_STATUS_TX_COMPLETE) && 
-           (gI2cControllerStatus != I2C_STATUS_ERROR));
-    
+    I2C_WAIT_WHILE((gI2cControllerStatus != I2C_STATUS_TX_COMPLETE) &&
+                   (gI2cControllerStatus != I2C_STATUS_ERROR), timed_out);
+    if (timed_out) { (void)I2C_HandleTimeout(i2c); return false; }
+
     // Wait until bus is no longer busy
-    while (DL_I2C_getControllerStatus(i2c) & DL_I2C_CONTROLLER_STATUS_BUSY_BUS);
-    
+    I2C_WAIT_WHILE(DL_I2C_getControllerStatus(i2c) & DL_I2C_CONTROLLER_STATUS_BUSY_BUS, timed_out);
+    if (timed_out) { (void)I2C_HandleTimeout(i2c); return false; }
+
     // Check if we got an error (NACK or arbitration lost)
     bool success = (gI2cControllerStatus == I2C_STATUS_TX_COMPLETE);
-    
+
     // Clear any error conditions for next scan
     if (!success) {
         // Clear the error interrupt flags
-        DL_I2C_clearInterruptStatus(i2c, DL_I2C_INTERRUPT_CONTROLLER_NACK | 
+        DL_I2C_clearInterruptStatus(i2c, DL_I2C_INTERRUPT_CONTROLLER_NACK |
                                           DL_I2C_INTERRUPT_CONTROLLER_ARBITRATION_LOST);
     }
     // Flush and reset
     DL_I2C_flushControllerTXFIFO(i2c);
     gI2cControllerStatus = I2C_STATUS_IDLE;
-    
-    delay_cycles(1000); 
-    
+
+    delay_cycles(1000);
+
     return success;
 }
 
