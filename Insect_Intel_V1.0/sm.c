@@ -271,9 +271,69 @@ static void SM_HandleState_CHARGING(void) {
     __WFI();
 }
 
+/* 32 MHz core: 32000 cycles per millisecond. Same basis as the 200 ms delays
+ * in functions.c and the 10 ms one in gauge_init(). */
+#define SM_MS_CYCLES(ms)   ((uint32_t)(ms) * 32000UL)
+
+/* Long enough for the 3V8 rail to actually collapse and for the STM32's
+ * external NOR to see a genuine power-on reset. Too short and the flash keeps
+ * its octal-DTR mode across the "cycle", which reproduces exactly the failure
+ * this whole mechanism exists to avoid. */
+#define SM_POWER_CYCLE_OFF_MS   500U
+
+/* Small gap after the acknowledgement transfer completes, so the STM32 has a
+ * moment to stop touching the SD card. It has already committed everything
+ * that matters before it asks, so this is politeness rather than safety. */
+#define SM_POWER_CYCLE_SETTLE_MS 50U
+
+/**
+ * Remove the STM32's power and give it straight back, WITHOUT going through
+ * SM_ResumeSystemContext()/IDLE.
+ *
+ * Two reasons that routing matters, and both are easy to get wrong:
+ *
+ *   1. SM_HandleState_IDLE's entry sets wake_reason = SM_WAKE_NORMAL. The
+ *      power-up path only asserts STM_MCU_IO1 when the reason is SM_WAKE_SETUP,
+ *      and that pin is what tells the STM32 it is in Setup Mode. Lose it and
+ *      the device comes back with no access point, so the operator who just
+ *      pressed the update button never sees the result.
+ *
+ *   2. IDLE waits for SM_NeedsPeriodicSTMWake(), i.e. wake_interval_minutes.
+ *      That is minutes of darkness for what should be under a second.
+ *
+ * So: clear entry_done and let SM_HandleState_POWER_STM re-run its own entry
+ * block, which re-asserts IO1 from the wake reason we are deliberately leaving
+ * untouched, powers the rail back up and re-arms the IO2 interrupt.
+ */
+static void SM_DoPowerCycle(void) {
+    sm_context.power_cycle_pending = false;
+    sm_context.power_cycle_armed   = false;
+
+    uart_printf("[SM] Power-cycling STM32 (reason kept: %s)\n",
+        (sm_context.wake_reason == SM_WAKE_SETUP) ? "SETUP" : "NORMAL");
+
+    delay_cycles(SM_MS_CYCLES(SM_POWER_CYCLE_SETTLE_MS));
+
+    SM_SetSTMPower(false);
+    delay_cycles(SM_MS_CYCLES(SM_POWER_CYCLE_OFF_MS));
+
+    /* Re-run the POWER_STM entry block on the next tick of the state machine.
+     * Deliberately not SM_Transition(): we are already in this state and want
+     * its entry actions repeated, not a state change. */
+    sm_context.entry_done = false;
+}
+
 static void SM_HandleState_POWER_STM(void) {
 
     if (!sm_context.entry_done) {
+        /* Clear any power-cycle request left over from a previous session in
+         * this state. Without this, a request that was accepted and then
+         * overtaken by an inactivity timeout or a shutdown would still be
+         * pending next time the STM32 came up, and would fire on the first
+         * staged response — a spurious power cycle with no one asking for it. */
+        sm_context.power_cycle_pending = false;
+        sm_context.power_cycle_armed   = false;
+
         PWR_EnterMeasureProfile();
         sm_context.total_wakes++;
         if (sm_context.wake_reason == SM_WAKE_SETUP) {
@@ -301,6 +361,14 @@ static void SM_HandleState_POWER_STM(void) {
         if (sm_context.has_pending_response) {
             SPI_Controller_Arm(&stm32Spi);
             sm_context.has_pending_response = false;
+            /* If that staged reply is the acknowledgement for a power-cycle
+             * request, it is now on the wire. SPI_Controller_Arm() has just
+             * cleared rxDone, so rxDone going true again means this transfer
+             * finished and the STM32 has the answer. Only then may the rail
+             * drop. */
+            if (sm_context.power_cycle_pending) {
+                sm_context.power_cycle_armed = true;
+            }
         } else {
             sm_context.stm_data_sent = true;
             SM_SendOffer();
@@ -317,6 +385,18 @@ static void SM_HandleState_POWER_STM(void) {
         // delay_cycles(320000);
         SM_DispatchIncomingPacket();
      }
+
+    /* Deferred power cycle. Reached only once the acknowledgement transfer
+     * armed above has completed, so the STM32 knows the cut is coming.
+     *
+     * This sits after the dispatch block on purpose: that block only consumes
+     * rxDone when stm_data_sent is set, which it is not for a staged response,
+     * so the flag survives for us to test here. */
+    if (sm_context.power_cycle_armed && stm32Spi.rxDone) {
+        stm32Spi.rxDone = false;
+        SM_DoPowerCycle();
+        return;
+    }
 
     /* Inactivity timeout — resets each time IO2 fires */
     if ((sm_context.second_counter - sm_context.last_io2_activity_s) >= SM_INACTIVITY_TIMEOUT_S) {
@@ -694,6 +774,16 @@ static void SM_HandleConfig(uint8_t pid, const void *payload)
         sm_context.last_io2_activity_s = sm_context.second_counter;
         SM_PrepareAck();
         uart_printf("[SM] Keep-alive received: resetting inactivity timer\n");
+    } else if (pid == PID_POWER_CYCLE) {
+        /* Do NOT cut power here. SM_PrepareAck() only stages the reply; it is
+         * transmitted on the next transfer the STM32 initiates. Dropping the
+         * rail now would kill it mid-request, and it would never learn that we
+         * agreed. SM_HandleState_POWER_STM performs the cut once the reply has
+         * actually gone out — see SM_DoPowerCycle(). */
+        sm_context.last_io2_activity_s = sm_context.second_counter;
+        sm_context.power_cycle_pending = true;
+        SM_PrepareAck();
+        uart_printf("[SM] Power-cycle requested by STM32 (deferred until ack sent)\n");
     }
     else if (pid == PID_STM_CFG) {
         const SM_STMConfig_t *cfg = (const SM_STMConfig_t *)payload;
